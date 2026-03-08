@@ -125,7 +125,7 @@ const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollaps
               </button>
 
               {/* Report sub-items */}
-              {hasChildren && reportsOpen && (
+              {hasChildren && isOpen && (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
                   className="ml-5 mt-0.5 space-y-0.5 border-l-2 border-border pl-3">
                   {item.children!.map(child => {
