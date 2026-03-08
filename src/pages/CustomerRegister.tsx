@@ -226,10 +226,4 @@ const CustomerRegister = () => {
   );
 };
 
-function getQuickServices(type: string): string[] {
-  if (type === "hotel") return ["🛎️ Room Service", "🍽️ Restaurant", "📶 Free Wi-Fi", "🅿️ Parking"];
-  if (type === "cafe") return ["☕ Coffee", "🥐 Pastries", "📶 Wi-Fi", "⭐ Rewards"];
-  return ["🍽️ Dine-In", "📦 Takeaway", "⭐ Loyalty", "👥 Groups"];
-}
-
 export default CustomerRegister;
