@@ -67,7 +67,7 @@ const CustomerRegister = () => {
         registeredAt: new Date().toISOString(),
       });
     }
-    setTimeout(() => { navigate(`/customer-home?table=${tableId}&business=${businessId}`); }, 1500);
+    setTimeout(() => { navigate(`/menu?table=${tableId}&business=${businessId}`); }, 1500);
   };
 
   return (
