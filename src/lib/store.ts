@@ -5,13 +5,21 @@ export interface Business {
   name: string;
   type: "hotel" | "cafe" | "restaurant";
   address: string;
+  city: string;
+  country: string;
+  countryCode: string;
+  phonePrefix: string;
   phone: string;
+  email: string;
+  logo: string;
+  description: string;
   adminUsername: string;
   adminPassword: string;
   status: "active" | "inactive";
   createdAt: string;
   totalOrders: number;
   totalRevenue: number;
+  subscription: "free" | "basic" | "premium" | "enterprise";
 }
 
 export interface Category {

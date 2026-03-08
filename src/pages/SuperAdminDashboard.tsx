@@ -1,28 +1,36 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
-  Building2, Users, BarChart3, Shield, PlusCircle,
-  LogOut, X, Eye, EyeOff, Hotel, Coffee, UtensilsCrossed,
-  Trash2, Power, Search, LayoutDashboard, CreditCard,
-  DollarSign, Activity, Settings, ChevronLeft, ChevronRight, Pencil,
+  PlusCircle, Search, Building2,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
-  Business, getBusinesses, saveBusiness, updateBusiness,
-  deleteBusiness, generateId,
+  Business, getBusinesses, updateBusiness, deleteBusiness,
 } from "@/lib/store";
 import SuperAdminSidebar from "@/components/super-admin/Sidebar";
 import SuperAdminStats from "@/components/super-admin/StatsCards";
 import BusinessTable from "@/components/super-admin/BusinessTable";
 import NewBusinessModal from "@/components/super-admin/NewBusinessModal";
+import BusinessDetailModal from "@/components/super-admin/BusinessDetailModal";
+import SubscriptionsTab from "@/components/super-admin/SubscriptionsTab";
+import RevenueTab from "@/components/super-admin/RevenueTab";
+import SettingsTab from "@/components/super-admin/SettingsTab";
+
+const tabTitles: Record<string, { title: string; subtitle: string }> = {
+  dashboard: { title: "Super Admin Dashboard", subtitle: "Global Control Overview for all SaaS entities" },
+  businesses: { title: "Business Management", subtitle: "Manage all registered businesses" },
+  subscriptions: { title: "Subscriptions", subtitle: "Manage plans and billing" },
+  revenue: { title: "Revenue Analytics", subtitle: "Track income and performance" },
+  settings: { title: "Platform Settings", subtitle: "Configure system preferences" },
+};
 
 const SuperAdminDashboard = () => {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [editBiz, setEditBiz] = useState<Business | null>(null);
+  const [viewBiz, setViewBiz] = useState<Business | null>(null);
   const [search, setSearch] = useState("");
   const [collapsed, setCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -31,11 +39,96 @@ const SuperAdminDashboard = () => {
   const refresh = () => setBusinesses(getBusinesses());
 
   const filtered = businesses.filter(b =>
-    b.name.toLowerCase().includes(search.toLowerCase()) || b.type.includes(search.toLowerCase()) || b.adminUsername.toLowerCase().includes(search.toLowerCase())
+    b.name.toLowerCase().includes(search.toLowerCase()) ||
+    b.type.includes(search.toLowerCase()) ||
+    b.adminUsername.toLowerCase().includes(search.toLowerCase()) ||
+    (b.country || "").toLowerCase().includes(search.toLowerCase())
   );
 
   const activeCount = businesses.filter(b => b.status === "active").length;
   const totalRevenue = businesses.reduce((sum, b) => sum + b.totalRevenue, 0);
+
+  const handleToggleStatus = (id: string, status: string) => {
+    const newStatus = status === "active" ? "inactive" : "active";
+    updateBusiness(id, { status: newStatus as Business["status"] });
+    refresh();
+    toast.success(newStatus === "active" ? "Business activated ✅" : "Business deactivated ❌");
+  };
+
+  const handleDelete = (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete "${name}"?`)) return;
+    deleteBusiness(id);
+    refresh();
+    toast.success("Business deleted!");
+  };
+
+  const handleEdit = (biz: Business) => {
+    setEditBiz(biz);
+    setShowForm(true);
+  };
+
+  const currentTab = tabTitles[activeTab] || tabTitles.dashboard;
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case "dashboard":
+        return (
+          <div className="space-y-8">
+            <SuperAdminStats totalBusinesses={businesses.length} activeCount={activeCount} totalRevenue={totalRevenue} />
+            {/* Quick business list */}
+            <div>
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="font-display font-bold text-xl text-foreground">Recent Businesses</h2>
+                <Button variant="outline" size="sm" onClick={() => setActiveTab("businesses")}>
+                  View All <Building2 className="w-3.5 h-3.5 ml-1.5" />
+                </Button>
+              </div>
+              <BusinessTable
+                businesses={filtered.slice(0, 5)}
+                onToggleStatus={handleToggleStatus}
+                onDelete={handleDelete}
+                onEdit={handleEdit}
+                onView={(biz) => setViewBiz(biz)}
+              />
+            </div>
+          </div>
+        );
+
+      case "businesses":
+        return (
+          <div>
+            <div className="flex items-center justify-between mb-5">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input placeholder="Search businesses..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 w-72" />
+              </div>
+              <Button onClick={() => { setEditBiz(null); setShowForm(true); }} variant="hero">
+                <PlusCircle className="w-4 h-4 mr-2" /> New Business
+              </Button>
+            </div>
+            <BusinessTable
+              businesses={filtered}
+              onToggleStatus={handleToggleStatus}
+              onDelete={handleDelete}
+              onEdit={handleEdit}
+              onView={(biz) => setViewBiz(biz)}
+            />
+          </div>
+        );
+
+      case "subscriptions":
+        return <SubscriptionsTab businesses={businesses} />;
+
+      case "revenue":
+        return <RevenueTab businesses={businesses} />;
+
+      case "settings":
+        return <SettingsTab />;
+
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -47,64 +140,34 @@ const SuperAdminDashboard = () => {
       />
 
       <main className={`flex-1 transition-all duration-300 ${collapsed ? "ml-[72px]" : "ml-[240px]"}`}>
-        {/* Header */}
         <header className="border-b border-border bg-card px-8 py-6 flex items-center justify-between">
           <div>
-            <h1 className="font-display font-bold text-2xl text-foreground">Super Admin Dashboard</h1>
-            <p className="text-sm text-muted-foreground mt-1">Global Control Overview for all SaaS entities</p>
+            <h1 className="font-display font-bold text-2xl text-foreground">{currentTab.title}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{currentTab.subtitle}</p>
           </div>
-          <Button onClick={() => setShowForm(true)} variant="hero">
-            <PlusCircle className="w-4 h-4 mr-2" /> New Business
-          </Button>
+          {activeTab === "dashboard" && (
+            <Button onClick={() => { setEditBiz(null); setShowForm(true); }} variant="hero">
+              <PlusCircle className="w-4 h-4 mr-2" /> New Business
+            </Button>
+          )}
         </header>
 
-        <div className="p-8 space-y-8">
-          <SuperAdminStats
-            totalBusinesses={businesses.length}
-            activeCount={activeCount}
-            totalRevenue={totalRevenue}
-          />
-
-          {/* Business Management */}
-          <div>
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="font-display font-bold text-xl text-foreground">Business Management</h2>
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search businesses..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-10 w-64"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <BusinessTable
-              businesses={filtered}
-              onToggleStatus={(id, status) => {
-                const newStatus = status === "active" ? "inactive" : "active";
-                updateBusiness(id, { status: newStatus as Business["status"] });
-                refresh();
-                toast.success(newStatus === "active" ? "Business activated ✅" : "Business deactivated ❌");
-              }}
-              onDelete={(id, name) => {
-                if (!confirm(`Are you sure you want to delete "${name}"?`)) return;
-                deleteBusiness(id);
-                refresh();
-                toast.success("Business deleted!");
-              }}
-            />
-          </div>
+        <div className="p-8">
+          {renderContent()}
         </div>
       </main>
 
       <NewBusinessModal
         open={showForm}
-        onClose={() => setShowForm(false)}
+        onClose={() => { setShowForm(false); setEditBiz(null); }}
         onCreated={refresh}
+        editBusiness={editBiz}
+      />
+
+      <BusinessDetailModal
+        open={!!viewBiz}
+        onClose={() => setViewBiz(null)}
+        business={viewBiz}
       />
     </div>
   );
