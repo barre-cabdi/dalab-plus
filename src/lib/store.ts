@@ -106,6 +106,56 @@ export const updateOrder = (id: string, updates: Partial<Order>) => {
   localStorage.setItem(ORDERS_KEY, JSON.stringify(all.map(o => o.id === id ? { ...o, ...updates } : o)));
 };
 
+export interface StaffMember {
+  id: string;
+  businessId: string;
+  name: string;
+  phone: string;
+  nationality: string;
+  jobTitle: string;
+  customJobTitle?: string;
+  shifts: string;
+  startTime: string;
+  endTime: string;
+  username?: string;
+  password?: string;
+  createdAt: string;
+}
+
+export interface Customer {
+  id: string;
+  businessId: string;
+  name: string;
+  phone: string;
+  email?: string;
+  totalOrders: number;
+  totalSpent: number;
+  loyaltyPoints: number;
+  registeredAt: string;
+}
+
+const STAFF_KEY = "dp_staff";
+const CUSTOMERS_KEY = "dp_customers";
+
+export const getStaff = (businessId: string): StaffMember[] => {
+  const all: StaffMember[] = JSON.parse(localStorage.getItem(STAFF_KEY) || "[]");
+  return all.filter(s => s.businessId === businessId);
+};
+export const saveStaff = (staff: StaffMember) => { const all: StaffMember[] = JSON.parse(localStorage.getItem(STAFF_KEY) || "[]"); all.push(staff); localStorage.setItem(STAFF_KEY, JSON.stringify(all)); };
+export const updateStaff = (id: string, updates: Partial<StaffMember>) => { const all: StaffMember[] = JSON.parse(localStorage.getItem(STAFF_KEY) || "[]"); localStorage.setItem(STAFF_KEY, JSON.stringify(all.map(s => s.id === id ? { ...s, ...updates } : s))); };
+export const deleteStaff = (id: string) => { const all: StaffMember[] = JSON.parse(localStorage.getItem(STAFF_KEY) || "[]"); localStorage.setItem(STAFF_KEY, JSON.stringify(all.filter(s => s.id !== id))); };
+export const getStaffByUsername = (username: string): StaffMember | undefined => {
+  const all: StaffMember[] = JSON.parse(localStorage.getItem(STAFF_KEY) || "[]");
+  return all.find(s => s.username === username);
+};
+
+export const getCustomers = (businessId: string): Customer[] => {
+  const all: Customer[] = JSON.parse(localStorage.getItem(CUSTOMERS_KEY) || "[]");
+  return all.filter(c => c.businessId === businessId);
+};
+export const saveCustomer = (customer: Customer) => { const all: Customer[] = JSON.parse(localStorage.getItem(CUSTOMERS_KEY) || "[]"); all.push(customer); localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(all)); };
+export const updateCustomer = (id: string, updates: Partial<Customer>) => { const all: Customer[] = JSON.parse(localStorage.getItem(CUSTOMERS_KEY) || "[]"); localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(all.map(c => c.id === id ? { ...c, ...updates } : c))); };
+
 export const generateId = (prefix: string) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 
 export const seedDemoData = (businessId: string) => {
