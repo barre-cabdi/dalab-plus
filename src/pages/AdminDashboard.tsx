@@ -503,6 +503,14 @@ const AdminDashboard = () => {
       case "customers":
         return <CustomersTab businessId={business.id} />;
 
+      case "hotel-overview":
+      case "hotel-rooms":
+      case "hotel-bookings":
+      case "hotel-guests": {
+        const hotelViewMap: Record<string, string> = { "hotel-overview": "overview", "hotel-rooms": "rooms", "hotel-bookings": "bookings", "hotel-guests": "guests" };
+        return <HotelManagementTab businessId={business.id} initialView={hotelViewMap[activeTab] || "overview"} />;
+      }
+
       case "settings":
         return <AdminSettings business={business} onUpdate={refreshData} />;
 
