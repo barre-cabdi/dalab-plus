@@ -12,6 +12,7 @@ import CustomerDashboard from "./pages/CustomerDashboard";
 import CustomerRegister from "./pages/CustomerRegister";
 import CustomerMenu from "./pages/CustomerMenu";
 import OrderTracking from "./pages/OrderTracking";
+import WaiterDashboard from "./pages/WaiterDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
