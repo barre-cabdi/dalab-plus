@@ -71,6 +71,11 @@ const AdminDashboard = () => {
   const [catImageMode, setCatImageMode] = useState<"emoji" | "upload">("emoji");
   const menuImageRef = useRef<HTMLInputElement>(null);
   const catImageRef = useRef<HTMLInputElement>(null);
+  const [feedbackDialog, setFeedbackDialog] = useState<{ orderId: string; customerName: string } | null>(null);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [orderFilter, setOrderFilter] = useState("all");
+  const prevOrderCountRef = useRef(0);
+  const audioContextRef = useRef<AudioContext | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("dp_active_business");
