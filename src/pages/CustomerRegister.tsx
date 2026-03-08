@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User, Phone, MapPin, CheckCircle, UtensilsCrossed, Hotel, Coffee, Sparkles, Star } from "lucide-react";
-import { getBusinesses, Business, saveCustomer, getCustomers, generateId } from "@/lib/store";
+import { getBusinesses, Business, saveCustomer, getCustomers, generateId, getDefaultServices, BusinessService } from "@/lib/store";
 
 const typeConfig: Record<string, { icon: any; emoji: string; welcome: string; gradient: string }> = {
   restaurant: { icon: UtensilsCrossed, emoji: "🍽️", welcome: "Cuntada ugu fiican!", gradient: "from-[hsl(222,60%,12%)] via-[hsl(222,50%,18%)] to-[hsl(222,40%,14%)]" },
