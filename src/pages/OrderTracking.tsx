@@ -121,6 +121,24 @@ const OrderTracking = () => {
           </div>
         </motion.div>
 
+        {/* Admin Messages */}
+        {messages.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="glass rounded-xl p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <MessageSquare className="w-4 h-4 text-accent" />
+              <h3 className="font-display font-semibold text-primary-foreground text-sm">Fariimo</h3>
+            </div>
+            <div className="space-y-2">
+              {messages.map((msg: any) => (
+                <motion.div key={msg.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="bg-accent/10 rounded-lg p-3 border border-accent/20">
+                  <p className="text-xs text-primary-foreground">{msg.message}</p>
+                  <p className="text-[9px] text-primary-foreground/40 mt-1">{new Date(msg.createdAt).toLocaleTimeString()}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
         {customer && levelInfo && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="glass rounded-xl p-5">
             <div className="flex items-center gap-2 mb-3"><Trophy className={`w-5 h-5 ${levelInfo.color}`} /><span className="font-display font-semibold text-primary-foreground text-sm">{customer.level} Level</span></div>
