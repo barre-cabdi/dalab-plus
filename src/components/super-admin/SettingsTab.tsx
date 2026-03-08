@@ -36,6 +36,10 @@ const savePlans = (plans: SubscriptionPlan[]) => {
 };
 
 const SettingsTab = () => {
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const [platformLogo, setPlatformLogo] = useState<string>(
+    localStorage.getItem("dp_platform_logo") || ""
+  );
   const [settings, setSettings] = useState({
     platformName: "DALABplus+",
     supportEmail: "support@dalabplus.com",
@@ -46,6 +50,29 @@ const SettingsTab = () => {
     maintenanceMode: false,
     analyticsEnabled: true,
   });
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Logo must be under 2MB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      setPlatformLogo(base64);
+      localStorage.setItem("dp_platform_logo", base64);
+      toast.success("Logo uploaded! ✅");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeLogo = () => {
+    setPlatformLogo("");
+    localStorage.removeItem("dp_platform_logo");
+    toast.success("Logo removed");
+  };
 
   const [plans, setPlans] = useState<SubscriptionPlan[]>(getPlans());
   const [editingPlan, setEditingPlan] = useState<string | null>(null);
