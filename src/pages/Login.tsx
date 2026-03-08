@@ -3,13 +3,17 @@ import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, Sun, Moon, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { getBusinessByAdmin } from "@/lib/store";
+import { useI18n } from "@/lib/i18n";
+import { useTheme } from "@/lib/theme";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { t, lang, setLang } = useI18n();
+  const { theme, toggleTheme } = useTheme();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -21,7 +25,7 @@ const Login = () => {
 
     setTimeout(() => {
       if (username === "superadmin" && password === "super123") {
-        toast.success("Ku soo dhawoow, Super Admin!");
+        toast.success(`${t.welcome}, Super Admin!`);
         navigate("/super-admin");
         setLoading(false);
         return;
@@ -30,36 +34,66 @@ const Login = () => {
       const biz = getBusinessByAdmin(username);
       if (biz) {
         if (biz.adminPassword !== password) {
-          toast.error("Password-ka waa khalad!");
+          toast.error(t.wrongPassword);
           setLoading(false);
           return;
         }
         if (biz.status === "inactive") {
-          toast.error("Meheraddan waa la xidhay. La xiriir Super Admin.");
+          toast.error(t.businessInactive);
           setLoading(false);
           return;
         }
         localStorage.setItem("dp_active_business", JSON.stringify(biz));
-        toast.success(`Ku soo dhawoow, ${biz.name}!`);
+        toast.success(`${t.welcome}, ${biz.name}!`);
         navigate("/admin");
         setLoading(false);
         return;
       }
 
-      toast.success("Ku soo dhawoow!");
+      toast.success(`${t.welcome}!`);
       navigate("/customer");
       setLoading(false);
     }, 600);
   };
 
   return (
-    <div className="min-h-screen bg-hero flex items-center justify-center px-4">
-      <div className="absolute top-20 right-20 w-72 h-72 rounded-full bg-accent/10 blur-3xl" />
-      <div className="absolute bottom-20 left-20 w-96 h-96 rounded-full bg-accent/5 blur-3xl" />
+    <div className="min-h-screen bg-hero flex items-center justify-center px-4 relative">
+      <motion.div
+        animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
+        transition={{ duration: 8, repeat: Infinity }}
+        className="absolute top-20 right-20 w-72 h-72 rounded-full bg-accent/10 blur-3xl"
+      />
+      <motion.div
+        animate={{ scale: [1, 1.3, 1], opacity: [0.05, 0.1, 0.05] }}
+        transition={{ duration: 10, repeat: Infinity }}
+        className="absolute bottom-20 left-20 w-96 h-96 rounded-full bg-accent/5 blur-3xl"
+      />
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md relative">
+      {/* Top controls */}
+      <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+        <button
+          onClick={() => setLang(lang === "en" ? "so" : "en")}
+          className="flex items-center gap-1 text-xs font-semibold text-primary-foreground/60 hover:text-accent transition-colors px-3 py-2 rounded-full glass"
+        >
+          <Globe className="w-3.5 h-3.5" />
+          {lang === "en" ? "SO" : "EN"}
+        </button>
+        <button
+          onClick={toggleTheme}
+          className="p-2 rounded-full glass text-primary-foreground/60 hover:text-accent transition-all"
+        >
+          {theme === "light" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+        </button>
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 30, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="w-full max-w-md relative z-10"
+      >
         <Link to="/" className="inline-flex items-center gap-2 text-sm text-primary-foreground/60 hover:text-accent transition-colors mb-8">
-          <ArrowLeft className="w-4 h-4" /> Ku noqo Home
+          <ArrowLeft className="w-4 h-4" /> {t.backHome}
         </Link>
 
         <div className="glass rounded-2xl p-8">
@@ -69,35 +103,35 @@ const Login = () => {
             </div>
             <div>
               <h1 className="font-display font-bold text-xl text-primary-foreground">DALABplus+</h1>
-              <p className="text-xs text-primary-foreground/50">Sign in to your account</p>
+              <p className="text-xs text-primary-foreground/50">{t.signIn}</p>
             </div>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
-              <Label className="text-primary-foreground/70 text-sm">Username</Label>
-              <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Gali username-kaaga" required className="h-12 bg-primary/30 border-primary-foreground/10 text-primary-foreground placeholder:text-primary-foreground/30 focus:border-accent" />
+              <Label className="text-primary-foreground/70 text-sm">{t.username}</Label>
+              <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder={t.enterUsername} required className="h-12 bg-primary/30 border-primary-foreground/10 text-primary-foreground placeholder:text-primary-foreground/30 focus:border-accent" />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-primary-foreground/70 text-sm">Password</Label>
+              <Label className="text-primary-foreground/70 text-sm">{t.password}</Label>
               <div className="relative">
-                <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Gali password-kaaga" required className="h-12 bg-primary/30 border-primary-foreground/10 text-primary-foreground placeholder:text-primary-foreground/30 focus:border-accent pr-12" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-primary-foreground/40 hover:text-accent">
+                <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t.enterPassword} required className="h-12 bg-primary/30 border-primary-foreground/10 text-primary-foreground placeholder:text-primary-foreground/30 focus:border-accent pr-12" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-primary-foreground/40 hover:text-accent transition-colors">
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
 
             <Button variant="hero" size="lg" type="submit" className="w-full" disabled={loading}>
-              {loading ? "Galitaanka..." : "Gal"}
+              {loading ? t.signingIn : t.signInBtn}
             </Button>
           </form>
 
           <div className="mt-6 p-3 rounded-lg bg-primary/20 border border-primary-foreground/10">
-            <p className="text-[10px] text-primary-foreground/50 font-semibold mb-1.5">Demo Credentials:</p>
-            <p className="text-[10px] text-primary-foreground/40"><strong>Super Admin:</strong> superadmin / super123</p>
-            <p className="text-[10px] text-primary-foreground/40"><strong>Business Admin:</strong> Super Admin-ka ka samee meherad cusub</p>
+            <p className="text-[10px] text-primary-foreground/50 font-semibold mb-1.5">{t.demoCredentials}</p>
+            <p className="text-[10px] text-primary-foreground/40"><strong>{t.superAdmin}:</strong> superadmin / super123</p>
+            <p className="text-[10px] text-primary-foreground/40"><strong>{t.businessAdmin}:</strong> {t.businessAdmin}</p>
           </div>
         </div>
       </motion.div>

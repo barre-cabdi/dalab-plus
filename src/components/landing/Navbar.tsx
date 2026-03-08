@@ -1,43 +1,109 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Sun, Moon, Globe } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
+import { useTheme } from "@/lib/theme";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { t, lang, setLang } = useI18n();
+  const { theme, toggleTheme } = useTheme();
+
   const links = [
-    { label: "Home", href: "#home" },
-    { label: "Services", href: "#services" },
-    { label: "About", href: "#about" },
-    { label: "Contact", href: "#contact" },
+    { label: t.home, href: "#home" },
+    { label: t.services, href: "#services" },
+    { label: t.about, href: "#about" },
+    { label: t.contact, href: "#contact" },
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass">
+    <motion.nav
+      initial={{ y: -80 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="fixed top-0 left-0 right-0 z-50 glass"
+    >
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-lg bg-gold-gradient flex items-center justify-center">
+        <Link to="/" className="flex items-center gap-2 group">
+          <div className="w-9 h-9 rounded-lg bg-gold-gradient flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
             <span className="font-display font-bold text-accent-foreground text-sm">D+</span>
           </div>
           <span className="font-display font-bold text-lg text-foreground">DALABplus+</span>
         </Link>
-        <div className="hidden md:flex items-center gap-8">
+
+        <div className="hidden md:flex items-center gap-6">
           {links.map(l => (
-            <a key={l.href} href={l.href} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{l.label}</a>
+            <a key={l.href} href={l.href} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent after:transition-all after:duration-300 hover:after:w-full">
+              {l.label}
+            </a>
           ))}
-          <Link to="/login"><Button variant="hero" size="default">Login</Button></Link>
+
+          {/* Language Toggle */}
+          <button
+            onClick={() => setLang(lang === "en" ? "so" : "en")}
+            className="flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-full border border-border hover:border-accent"
+          >
+            <Globe className="w-3.5 h-3.5" />
+            {lang === "en" ? "SO" : "EN"}
+          </button>
+
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-full border border-border hover:border-accent text-muted-foreground hover:text-foreground transition-all duration-300"
+          >
+            {theme === "light" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+          </button>
+
+          <Link to="/login">
+            <Button variant="hero" size="default">{t.getStarted}</Button>
+          </Link>
         </div>
-        <button className="md:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
-          {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+
+        <div className="flex md:hidden items-center gap-2">
+          <button onClick={() => setLang(lang === "en" ? "so" : "en")} className="p-2 text-foreground">
+            <Globe className="w-4 h-4" />
+          </button>
+          <button onClick={toggleTheme} className="p-2 text-foreground">
+            {theme === "light" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+          </button>
+          <button className="text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
+            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
-      {mobileOpen && (
-        <div className="md:hidden glass border-t border-border px-4 pb-4 space-y-3">
-          {links.map(l => (<a key={l.href} href={l.href} className="block text-sm font-medium text-muted-foreground hover:text-foreground py-2" onClick={() => setMobileOpen(false)}>{l.label}</a>))}
-          <Link to="/login" onClick={() => setMobileOpen(false)}><Button variant="hero" size="default" className="w-full">Login</Button></Link>
-        </div>
-      )}
-    </nav>
+
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="md:hidden glass border-t border-border px-4 pb-4 space-y-3 overflow-hidden"
+          >
+            {links.map((l, i) => (
+              <motion.a
+                key={l.href}
+                href={l.href}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="block text-sm font-medium text-muted-foreground hover:text-foreground py-2"
+                onClick={() => setMobileOpen(false)}
+              >
+                {l.label}
+              </motion.a>
+            ))}
+            <Link to="/login" onClick={() => setMobileOpen(false)}>
+              <Button variant="hero" size="default" className="w-full">{t.getStarted}</Button>
+            </Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.nav>
   );
 };
 

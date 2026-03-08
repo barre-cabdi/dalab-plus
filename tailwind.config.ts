@@ -8,8 +8,8 @@ export default {
     container: { center: true, padding: "2rem", screens: { "2xl": "1400px" } },
     extend: {
       fontFamily: {
-        display: ['"Space Grotesk"', 'sans-serif'],
-        body: ['Inter', 'sans-serif'],
+        display: ['Outfit', 'sans-serif'],
+        body: ['"DM Sans"', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -42,6 +42,9 @@ export default {
         "float": { "0%, 100%": { transform: "translateY(0)" }, "50%": { transform: "translateY(-10px)" } },
         "pulse-gold": { "0%, 100%": { boxShadow: "0 0 0 0 hsl(45 100% 55% / 0.4)" }, "50%": { boxShadow: "0 0 0 12px hsl(45 100% 55% / 0)" } },
         "shimmer": { "0%": { backgroundPosition: "-200% 0" }, "100%": { backgroundPosition: "200% 0" } },
+        "slide-up": { "0%": { opacity: "0", transform: "translateY(30px)" }, "100%": { opacity: "1", transform: "translateY(0)" } },
+        "scale-up": { "0%": { opacity: "0", transform: "scale(0.9)" }, "100%": { opacity: "1", transform: "scale(1)" } },
+        "rotate-in": { "0%": { opacity: "0", transform: "rotate(-10deg) scale(0.9)" }, "100%": { opacity: "1", transform: "rotate(0) scale(1)" } },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -49,6 +52,9 @@ export default {
         "float": "float 3s ease-in-out infinite",
         "pulse-gold": "pulse-gold 2s ease-in-out infinite",
         "shimmer": "shimmer 3s linear infinite",
+        "slide-up": "slide-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards",
+        "scale-up": "scale-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards",
+        "rotate-in": "rotate-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards",
       },
     },
   },
