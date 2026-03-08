@@ -88,7 +88,6 @@ const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollaps
           const hasChildren = item.children && !collapsed;
           const isOpen = item.id === "reports" ? reportsOpen : item.id === "hotel" ? hotelOpen : false;
           const setOpen = item.id === "reports" ? setReportsOpen : item.id === "hotel" ? setHotelOpen : () => {};
-          const hasChildren = item.children && !collapsed;
 
           return (
             <div key={item.id}>
