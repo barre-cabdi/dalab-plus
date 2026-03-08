@@ -96,8 +96,8 @@ const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollaps
         {navItems.map((item) => {
           const isActive = activeTab === item.id || (item.children && activeTab.startsWith(item.id));
           const hasChildren = item.children && !collapsed;
-          const isOpen = item.id === "reports" ? reportsOpen : item.id === "hotel" ? hotelOpen : false;
-          const setOpen = item.id === "reports" ? setReportsOpen : item.id === "hotel" ? setHotelOpen : () => {};
+          const isOpen = item.id === "reports" ? reportsOpen : item.id === "hotel" ? hotelOpen : item.id === "hotel-report" ? hotelReportOpen : false;
+          const setOpen = item.id === "reports" ? setReportsOpen : item.id === "hotel" ? setHotelOpen : item.id === "hotel-report" ? setHotelReportOpen : () => {};
 
           return (
             <div key={item.id}>
