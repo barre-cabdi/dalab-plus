@@ -124,15 +124,15 @@ const CustomerRegister = () => {
               transition={{ delay: 0.5, duration: 0.5 }}
               className="flex items-center justify-center gap-3 mt-4 flex-wrap"
             >
-              {getQuickServices(businessType).map((s, i) => (
+              {(business.services?.length ? business.services : getDefaultServices(business.type)).slice(0, 4).map((s, i) => (
                 <motion.div
-                  key={s}
+                  key={s.id}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.6 + i * 0.1 }}
                   className="bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10"
                 >
-                  <span className="text-[11px] text-white/80">{s}</span>
+                  <span className="text-[11px] text-white/80">{s.icon} {s.title}</span>
                 </motion.div>
               ))}
             </motion.div>
