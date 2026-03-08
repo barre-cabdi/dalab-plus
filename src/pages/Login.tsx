@@ -48,6 +48,26 @@ const Login = () => {
         return;
       }
 
+      // Check waiter login
+      const waiter = getStaffByUsername(username);
+      if (waiter) {
+        if (waiter.password !== password) {
+          toast.error(t.wrongPassword);
+          setLoading(false);
+          return;
+        }
+        const businesses = getBusinesses();
+        const waiterBiz = businesses.find(b => b.id === waiter.businessId);
+        if (waiterBiz) {
+          localStorage.setItem("dp_active_waiter", JSON.stringify(waiter));
+          localStorage.setItem("dp_active_business", JSON.stringify(waiterBiz));
+          toast.success(`${t.welcome}, ${waiter.name}!`);
+          navigate("/waiter");
+          setLoading(false);
+          return;
+        }
+      }
+
       toast.success(`${t.welcome}!`);
       navigate("/customer");
       setLoading(false);

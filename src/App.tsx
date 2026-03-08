@@ -33,6 +33,7 @@ const App = () => (
             <Route path="/register" element={<CustomerRegister />} />
             <Route path="/menu" element={<CustomerMenu />} />
             <Route path="/order-tracking/:orderId" element={<OrderTracking />} />
+            <Route path="/waiter" element={<WaiterDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
