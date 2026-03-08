@@ -40,6 +40,7 @@ import StaffTab from "@/components/admin/StaffTab";
 import CustomersTab from "@/components/admin/CustomersTab";
 import HotelManagementTab from "@/components/admin/HotelManagementTab";
 import HotelReportTab from "@/components/admin/HotelReportTab";
+import OrderHistoryTab from "@/components/admin/OrderHistoryTab";
 
 const emojiOptions = ["🍛","🍔","🐟","🥗","🍵","🥤","🫓","🍝","🍰","🍦","🦞","🥭","☕","🍕","🥩","🍗","🌮","🍣","🧁","🥚","🍳","🥐","🧀","🍱"];
 
