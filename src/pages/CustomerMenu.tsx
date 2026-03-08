@@ -22,6 +22,9 @@ const CustomerMenu = () => {
   const [showCart, setShowCart] = useState(false);
   const [customer, setCustomer] = useState<any>(null);
   const [activeNav, setActiveNav] = useState("menu");
+  const [activeOrders, setActiveOrders] = useState<any[]>([]);
+  const [showOrderTracker, setShowOrderTracker] = useState(false);
+  const [orderMessages, setOrderMessages] = useState<any[]>([]);
 
   useEffect(() => { const stored = localStorage.getItem("dp_customer"); if (stored) setCustomer(JSON.parse(stored)); }, []);
   useEffect(() => { if (!businessId) return; seedDemoData(businessId); setCategories(getCategories(businessId)); setMenuItems(getMenuItems(businessId).filter(m => m.available)); }, [businessId]);
