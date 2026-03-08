@@ -188,22 +188,6 @@ const CustomerHome = () => {
           </motion.section>
         )}
 
-        {/* Bottom Menu CTA */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="bg-card border border-secondary/20 rounded-xl p-5 text-center"
-        >
-          <p className="text-sm font-semibold text-foreground mb-1">📋 Menu-ga ayaa diyaar ah!</p>
-          <p className="text-xs text-muted-foreground mb-4">Eeg cuntada iyo cabbitaanka la heli karo</p>
-          <Button
-            onClick={() => navigate(`/menu?business=${businessId}&table=${tableId}`)}
-            className="bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl px-6 py-2.5 gap-2 shadow-gold w-full"
-          >
-            Fur Menu-ga <ChevronRight className="w-4 h-4" />
-          </Button>
-        </motion.div>
       </div>
 
       {/* Footer */}
