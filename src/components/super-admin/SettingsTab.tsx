@@ -293,6 +293,38 @@ const SettingsTab = () => {
           <h3 className="font-display font-bold text-foreground">General Settings</h3>
         </div>
         <div className="space-y-4">
+          {/* Logo Upload */}
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">Platform Logo</Label>
+            <div className="flex items-center gap-4">
+              <div
+                onClick={() => logoInputRef.current?.click()}
+                className="w-20 h-20 rounded-xl border-2 border-dashed border-border hover:border-primary/50 bg-muted/30 flex items-center justify-center cursor-pointer transition-colors overflow-hidden group"
+              >
+                {platformLogo ? (
+                  <img src={platformLogo} alt="Platform logo" className="w-full h-full object-contain p-1" />
+                ) : (
+                  <div className="flex flex-col items-center gap-1 text-muted-foreground group-hover:text-primary transition-colors">
+                    <ImageIcon className="w-6 h-6" />
+                    <span className="text-[9px]">Upload</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col gap-2">
+                <Button variant="outline" size="sm" onClick={() => logoInputRef.current?.click()}>
+                  <Upload className="w-3.5 h-3.5 mr-1.5" /> Choose Logo
+                </Button>
+                {platformLogo && (
+                  <Button variant="ghost" size="sm" onClick={removeLogo} className="text-destructive hover:text-destructive">
+                    <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Remove
+                  </Button>
+                )}
+                <p className="text-[10px] text-muted-foreground">PNG, JPG, SVG. Max 2MB</p>
+              </div>
+              <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Platform Name</Label>
