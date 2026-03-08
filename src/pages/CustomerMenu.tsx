@@ -116,7 +116,6 @@ const CustomerMenu = () => {
           </div>
           <div className="flex items-center gap-6">
             {[
-              { key: "home", label: "Home" },
               { key: "menu", label: "Menu" },
               { key: "orders", label: "My Orders" },
             ].map(nav => (
