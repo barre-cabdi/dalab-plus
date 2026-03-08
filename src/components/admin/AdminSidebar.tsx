@@ -63,7 +63,8 @@ const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollaps
   const isHotel = business.type === "hotel";
   const navItems = isHotel ? [...baseNavItems.slice(0, 1), ...hotelNavItems, ...baseNavItems.slice(1)] : baseNavItems;
   const [reportsOpen, setReportsOpen] = useState(activeTab.startsWith("reports"));
-  const [hotelOpen, setHotelOpen] = useState(activeTab.startsWith("hotel"));
+  const [hotelOpen, setHotelOpen] = useState(activeTab.startsWith("hotel-") && !activeTab.startsWith("hotel-report"));
+  const [hotelReportOpen, setHotelReportOpen] = useState(activeTab.startsWith("hotel-report"));
 
   return (
     <motion.aside
