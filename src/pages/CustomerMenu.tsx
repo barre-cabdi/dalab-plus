@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Plus, Minus, Search, Star, Trash2, Send, UtensilsCrossed, Trophy, ChevronRight, User } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Search, Star, Trash2, Send, UtensilsCrossed, Trophy, ChevronRight, User, Clock, ChefHat, Package, CheckCircle, MessageSquare, XCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { getCategories, getMenuItems, Category, MenuItem, seedDemoData, getBusinesses } from "@/lib/store";
 
