@@ -489,7 +489,17 @@ const AdminDashboard = () => {
         return <LoyaltyTab businessId={business.id} />;
 
       case "reports":
-        return <ReportsTab orders={orders} menuItems={menuItems} categories={categories} />;
+      case "reports-sales":
+      case "reports-items":
+      case "reports-categories":
+      case "reports-waiters":
+        return <ReportsTab orders={orders} menuItems={menuItems} categories={categories} businessId={business.id} />;
+
+      case "staff":
+        return <StaffTab businessId={business.id} />;
+
+      case "customers":
+        return <CustomersTab businessId={business.id} />;
 
       case "settings":
         return <AdminSettings business={business} onUpdate={refreshData} />;
