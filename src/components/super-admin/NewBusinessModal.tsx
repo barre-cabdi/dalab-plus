@@ -109,7 +109,6 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
     };
 
     if (editBusiness) {
-      const { updateBusiness } = require("@/lib/store");
       updateBusiness(editBusiness.id, newBiz);
     } else {
       saveBusiness(newBiz);
