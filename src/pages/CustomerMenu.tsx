@@ -54,10 +54,26 @@ const CustomerMenu = () => {
 
   const confirmOrder = () => {
     const orderId = `ORD-${String(Math.floor(Math.random() * 999999)).padStart(6, "0")}`;
-    const order = { id: orderId, items: cart, total: cartTotal, status: "pending", tableId, businessId, customerId: customer?.id, createdAt: new Date().toISOString() };
+    const order = {
+      id: orderId, items: cart, total: cartTotal, status: "pending",
+      tableId, businessId, customerId: customer?.id,
+      customerName: customer?.name || "Guest",
+      customerPhone: customer?.phone || "",
+      createdAt: new Date().toISOString()
+    };
     const orders = JSON.parse(localStorage.getItem("dp_orders") || "[]");
     orders.push(order);
     localStorage.setItem("dp_orders", JSON.stringify(orders));
+    // Update customer stats in dp_customers store
+    if (customer) {
+      const allCustomers = JSON.parse(localStorage.getItem("dp_customers") || "[]");
+      const updated = allCustomers.map((c: any) =>
+        c.id === customer.id
+          ? { ...c, totalOrders: (c.totalOrders || 0) + 1, totalSpent: (c.totalSpent || 0) + cartTotal, loyaltyPoints: (c.loyaltyPoints || 0) + Math.floor(cartTotal) }
+          : c
+      );
+      localStorage.setItem("dp_customers", JSON.stringify(updated));
+    }
     if (customer) {
       const points = Math.floor(cartTotal);
       customer.points = (customer.points || 0) + points;
@@ -100,16 +116,16 @@ const CustomerMenu = () => {
           </div>
           <div className="flex items-center gap-6">
             {[
+              { key: "home", label: "Home" },
               { key: "menu", label: "Menu" },
               { key: "orders", label: "My Orders" },
-              { key: "loyalty", label: "Loyalty" },
             ].map(nav => (
               <button
                 key={nav.key}
                 onClick={() => {
                   setActiveNav(nav.key);
+                  if (nav.key === "home") navigate(`/customer-home?business=${businessId}&table=${tableId}`);
                   if (nav.key === "orders") navigate(`/customer`);
-                  if (nav.key === "loyalty") navigate(`/customer`);
                 }}
                 className={`text-sm font-medium transition-colors duration-200 relative pb-1 ${
                   activeNav === nav.key

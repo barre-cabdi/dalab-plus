@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User, Phone, MapPin, CheckCircle, UtensilsCrossed, Hotel, Coffee, Sparkles, Star } from "lucide-react";
-import { getBusinesses, Business } from "@/lib/store";
+import { getBusinesses, Business, saveCustomer, getCustomers, generateId } from "@/lib/store";
 
 const typeConfig: Record<string, { icon: any; emoji: string; welcome: string; gradient: string }> = {
   restaurant: { icon: UtensilsCrossed, emoji: "🍽️", welcome: "Cuntada ugu fiican!", gradient: "from-[hsl(222,60%,12%)] via-[hsl(222,50%,18%)] to-[hsl(222,40%,14%)]" },
@@ -51,6 +51,22 @@ const CustomerRegister = () => {
     setIsSubmitting(true);
     const customer = { id: customerId, ...formData, tableId, businessId, points: 0, level: "Bronze", totalOrders: 0, totalSpent: 0, registeredAt: new Date().toISOString() };
     localStorage.setItem("dp_customer", JSON.stringify(customer));
+    // Also save to dp_customers store so admin can see this customer
+    const existing = getCustomers(businessId);
+    const alreadyExists = existing.find(c => c.phone === formData.phone);
+    if (!alreadyExists) {
+      saveCustomer({
+        id: customerId,
+        businessId,
+        name: formData.name,
+        phone: formData.phone,
+        email: "",
+        totalOrders: 0,
+        totalSpent: 0,
+        loyaltyPoints: 0,
+        registeredAt: new Date().toISOString(),
+      });
+    }
     setTimeout(() => { navigate(`/customer-home?table=${tableId}&business=${businessId}`); }, 1500);
   };
 
