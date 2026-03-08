@@ -29,13 +29,13 @@ const CustomerRegister = () => {
     if (b) setBusiness(b);
   }, [businessId]);
 
-  // Check if customer already exists → redirect to customer-home
+  // Check if customer already exists → redirect to menu
   useEffect(() => {
     const stored = localStorage.getItem("dp_customer");
     if (stored) {
       const customer = JSON.parse(stored);
       if (customer && customer.name) {
-        navigate(`/customer-home?table=${tableId}&business=${businessId}`);
+        navigate(`/menu?table=${tableId}&business=${businessId}`);
       }
     }
   }, [navigate, tableId, businessId]);
@@ -67,7 +67,7 @@ const CustomerRegister = () => {
         registeredAt: new Date().toISOString(),
       });
     }
-    setTimeout(() => { navigate(`/customer-home?table=${tableId}&business=${businessId}`); }, 1500);
+    setTimeout(() => { navigate(`/menu?table=${tableId}&business=${businessId}`); }, 1500);
   };
 
   return (

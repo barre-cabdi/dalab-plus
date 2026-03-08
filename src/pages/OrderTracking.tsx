@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Clock, ChefHat, Truck, CheckCircle, Home, Star, Trophy, Gift, ArrowRight, Package } from "lucide-react";
+import { Clock, ChefHat, Truck, CheckCircle, Home, Star, Trophy, Gift, ArrowRight, Package, MessageSquare } from "lucide-react";
 
 const statusSteps = [
   { key: "pending", label: "La sugayo", icon: Clock, color: "text-muted-foreground" },
@@ -20,17 +20,26 @@ const OrderTracking = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [customer, setCustomer] = useState<any>(null);
   const [showReward, setShowReward] = useState(false);
+  const [messages, setMessages] = useState<any[]>([]);
 
   useEffect(() => {
-    const orders = JSON.parse(localStorage.getItem("dp_orders") || "[]");
-    const found = orders.find((o: any) => o.id === orderId);
-    if (found) setOrder(found);
-    const stored = localStorage.getItem("dp_customer");
-    if (stored) {
-      const c = JSON.parse(stored);
-      setCustomer(c);
-      if (c.points >= 100 && c.level === "Silver") setShowReward(true);
-    }
+    const loadData = () => {
+      const orders = JSON.parse(localStorage.getItem("dp_orders") || "[]");
+      const found = orders.find((o: any) => o.id === orderId);
+      if (found) setOrder(found);
+      const stored = localStorage.getItem("dp_customer");
+      if (stored) {
+        const c = JSON.parse(stored);
+        setCustomer(c);
+        if (c.points >= 100 && c.level === "Silver") setShowReward(true);
+      }
+      // Load messages
+      const allMessages = JSON.parse(localStorage.getItem("dp_order_messages") || "[]");
+      setMessages(allMessages.filter((m: any) => m.orderId === orderId));
+    };
+    loadData();
+    const interval = setInterval(loadData, 3000);
+    return () => clearInterval(interval);
   }, [orderId]);
 
   useEffect(() => {
@@ -111,6 +120,24 @@ const OrderTracking = () => {
             </div>
           </div>
         </motion.div>
+
+        {/* Admin Messages */}
+        {messages.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="glass rounded-xl p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <MessageSquare className="w-4 h-4 text-accent" />
+              <h3 className="font-display font-semibold text-primary-foreground text-sm">Fariimo</h3>
+            </div>
+            <div className="space-y-2">
+              {messages.map((msg: any) => (
+                <motion.div key={msg.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="bg-accent/10 rounded-lg p-3 border border-accent/20">
+                  <p className="text-xs text-primary-foreground">{msg.message}</p>
+                  <p className="text-[9px] text-primary-foreground/40 mt-1">{new Date(msg.createdAt).toLocaleTimeString()}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {customer && levelInfo && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="glass rounded-xl p-5">

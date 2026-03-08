@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import {
   Plus, Pencil, Trash2, Search, QrCode, Download, Bell, HelpCircle,
-  Upload, ImageIcon, Printer, ExternalLink, Copy, X,
+  Upload, ImageIcon, Printer, ExternalLink, Copy, X, MessageSquare, Check, XCircle, Volume2,
 } from "lucide-react";
 import {
   Business, Category, MenuItem, TableItem, Order,
@@ -27,6 +27,7 @@ import {
 } from "@/lib/store";
 import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
+import { Textarea } from "@/components/ui/textarea";
 
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminStatsCards from "@/components/admin/AdminStatsCards";
@@ -69,6 +70,11 @@ const AdminDashboard = () => {
   const [catImageMode, setCatImageMode] = useState<"emoji" | "upload">("emoji");
   const menuImageRef = useRef<HTMLInputElement>(null);
   const catImageRef = useRef<HTMLInputElement>(null);
+  const [feedbackDialog, setFeedbackDialog] = useState<{ orderId: string; customerName: string } | null>(null);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [orderFilter, setOrderFilter] = useState("all");
+  const prevOrderCountRef = useRef(0);
+  const audioContextRef = useRef<AudioContext | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("dp_active_business");
@@ -84,23 +90,53 @@ const AdminDashboard = () => {
     }
   }, [business]);
 
+  // Play notification sound
+  const playNotificationSound = () => {
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      const ctx = audioContextRef.current;
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      oscillator.frequency.setValueAtTime(800, ctx.currentTime);
+      oscillator.frequency.setValueAtTime(1000, ctx.currentTime + 0.1);
+      oscillator.frequency.setValueAtTime(800, ctx.currentTime + 0.2);
+      gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.5);
+    } catch (e) { /* silently fail */ }
+  };
+
   const refreshData = () => {
     if (!business) return;
     setCategories(getCategories(business.id));
     setMenuItemsState(getMenuItems(business.id));
     setTables(getTables(business.id));
-    setOrders(getOrders(business.id));
+    const currentOrders = getOrders(business.id);
+    
+    // Check for new orders and play sound
+    if (prevOrderCountRef.current > 0 && currentOrders.length > prevOrderCountRef.current) {
+      const newCount = currentOrders.length - prevOrderCountRef.current;
+      playNotificationSound();
+      toast.success(`🔔 ${newCount} dalab cusub ayaa soo galay!`, { duration: 5000 });
+    }
+    prevOrderCountRef.current = currentOrders.length;
+    
+    setOrders(currentOrders);
     const stored = localStorage.getItem("dp_active_business");
     if (stored) setBusiness(JSON.parse(stored));
     // Build notifications from recent orders
-    const allOrders = getOrders(business.id);
-    const recent = allOrders.filter(o => {
+    const recent = currentOrders.filter(o => {
       const diff = Date.now() - new Date(o.createdAt).getTime();
       return diff < 24 * 60 * 60 * 1000;
     });
-    setNotifications(recent.slice(-5).reverse().map(o => ({
+    setNotifications(recent.slice(-10).reverse().map(o => ({
       id: o.id,
-      text: `Order ${o.id.slice(0, 10)} - ${o.status} ($${o.total.toFixed(2)})`,
+      text: `${(o as any).customerName || "Guest"} - ${o.status} ($${o.total.toFixed(2)})`,
       time: new Date(o.createdAt).toLocaleTimeString(),
     })));
   };
@@ -396,54 +432,214 @@ const AdminDashboard = () => {
           </div>
         );
 
-      case "orders":
+      case "orders": {
+        const sendFeedback = () => {
+          if (!feedbackDialog || !feedbackMessage.trim()) return;
+          const allMessages = JSON.parse(localStorage.getItem("dp_order_messages") || "[]");
+          allMessages.push({
+            id: `msg-${Date.now()}`,
+            orderId: feedbackDialog.orderId,
+            businessId: business.id,
+            from: "admin",
+            message: feedbackMessage.trim(),
+            createdAt: new Date().toISOString(),
+          });
+          localStorage.setItem("dp_order_messages", JSON.stringify(allMessages));
+          toast.success(`Fariin loo diray ${feedbackDialog.customerName}`);
+          setFeedbackMessage("");
+          setFeedbackDialog(null);
+        };
+
+        const filteredOrders = orderFilter === "all" ? orders : orders.filter(o => o.status === orderFilter);
+        const pendingCount = orders.filter(o => o.status === "pending").length;
+        const preparingCount = orders.filter(o => o.status === "preparing").length;
+        const readyCount = orders.filter(o => o.status === "ready").length;
+
         return (
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <div><h2 className="text-xl font-display font-bold">Orders</h2><p className="text-sm text-muted-foreground">{orders.length} orders</p></div>
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div><h2 className="text-xl font-display font-bold">Orders</h2><p className="text-sm text-muted-foreground">{orders.length} orders total</p></div>
+              <div className="flex items-center gap-2">
+                <Volume2 className="w-4 h-4 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Sound notifications active</span>
+              </div>
             </div>
-            <div className="bg-card border border-border rounded-xl shadow-card-custom overflow-hidden">
-              <Table>
-                <TableHeader><TableRow><TableHead>Order ID</TableHead><TableHead>Items</TableHead><TableHead>Total</TableHead><TableHead>Status</TableHead><TableHead>Time</TableHead><TableHead className="text-right">Action</TableHead></TableRow></TableHeader>
-                <TableBody>
-                  {orders.length === 0 ? (
-                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No orders yet</TableCell></TableRow>
-                  ) : orders.map(o => (
-                    <TableRow key={o.id}>
-                      <TableCell className="font-mono text-xs">{o.id.slice(0, 12)}</TableCell>
-                      <TableCell className="text-sm">{o.items.map(i => i.name).join(", ")}</TableCell>
-                      <TableCell className="font-bold text-accent">${o.total.toFixed(2)}</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className={
-                          o.status === "pending" ? "bg-secondary/20 text-secondary-foreground" :
-                          o.status === "preparing" ? "bg-accent/20 text-accent" :
-                          o.status === "ready" ? "bg-accent/30 text-accent-foreground" :
-                          o.status === "delivered" ? "bg-muted text-muted-foreground" :
-                          "bg-destructive/15 text-destructive"
-                        }>{o.status}</Badge>
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{new Date(o.createdAt).toLocaleTimeString()}</TableCell>
-                      <TableCell className="text-right">
-                        {o.status !== "delivered" && o.status !== "cancelled" && (
-                          <Select value={o.status} onValueChange={v => { updateOrder(o.id, { status: v as Order["status"] }); refreshData(); }}>
-                            <SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="preparing">Preparing</SelectItem>
-                              <SelectItem value="ready">Ready</SelectItem>
-                              <SelectItem value="delivered">Delivered</SelectItem>
-                              <SelectItem value="cancelled">Cancel</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+
+            {/* Status filter chips */}
+            <div className="flex gap-2 flex-wrap">
+              {[
+                { key: "all", label: "Dhammaan", count: orders.length },
+                { key: "pending", label: "⏳ Sugaya", count: pendingCount },
+                { key: "preparing", label: "👨‍🍳 Diyaarinaya", count: preparingCount },
+                { key: "ready", label: "✅ Diyaar", count: readyCount },
+                { key: "delivered", label: "📦 La Geeyay", count: orders.filter(o => o.status === "delivered").length },
+                { key: "cancelled", label: "❌ La Joojiyay", count: orders.filter(o => o.status === "cancelled").length },
+              ].map(f => (
+                <Button
+                  key={f.key}
+                  variant={orderFilter === f.key ? "default" : "outline"}
+                  size="sm"
+                  className="text-xs gap-1.5"
+                  onClick={() => setOrderFilter(f.key)}
+                >
+                  {f.label}
+                  {f.count > 0 && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{f.count}</Badge>}
+                </Button>
+              ))}
             </div>
+
+            {/* Orders Cards */}
+            <div className="space-y-4">
+              {filteredOrders.length === 0 ? (
+                <div className="bg-card border border-border rounded-xl p-12 text-center">
+                  <p className="text-muted-foreground">Dalab la helin</p>
+                </div>
+              ) : filteredOrders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((o, i) => (
+                <motion.div
+                  key={o.id}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.03 }}
+                  className={`bg-card border rounded-xl p-5 shadow-card-custom transition-all duration-300 hover:shadow-gold ${
+                    o.status === "pending" ? "border-secondary/50" :
+                    o.status === "preparing" ? "border-accent/50" :
+                    o.status === "ready" ? "border-green-500/50" :
+                    "border-border"
+                  }`}
+                >
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold">
+                        {((o as any).customerName || "G").charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-display font-bold text-sm">{(o as any).customerName || "Guest"}</p>
+                        <p className="text-xs text-muted-foreground">{(o as any).customerPhone || "No phone"} · Table #{o.tableId}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <Badge variant="secondary" className={`text-xs ${
+                        o.status === "pending" ? "bg-secondary/20 text-secondary-foreground" :
+                        o.status === "preparing" ? "bg-accent/20 text-accent" :
+                        o.status === "ready" ? "bg-green-500/20 text-green-700" :
+                        o.status === "delivered" ? "bg-muted text-muted-foreground" :
+                        "bg-destructive/15 text-destructive"
+                      }`}>
+                        {o.status === "pending" ? "⏳ Sugaya" :
+                         o.status === "preparing" ? "👨‍🍳 Diyaarinaya" :
+                         o.status === "ready" ? "✅ Diyaar" :
+                         o.status === "delivered" ? "📦 La Geeyay" :
+                         "❌ La Joojiyay"}
+                      </Badge>
+                      <p className="text-[10px] text-muted-foreground mt-1">{new Date(o.createdAt).toLocaleTimeString()}</p>
+                      <p className="text-[10px] text-muted-foreground font-mono">{o.id.slice(0, 12)}</p>
+                    </div>
+                  </div>
+
+                  {/* Items */}
+                  <div className="bg-muted/50 rounded-lg p-3 mb-4">
+                    <div className="space-y-1.5">
+                      {o.items.map((item, idx) => (
+                        <div key={idx} className="flex items-center justify-between text-sm">
+                          <span className="text-foreground">{item.quantity}× {item.name}</span>
+                          <span className="text-muted-foreground">${(item.price * item.quantity).toFixed(2)}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="border-t border-border mt-2 pt-2 flex justify-between">
+                      <span className="font-semibold text-sm">Wadarta</span>
+                      <span className="font-display font-bold text-accent">${o.total.toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 flex-wrap">
+                    {o.status === "pending" && (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="hero"
+                          className="gap-1.5 text-xs"
+                          onClick={() => { updateOrder(o.id, { status: "preparing" }); toast.success("Dalabka la aqbalay ✓"); refreshData(); }}
+                        >
+                          <Check className="w-3.5 h-3.5" /> Aqbal
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="gap-1.5 text-xs"
+                          onClick={() => { updateOrder(o.id, { status: "cancelled" }); toast.info("Dalabka la joojiyay"); refreshData(); }}
+                        >
+                          <XCircle className="w-3.5 h-3.5" /> Diid
+                        </Button>
+                      </>
+                    )}
+                    {o.status === "preparing" && (
+                      <Button
+                        size="sm"
+                        className="gap-1.5 text-xs bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => { updateOrder(o.id, { status: "ready" }); toast.success("Dalabka diyaar ayuu yahay ✓"); refreshData(); }}
+                      >
+                        <Check className="w-3.5 h-3.5" /> Diyaar
+                      </Button>
+                    )}
+                    {o.status === "ready" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5 text-xs"
+                        onClick={() => { updateOrder(o.id, { status: "delivered" }); toast.success("Dalabka la geeyay ✓"); refreshData(); }}
+                      >
+                        <Check className="w-3.5 h-3.5" /> La Geeyay
+                      </Button>
+                    )}
+                    {o.status !== "cancelled" && o.status !== "delivered" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5 text-xs"
+                        onClick={() => setFeedbackDialog({ orderId: o.id, customerName: (o as any).customerName || "Guest" })}
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" /> Fariin U Dir
+                      </Button>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Feedback Dialog */}
+            <Dialog open={!!feedbackDialog} onOpenChange={() => { setFeedbackDialog(null); setFeedbackMessage(""); }}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Fariin U Dir {feedbackDialog?.customerName}</DialogTitle>
+                  <DialogDescription>Qor fariin aad u direyso macmiilka dalabka #{feedbackDialog?.orderId.slice(0, 10)}</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <div className="flex gap-2 flex-wrap">
+                    {["Dalabkaaga waa la diyaarinayaa ☕", "Dalabkaaga diyaar ayuu yahay! ✅", "Fadlan sug daqiiqado yar ⏳", "Mahadsanid dalabkaaga! 🙏"].map(q => (
+                      <Button key={q} variant="outline" size="sm" className="text-xs" onClick={() => setFeedbackMessage(q)}>{q}</Button>
+                    ))}
+                  </div>
+                  <Textarea
+                    placeholder="Qor fariintaada halkan..."
+                    value={feedbackMessage}
+                    onChange={e => setFeedbackMessage(e.target.value)}
+                    className="min-h-[80px]"
+                  />
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => { setFeedbackDialog(null); setFeedbackMessage(""); }}>Jooji</Button>
+                  <Button variant="hero" onClick={sendFeedback} disabled={!feedbackMessage.trim()}>
+                    <MessageSquare className="w-4 h-4 mr-1.5" /> U Dir
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         );
+      }
 
       case "qr":
         return (
