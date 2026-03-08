@@ -3,9 +3,11 @@ import { motion } from "framer-motion";
 import {
   LayoutDashboard, UtensilsCrossed, Grid3X3, QrCode,
   ClipboardList, Heart, BarChart3, Settings, LogOut,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Users, UserCheck,
+  DollarSign, Package, Layers, UserCog,
 } from "lucide-react";
 import { Business } from "@/lib/store";
+import { useState } from "react";
 
 const navItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -13,8 +15,18 @@ const navItems = [
   { id: "tables", label: "Tables", icon: Grid3X3 },
   { id: "qr", label: "QR Codes", icon: QrCode },
   { id: "orders", label: "Orders", icon: ClipboardList },
+  { id: "staff", label: "Staff", icon: UserCog },
+  { id: "customers", label: "Customers", icon: Users },
   { id: "loyalty", label: "Loyalty", icon: Heart },
-  { id: "reports", label: "Reports", icon: BarChart3 },
+  {
+    id: "reports", label: "Reports", icon: BarChart3,
+    children: [
+      { id: "reports-sales", label: "Sales Report", icon: DollarSign },
+      { id: "reports-items", label: "Item Report", icon: Package },
+      { id: "reports-categories", label: "Category Report", icon: Layers },
+      { id: "reports-waiters", label: "Waiter Report", icon: UserCheck },
+    ],
+  },
 ];
 
 interface AdminSidebarProps {
@@ -26,6 +38,8 @@ interface AdminSidebarProps {
 }
 
 const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollapsed }: AdminSidebarProps) => {
+  const [reportsOpen, setReportsOpen] = useState(activeTab.startsWith("reports"));
+
   return (
     <motion.aside
       animate={{ width: collapsed ? 72 : 240 }}
@@ -52,49 +66,92 @@ const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollaps
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 py-4 px-3 space-y-1">
+      <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
         {navItems.map((item) => {
-          const isActive = activeTab === item.id;
+          const isActive = activeTab === item.id || (item.children && activeTab.startsWith("reports"));
+          const hasChildren = item.children && !collapsed;
+
           return (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                isActive
-                  ? "bg-accent/15 text-accent"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
-            >
-              <item.icon className={`w-5 h-5 shrink-0 ${isActive ? "text-accent" : ""}`} />
-              {!collapsed && (
-                <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="truncate">
-                  {item.label}
-                </motion.span>
+            <div key={item.id}>
+              <button
+                onClick={() => {
+                  if (item.children) {
+                    if (collapsed) { setActiveTab("reports-sales"); }
+                    else { setReportsOpen(!reportsOpen); }
+                  } else {
+                    setActiveTab(item.id);
+                  }
+                }}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group relative ${
+                  isActive
+                    ? "bg-accent/15 text-accent"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+              >
+                <item.icon className={`w-5 h-5 shrink-0 transition-transform duration-200 group-hover:scale-110 ${isActive ? "text-accent" : ""}`} />
+                {!collapsed && (
+                  <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="truncate flex-1 text-left">
+                    {item.label}
+                  </motion.span>
+                )}
+                {hasChildren && (
+                  <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${reportsOpen ? "rotate-90" : ""}`} />
+                )}
+                {/* Hover tooltip when collapsed */}
+                {collapsed && (
+                  <span className="absolute left-full ml-2 px-2 py-1 rounded-md bg-foreground text-background text-xs font-medium opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50">
+                    {item.label}
+                  </span>
+                )}
+              </button>
+
+              {/* Report sub-items */}
+              {hasChildren && reportsOpen && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+                  className="ml-5 mt-0.5 space-y-0.5 border-l-2 border-border pl-3">
+                  {item.children!.map(child => {
+                    const childActive = activeTab === child.id;
+                    return (
+                      <button key={child.id} onClick={() => setActiveTab(child.id)}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 group ${
+                          childActive ? "bg-accent/15 text-accent" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        }`}>
+                        <child.icon className={`w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110 ${childActive ? "text-accent" : ""}`} />
+                        <span className="truncate">{child.label}</span>
+                      </button>
+                    );
+                  })}
+                </motion.div>
               )}
-            </button>
+            </div>
           );
         })}
       </nav>
 
-      {/* Settings at bottom */}
+      {/* Settings */}
       <div className="px-3 pb-2">
         <button
           onClick={() => setActiveTab("settings")}
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group relative ${
             activeTab === "settings"
               ? "bg-accent/15 text-accent"
               : "text-muted-foreground hover:text-foreground hover:bg-muted"
           }`}
         >
-          <Settings className={`w-5 h-5 shrink-0 ${activeTab === "settings" ? "text-accent" : ""}`} />
+          <Settings className={`w-5 h-5 shrink-0 transition-transform duration-200 group-hover:rotate-90 ${activeTab === "settings" ? "text-accent" : ""}`} />
           {!collapsed && <span>Settings</span>}
+          {collapsed && (
+            <span className="absolute left-full ml-2 px-2 py-1 rounded-md bg-foreground text-background text-xs font-medium opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50">
+              Settings
+            </span>
+          )}
         </button>
       </div>
 
       {/* Collapse toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shadow-sm"
+        className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200 shadow-sm hover:scale-110"
       >
         {collapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
       </button>
@@ -104,10 +161,15 @@ const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollaps
         <Link
           to="/login"
           onClick={() => localStorage.removeItem("dp_active_business")}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200 group relative"
         >
-          <LogOut className="w-5 h-5 shrink-0" />
+          <LogOut className="w-5 h-5 shrink-0 transition-transform duration-200 group-hover:scale-110" />
           {!collapsed && <span>Log Out</span>}
+          {collapsed && (
+            <span className="absolute left-full ml-2 px-2 py-1 rounded-md bg-foreground text-background text-xs font-medium opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50">
+              Log Out
+            </span>
+          )}
         </Link>
       </div>
     </motion.aside>

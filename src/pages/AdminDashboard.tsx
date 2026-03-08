@@ -35,6 +35,8 @@ import PopularItems from "@/components/admin/PopularItems";
 import AdminSettings from "@/components/admin/AdminSettings";
 import LoyaltyTab from "@/components/admin/LoyaltyTab";
 import ReportsTab from "@/components/admin/ReportsTab";
+import StaffTab from "@/components/admin/StaffTab";
+import CustomersTab from "@/components/admin/CustomersTab";
 
 const emojiOptions = ["🍛","🍔","🐟","🥗","🍵","🥤","🫓","🍝","🍰","🍦","🦞","🥭","☕","🍕","🥩","🍗","🌮","🍣","🧁","🥚","🍳","🥐","🧀","🍱"];
 
@@ -487,7 +489,19 @@ const AdminDashboard = () => {
         return <LoyaltyTab businessId={business.id} />;
 
       case "reports":
-        return <ReportsTab orders={orders} menuItems={menuItems} categories={categories} />;
+      case "reports-sales":
+      case "reports-items":
+      case "reports-categories":
+      case "reports-waiters": {
+        const viewMap: Record<string, string> = { "reports-sales": "sales", "reports-items": "items", "reports-categories": "categories", "reports-waiters": "waiters" };
+        return <ReportsTab orders={orders} menuItems={menuItems} categories={categories} businessId={business.id} initialView={viewMap[activeTab] || "sales"} />;
+      }
+
+      case "staff":
+        return <StaffTab businessId={business.id} />;
+
+      case "customers":
+        return <CustomersTab businessId={business.id} />;
 
       case "settings":
         return <AdminSettings business={business} onUpdate={refreshData} />;
@@ -504,8 +518,14 @@ const AdminDashboard = () => {
     tables: "Table Management",
     orders: "Order Management",
     qr: "QR Codes",
+    staff: "Staff Management",
+    customers: "Customers",
     loyalty: "Loyalty Program",
     reports: "Reports",
+    "reports-sales": "Sales Report",
+    "reports-items": "Item Report",
+    "reports-categories": "Category Report",
+    "reports-waiters": "Waiter Report",
     settings: "Settings",
   };
 

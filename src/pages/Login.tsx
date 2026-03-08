@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, ArrowLeft, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { getBusinessByAdmin } from "@/lib/store";
+import { getBusinessByAdmin, getStaffByUsername, getBusinesses } from "@/lib/store";
 import { useI18n } from "@/lib/i18n";
 
 const Login = () => {
@@ -46,6 +46,26 @@ const Login = () => {
         navigate("/admin");
         setLoading(false);
         return;
+      }
+
+      // Check waiter login
+      const waiter = getStaffByUsername(username);
+      if (waiter) {
+        if (waiter.password !== password) {
+          toast.error(t.wrongPassword);
+          setLoading(false);
+          return;
+        }
+        const businesses = getBusinesses();
+        const waiterBiz = businesses.find(b => b.id === waiter.businessId);
+        if (waiterBiz) {
+          localStorage.setItem("dp_active_waiter", JSON.stringify(waiter));
+          localStorage.setItem("dp_active_business", JSON.stringify(waiterBiz));
+          toast.success(`${t.welcome}, ${waiter.name}!`);
+          navigate("/waiter");
+          setLoading(false);
+          return;
+        }
       }
 
       toast.success(`${t.welcome}!`);
