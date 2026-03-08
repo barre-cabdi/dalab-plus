@@ -114,7 +114,7 @@ const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollaps
                   </motion.span>
                 )}
                 {hasChildren && (
-                  <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${reportsOpen ? "rotate-90" : ""}`} />
+                  <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`} />
                 )}
                 {/* Hover tooltip when collapsed */}
                 {collapsed && (
