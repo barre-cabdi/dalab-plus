@@ -642,6 +642,9 @@ const AdminDashboard = () => {
         );
       }
 
+      case "order-history":
+        return <OrderHistoryTab businessId={business.id} />;
+
       case "qr":
         return (
           <div>
