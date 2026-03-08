@@ -1,5 +1,4 @@
 import { MenuItem, Order } from "@/lib/store";
-import { Button } from "@/components/ui/button";
 
 interface PopularItemsProps {
   menuItems: MenuItem[];
@@ -8,7 +7,6 @@ interface PopularItemsProps {
 }
 
 const PopularItems = ({ menuItems, orders, onViewAll }: PopularItemsProps) => {
-  // Count order frequency per item
   const itemCounts: Record<string, number> = {};
   orders.forEach(o => {
     o.items.forEach(item => {
@@ -16,11 +14,12 @@ const PopularItems = ({ menuItems, orders, onViewAll }: PopularItemsProps) => {
     });
   });
 
-  // Get top items, fallback to first 4 menu items if no orders
-  let popular = menuItems
-    .map(m => ({ ...m, orderCount: itemCounts[m.id] || Math.floor(Math.random() * 40 + 10) }))
+  const popular = menuItems
+    .map(m => ({ ...m, orderCount: itemCounts[m.id] || 0 }))
     .sort((a, b) => b.orderCount - a.orderCount)
     .slice(0, 4);
+
+  const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");
 
   return (
     <div className="bg-card border border-border rounded-xl p-6 shadow-card-custom">
@@ -31,8 +30,12 @@ const PopularItems = ({ menuItems, orders, onViewAll }: PopularItemsProps) => {
         ) : (
           popular.map((item) => (
             <div key={item.id} className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-2xl shrink-0">
-                {item.image}
+              <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-2xl shrink-0 overflow-hidden">
+                {isImageUrl(item.image) ? (
+                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                ) : (
+                  item.image
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm text-foreground truncate">{item.name}</p>

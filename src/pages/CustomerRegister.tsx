@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,17 @@ const CustomerRegister = () => {
   const [formData, setFormData] = useState({ name: "", phone: "", residency: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customerId] = useState(`CUS-${String(Math.floor(Math.random() * 999999)).padStart(6, "0")}`);
+
+  // Check if customer already exists → redirect to menu
+  useEffect(() => {
+    const stored = localStorage.getItem("dp_customer");
+    if (stored) {
+      const customer = JSON.parse(stored);
+      if (customer && customer.name) {
+        navigate(`/menu?table=${tableId}&business=${businessId}`);
+      }
+    }
+  }, [navigate, tableId, businessId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
