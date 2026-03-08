@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  X, Eye, EyeOff, PlusCircle, Shield, Upload, ImageIcon,
+  X, Eye, EyeOff, PlusCircle, Shield, Upload,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Business, getBusinesses, saveBusiness, generateId } from "@/lib/store";
