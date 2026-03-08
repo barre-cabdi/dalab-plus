@@ -534,6 +534,10 @@ const AdminDashboard = () => {
     "reports-items": "Item Report",
     "reports-categories": "Category Report",
     "reports-waiters": "Waiter Report",
+    "hotel-overview": "Hotel Overview",
+    "hotel-rooms": "Room Management",
+    "hotel-bookings": "Bookings",
+    "hotel-guests": "Guest Directory",
     settings: "Settings",
   };
 
