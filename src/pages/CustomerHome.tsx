@@ -89,15 +89,6 @@ const CustomerHome = () => {
             <span className="text-white/50 text-xs capitalize">{config.emoji} {businessType}</span>
           </motion.div>
 
-          {/* Menu CTA in header */}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="mt-4">
-            <Button
-              onClick={() => navigate(`/menu?business=${businessId}&table=${tableId}`)}
-              className="bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl px-6 py-2.5 text-sm font-bold gap-2 shadow-gold"
-            >
-              <ShoppingBag className="w-4 h-4" /> Fur Menu-ga
-            </Button>
-          </motion.div>
         </div>
       </header>
 
