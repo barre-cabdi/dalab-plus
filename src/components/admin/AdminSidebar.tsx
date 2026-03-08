@@ -95,8 +95,8 @@ const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollaps
               <button
                 onClick={() => {
                   if (item.children) {
-                    if (collapsed) { setActiveTab("reports-sales"); }
-                    else { setReportsOpen(!reportsOpen); }
+                    if (collapsed) { setActiveTab(item.children[0].id); }
+                    else { setOpen(!isOpen); }
                   } else {
                     setActiveTab(item.id);
                   }
