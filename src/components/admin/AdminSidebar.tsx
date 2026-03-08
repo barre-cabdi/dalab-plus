@@ -84,7 +84,10 @@ const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollaps
       {/* Nav */}
       <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
         {navItems.map((item) => {
-          const isActive = activeTab === item.id || (item.children && activeTab.startsWith("reports"));
+          const isActive = activeTab === item.id || (item.children && activeTab.startsWith(item.id));
+          const hasChildren = item.children && !collapsed;
+          const isOpen = item.id === "reports" ? reportsOpen : item.id === "hotel" ? hotelOpen : false;
+          const setOpen = item.id === "reports" ? setReportsOpen : item.id === "hotel" ? setHotelOpen : () => {};
           const hasChildren = item.children && !collapsed;
 
           return (
