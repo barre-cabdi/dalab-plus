@@ -35,7 +35,7 @@ const CustomersTab = ({ businessId }: CustomersTabProps) => {
     customers.forEach(c => {
       map.set(c.id, { name: c.name, phone: c.phone, totalOrders: c.totalOrders, totalSpent: c.totalSpent, lastOrder: c.registeredAt });
     });
-    // From orders with customerId
+    // From orders with customerId - enrich with name from order
     orders.forEach(o => {
       if (o.customerId) {
         const existing = map.get(o.customerId);
@@ -43,8 +43,21 @@ const CustomersTab = ({ businessId }: CustomersTabProps) => {
           existing.totalOrders++;
           existing.totalSpent += o.total;
           existing.lastOrder = o.createdAt;
+          // Update name if we have it from order
+          if ((o as any).customerName && existing.name === o.customerId.slice(0, 8)) {
+            existing.name = (o as any).customerName;
+          }
+          if ((o as any).customerPhone && !existing.phone) {
+            existing.phone = (o as any).customerPhone;
+          }
         } else {
-          map.set(o.customerId, { name: o.customerId.slice(0, 8), phone: "", totalOrders: 1, totalSpent: o.total, lastOrder: o.createdAt });
+          map.set(o.customerId, {
+            name: (o as any).customerName || o.customerId.slice(0, 8),
+            phone: (o as any).customerPhone || "",
+            totalOrders: 1,
+            totalSpent: o.total,
+            lastOrder: o.createdAt
+          });
         }
       }
     });
