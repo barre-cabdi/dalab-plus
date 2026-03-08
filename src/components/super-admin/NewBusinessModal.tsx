@@ -15,7 +15,7 @@ import {
   X, Eye, EyeOff, PlusCircle, Shield, Upload,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Business, getBusinesses, saveBusiness, generateId } from "@/lib/store";
+import { Business, getBusinesses, saveBusiness, updateBusiness, generateId } from "@/lib/store";
 
 const businessTypes = [
   { value: "restaurant", label: "Restaurant", emoji: "🍽️" },
