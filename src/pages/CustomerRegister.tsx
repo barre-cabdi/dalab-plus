@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User, Phone, MapPin, CheckCircle, UtensilsCrossed, Hotel, Coffee, Sparkles, Star } from "lucide-react";
-import { getBusinesses, Business, saveCustomer, getCustomers, generateId } from "@/lib/store";
+import { getBusinesses, Business, saveCustomer, getCustomers, generateId, getDefaultServices, BusinessService } from "@/lib/store";
 
 const typeConfig: Record<string, { icon: any; emoji: string; welcome: string; gradient: string }> = {
   restaurant: { icon: UtensilsCrossed, emoji: "🍽️", welcome: "Cuntada ugu fiican!", gradient: "from-[hsl(222,60%,12%)] via-[hsl(222,50%,18%)] to-[hsl(222,40%,14%)]" },
@@ -124,15 +124,15 @@ const CustomerRegister = () => {
               transition={{ delay: 0.5, duration: 0.5 }}
               className="flex items-center justify-center gap-3 mt-4 flex-wrap"
             >
-              {getQuickServices(businessType).map((s, i) => (
+              {(business.services?.length ? business.services : getDefaultServices(business.type)).slice(0, 4).map((s, i) => (
                 <motion.div
-                  key={s}
+                  key={s.id}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.6 + i * 0.1 }}
                   className="bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10"
                 >
-                  <span className="text-[11px] text-white/80">{s}</span>
+                  <span className="text-[11px] text-white/80">{s.icon} {s.title}</span>
                 </motion.div>
               ))}
             </motion.div>
@@ -225,11 +225,5 @@ const CustomerRegister = () => {
     </div>
   );
 };
-
-function getQuickServices(type: string): string[] {
-  if (type === "hotel") return ["🛎️ Room Service", "🍽️ Restaurant", "📶 Free Wi-Fi", "🅿️ Parking"];
-  if (type === "cafe") return ["☕ Coffee", "🥐 Pastries", "📶 Wi-Fi", "⭐ Rewards"];
-  return ["🍽️ Dine-In", "📦 Takeaway", "⭐ Loyalty", "👥 Groups"];
-}
 
 export default CustomerRegister;

@@ -1,5 +1,12 @@
 // Centralized localStorage-based store for DALABplus+
 
+export interface BusinessService {
+  id: string;
+  title: string;
+  description: string;
+  icon: string; // emoji
+}
+
 export interface Business {
   id: string;
   name: string;
@@ -20,7 +27,35 @@ export interface Business {
   totalOrders: number;
   totalRevenue: number;
   subscription: "free" | "basic" | "premium" | "enterprise";
+  services?: BusinessService[];
 }
+
+export const getDefaultServices = (type: string): BusinessService[] => {
+  if (type === "hotel") return [
+    { id: "s1", title: "Room Booking", description: "Book luxurious rooms for a comfortable stay", icon: "🛏️" },
+    { id: "s2", title: "Restaurant", description: "Fine dining with local & international dishes", icon: "🍽️" },
+    { id: "s3", title: "Room Service", description: "Order food directly to your room 24/7", icon: "🛎️" },
+    { id: "s4", title: "Free Wi-Fi", description: "High-speed internet throughout the premises", icon: "📶" },
+    { id: "s5", title: "Parking", description: "Complimentary parking for all guests", icon: "🅿️" },
+    { id: "s6", title: "Concierge", description: "Our staff is ready to assist with anything", icon: "👨‍💼" },
+  ];
+  if (type === "cafe") return [
+    { id: "s1", title: "Specialty Coffee", description: "Freshly brewed artisan coffee selections", icon: "☕" },
+    { id: "s2", title: "Pastries & Snacks", description: "Freshly baked goods and light bites", icon: "🥐" },
+    { id: "s3", title: "Free Wi-Fi", description: "Stay connected while you enjoy", icon: "📶" },
+    { id: "s4", title: "Takeaway", description: "Grab your favorites on the go", icon: "📦" },
+    { id: "s5", title: "Loyalty Program", description: "Earn stamps with every cup", icon: "⭐" },
+    { id: "s6", title: "Meeting Space", description: "Cozy spots for meetings and co-working", icon: "👥" },
+  ];
+  return [
+    { id: "s1", title: "Dine-In", description: "Enjoy dishes in a comfortable atmosphere", icon: "🍽️" },
+    { id: "s2", title: "Takeaway", description: "Order your favorites and take them to go", icon: "📦" },
+    { id: "s3", title: "Loyalty Program", description: "Earn points with every order", icon: "⭐" },
+    { id: "s4", title: "Group Dining", description: "Special arrangements for groups and events", icon: "👥" },
+    { id: "s5", title: "Delivery", description: "Get your food delivered to your doorstep", icon: "🚗" },
+    { id: "s6", title: "Catering", description: "Catering services for your special events", icon: "🎉" },
+  ];
+};
 
 export interface Category {
   id: string;
