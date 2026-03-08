@@ -10,19 +10,36 @@ interface AdminRevenueChartProps {
 const AdminRevenueChart = ({ orders }: AdminRevenueChartProps) => {
   const [period, setPeriod] = useState("week");
 
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const now = new Date();
-  const dayOfWeek = now.getDay();
 
-  const weekData = days.map((day, i) => {
-    const diff = i - ((dayOfWeek + 6) % 7);
-    const date = new Date(now);
-    date.setDate(now.getDate() + diff);
-    const dateStr = date.toDateString();
-    const dayOrders = orders.filter(o => new Date(o.createdAt).toDateString() === dateStr);
-    const revenue = dayOrders.reduce((sum, o) => sum + o.total, 0);
-    return { name: day, revenue: revenue || Math.floor(Math.random() * 500 + 100) };
-  });
+  const getData = () => {
+    if (period === "week") {
+      const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+      const dayOfWeek = now.getDay();
+      return days.map((day, i) => {
+        const diff = i - ((dayOfWeek + 6) % 7);
+        const date = new Date(now);
+        date.setDate(now.getDate() + diff);
+        const dateStr = date.toDateString();
+        const dayOrders = orders.filter(o => new Date(o.createdAt).toDateString() === dateStr);
+        const revenue = dayOrders.reduce((sum, o) => sum + o.total, 0);
+        return { name: day, revenue };
+      });
+    } else {
+      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      const weeks: { name: string; revenue: number }[] = [];
+      for (let w = 0; w < Math.ceil(daysInMonth / 7); w++) {
+        let revenue = 0;
+        for (let d = w * 7; d < Math.min((w + 1) * 7, daysInMonth); d++) {
+          const date = new Date(now.getFullYear(), now.getMonth(), d + 1);
+          const dateStr = date.toDateString();
+          revenue += orders.filter(o => new Date(o.createdAt).toDateString() === dateStr).reduce((sum, o) => sum + o.total, 0);
+        }
+        weeks.push({ name: `Week ${w + 1}`, revenue });
+      }
+      return weeks;
+    }
+  };
 
   return (
     <div className="bg-card border border-border rounded-xl p-6 shadow-card-custom">
@@ -39,7 +56,7 @@ const AdminRevenueChart = ({ orders }: AdminRevenueChartProps) => {
         </Select>
       </div>
       <ResponsiveContainer width="100%" height={280}>
-        <BarChart data={weekData} barSize={40}>
+        <BarChart data={getData()} barSize={40}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(220 15% 90%)" />
           <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "hsl(220 10% 45%)" }} />
           <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "hsl(220 10% 45%)" }} />
@@ -50,7 +67,7 @@ const AdminRevenueChart = ({ orders }: AdminRevenueChartProps) => {
               borderRadius: "8px",
               boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
             }}
-            formatter={(value: number) => [`$${value}`, "Revenue"]}
+            formatter={(value: number) => [`$${value.toFixed(2)}`, "Revenue"]}
           />
           <Bar dataKey="revenue" fill="hsl(152 60% 54%)" radius={[6, 6, 0, 0]} />
         </BarChart>

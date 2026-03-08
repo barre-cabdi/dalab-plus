@@ -25,6 +25,8 @@ const CustomerMenu = () => {
   useEffect(() => { const stored = localStorage.getItem("dp_customer"); if (stored) setCustomer(JSON.parse(stored)); }, []);
   useEffect(() => { if (!businessId) return; seedDemoData(businessId); setCategories(getCategories(businessId)); setMenuItems(getMenuItems(businessId).filter(m => m.available)); }, [businessId]);
 
+  const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");
+
   const filteredItems = menuItems.filter(item => {
     const matchCat = activeCategory === "all" || item.categoryId === activeCategory;
     const matchSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -93,7 +95,7 @@ const CustomerMenu = () => {
         </button>
         {categories.map(cat => (
           <button key={cat.id} onClick={() => setActiveCategory(cat.id)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-200 ${activeCategory === cat.id ? "bg-gold-gradient text-accent-foreground shadow-gold" : "glass text-primary-foreground/60"}`}>
-            <span>{cat.icon}</span> {cat.name}
+            {isImageUrl(cat.icon) ? <img src={cat.icon} alt="" className="w-4 h-4 rounded-full object-cover" /> : <span>{cat.icon}</span>} {cat.name}
           </button>
         ))}
       </div>
@@ -105,7 +107,13 @@ const CustomerMenu = () => {
           const inCart = cart.find(c => c.id === item.id);
           return (
             <motion.div key={item.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }} className="glass rounded-xl overflow-hidden hover:shadow-gold transition-shadow duration-300">
-              <div className="h-24 flex items-center justify-center text-4xl bg-primary/20">{item.image}</div>
+              <div className="h-24 flex items-center justify-center text-4xl bg-primary/20 overflow-hidden">
+                {isImageUrl(item.image) ? (
+                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                ) : (
+                  item.image
+                )}
+              </div>
               <div className="p-3">
                 <h3 className="font-display font-semibold text-primary-foreground text-sm truncate">{item.name}</h3>
                 <p className="text-[10px] text-primary-foreground/40 mt-0.5 line-clamp-1">{item.description}</p>
@@ -138,8 +146,13 @@ const CustomerMenu = () => {
                   <div className="space-y-2">
                     {cart.map(item => (
                       <div key={item.id} className="flex items-center justify-between py-2 border-b border-border/10">
-                        <div className="flex items-center gap-2"><span className="text-lg">{item.image}</span><div><p className="text-xs font-medium text-primary-foreground">{item.name}</p><p className="text-[10px] text-primary-foreground/40">${item.price} × {item.quantity}</p></div></div>
-                        <div className="flex items-center gap-2"><span className="text-sm font-bold text-accent">${item.price * item.quantity}</span><button onClick={() => updateQuantity(item.id, -item.quantity)} className="text-destructive/60"><Trash2 className="w-3.5 h-3.5" /></button></div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded overflow-hidden flex items-center justify-center bg-primary/10">
+                            {isImageUrl(item.image) ? <img src={item.image} alt="" className="w-full h-full object-cover" /> : <span className="text-lg">{item.image}</span>}
+                          </div>
+                          <div><p className="text-xs font-medium text-primary-foreground">{item.name}</p><p className="text-[10px] text-primary-foreground/40">${item.price} × {item.quantity}</p></div>
+                        </div>
+                        <div className="flex items-center gap-2"><span className="text-sm font-bold text-accent">${(item.price * item.quantity).toFixed(2)}</span><button onClick={() => updateQuantity(item.id, -item.quantity)} className="text-destructive/60"><Trash2 className="w-3.5 h-3.5" /></button></div>
                       </div>
                     ))}
                   </div>
