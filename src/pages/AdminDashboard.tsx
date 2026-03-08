@@ -37,6 +37,7 @@ import LoyaltyTab from "@/components/admin/LoyaltyTab";
 import ReportsTab from "@/components/admin/ReportsTab";
 import StaffTab from "@/components/admin/StaffTab";
 import CustomersTab from "@/components/admin/CustomersTab";
+import HotelManagementTab from "@/components/admin/HotelManagementTab";
 
 const emojiOptions = ["🍛","🍔","🐟","🥗","🍵","🥤","🫓","🍝","🍰","🍦","🦞","🥭","☕","🍕","🥩","🍗","🌮","🍣","🧁","🥚","🍳","🥐","🧀","🍱"];
 
@@ -503,6 +504,14 @@ const AdminDashboard = () => {
       case "customers":
         return <CustomersTab businessId={business.id} />;
 
+      case "hotel-overview":
+      case "hotel-rooms":
+      case "hotel-bookings":
+      case "hotel-guests": {
+        const hotelViewMap: Record<string, string> = { "hotel-overview": "overview", "hotel-rooms": "rooms", "hotel-bookings": "bookings", "hotel-guests": "guests" };
+        return <HotelManagementTab businessId={business.id} initialView={hotelViewMap[activeTab] || "overview"} />;
+      }
+
       case "settings":
         return <AdminSettings business={business} onUpdate={refreshData} />;
 
@@ -526,6 +535,10 @@ const AdminDashboard = () => {
     "reports-items": "Item Report",
     "reports-categories": "Category Report",
     "reports-waiters": "Waiter Report",
+    "hotel-overview": "Hotel Overview",
+    "hotel-rooms": "Room Management",
+    "hotel-bookings": "Bookings",
+    "hotel-guests": "Guest Directory",
     settings: "Settings",
   };
 

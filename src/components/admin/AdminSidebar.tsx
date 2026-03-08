@@ -4,12 +4,13 @@ import {
   LayoutDashboard, UtensilsCrossed, Grid3X3, QrCode,
   ClipboardList, Heart, BarChart3, Settings, LogOut,
   ChevronLeft, ChevronRight, Users, UserCheck,
-  DollarSign, Package, Layers, UserCog,
+  DollarSign, Package, Layers, UserCog, Hotel,
+  BedDouble, CalendarCheck, BookOpen, Contact,
 } from "lucide-react";
 import { Business } from "@/lib/store";
 import { useState } from "react";
 
-const navItems = [
+const baseNavItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "menu", label: "Menu", icon: UtensilsCrossed },
   { id: "tables", label: "Tables", icon: Grid3X3 },
@@ -29,6 +30,18 @@ const navItems = [
   },
 ];
 
+const hotelNavItems = [
+  {
+    id: "hotel", label: "Hotel Management", icon: Hotel,
+    children: [
+      { id: "hotel-overview", label: "Overview", icon: LayoutDashboard },
+      { id: "hotel-rooms", label: "Rooms", icon: BedDouble },
+      { id: "hotel-bookings", label: "Bookings", icon: CalendarCheck },
+      { id: "hotel-guests", label: "Guests", icon: Contact },
+    ],
+  },
+];
+
 interface AdminSidebarProps {
   business: Business;
   activeTab: string;
@@ -38,7 +51,10 @@ interface AdminSidebarProps {
 }
 
 const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollapsed }: AdminSidebarProps) => {
+  const isHotel = business.type === "hotel";
+  const navItems = isHotel ? [...baseNavItems.slice(0, 1), ...hotelNavItems, ...baseNavItems.slice(1)] : baseNavItems;
   const [reportsOpen, setReportsOpen] = useState(activeTab.startsWith("reports"));
+  const [hotelOpen, setHotelOpen] = useState(activeTab.startsWith("hotel"));
 
   return (
     <motion.aside
@@ -68,16 +84,18 @@ const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollaps
       {/* Nav */}
       <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
         {navItems.map((item) => {
-          const isActive = activeTab === item.id || (item.children && activeTab.startsWith("reports"));
+          const isActive = activeTab === item.id || (item.children && activeTab.startsWith(item.id));
           const hasChildren = item.children && !collapsed;
+          const isOpen = item.id === "reports" ? reportsOpen : item.id === "hotel" ? hotelOpen : false;
+          const setOpen = item.id === "reports" ? setReportsOpen : item.id === "hotel" ? setHotelOpen : () => {};
 
           return (
             <div key={item.id}>
               <button
                 onClick={() => {
                   if (item.children) {
-                    if (collapsed) { setActiveTab("reports-sales"); }
-                    else { setReportsOpen(!reportsOpen); }
+                    if (collapsed) { setActiveTab(item.children[0].id); }
+                    else { setOpen(!isOpen); }
                   } else {
                     setActiveTab(item.id);
                   }
@@ -95,7 +113,7 @@ const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollaps
                   </motion.span>
                 )}
                 {hasChildren && (
-                  <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${reportsOpen ? "rotate-90" : ""}`} />
+                  <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`} />
                 )}
                 {/* Hover tooltip when collapsed */}
                 {collapsed && (
@@ -106,7 +124,7 @@ const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollaps
               </button>
 
               {/* Report sub-items */}
-              {hasChildren && reportsOpen && (
+              {hasChildren && isOpen && (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
                   className="ml-5 mt-0.5 space-y-0.5 border-l-2 border-border pl-3">
                   {item.children!.map(child => {
