@@ -27,6 +27,8 @@ import {
 } from "@/lib/store";
 import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
+import { Textarea } from "@/components/ui/textarea";
+import { QRCodeSVG } from "qrcode.react";
 
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminStatsCards from "@/components/admin/AdminStatsCards";
