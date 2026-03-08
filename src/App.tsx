@@ -11,6 +11,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import CustomerDashboard from "./pages/CustomerDashboard";
 import CustomerRegister from "./pages/CustomerRegister";
 import CustomerMenu from "./pages/CustomerMenu";
+import CustomerHome from "./pages/CustomerHome";
 import OrderTracking from "./pages/OrderTracking";
 import WaiterDashboard from "./pages/WaiterDashboard";
 import NotFound from "./pages/NotFound";

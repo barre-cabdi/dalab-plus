@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Plus, Minus, Search, Star, ArrowLeft, Trash2, Send, UtensilsCrossed } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Search, Star, Trash2, Send, UtensilsCrossed, Trophy, ChevronRight, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { getCategories, getMenuItems, Category, MenuItem, seedDemoData } from "@/lib/store";
+import { getCategories, getMenuItems, Category, MenuItem, seedDemoData, getBusinesses } from "@/lib/store";
 
 type CartItem = { id: string; name: string; price: number; quantity: number; image: string };
 
@@ -21,9 +21,13 @@ const CustomerMenu = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
   const [customer, setCustomer] = useState<any>(null);
+  const [activeNav, setActiveNav] = useState("menu");
 
   useEffect(() => { const stored = localStorage.getItem("dp_customer"); if (stored) setCustomer(JSON.parse(stored)); }, []);
   useEffect(() => { if (!businessId) return; seedDemoData(businessId); setCategories(getCategories(businessId)); setMenuItems(getMenuItems(businessId).filter(m => m.available)); }, [businessId]);
+
+  const business = getBusinesses().find(b => b.id === businessId);
+  const businessName = business?.name || "DALABplus+";
 
   const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");
 
@@ -68,105 +72,316 @@ const CustomerMenu = () => {
     navigate(`/order-tracking/${orderId}`);
   };
 
+  // Loyalty info
+  const customerLevel = customer?.level || "Bronze";
+  const customerPoints = customer?.points || 0;
+  const getLevelTarget = (level: string) => {
+    switch (level) {
+      case "Bronze": return { next: "Silver", needed: 100 };
+      case "Silver": return { next: "Gold", needed: 300 };
+      case "Gold": return { next: "Platinum", needed: 600 };
+      default: return { next: null, needed: 600 };
+    }
+  };
+  const levelTarget = getLevelTarget(customerLevel);
+  const progressPercent = levelTarget.needed ? Math.min((customerPoints / levelTarget.needed) * 100, 100) : 100;
+  const pointsToNext = levelTarget.needed - customerPoints;
+
   return (
-    <div className="min-h-screen bg-hero pb-24">
-      <header className="glass border-b border-border/20 px-4 py-3 sticky top-0 z-50">
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-background pb-24">
+      {/* Top Navbar - Clean & Light */}
+      <header className="bg-card border-b border-border sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <button onClick={() => navigate(-1)} className="text-primary-foreground/60 hover:text-accent transition-colors"><ArrowLeft className="w-5 h-5" /></button>
-            <div><p className="font-display font-bold text-primary-foreground text-sm">Menu</p><p className="text-xs text-primary-foreground/40">Table #{tableId}</p></div>
+            <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+              <UtensilsCrossed className="w-4 h-4 text-secondary-foreground" />
+            </div>
+            <span className="font-display font-bold text-foreground">{businessName}</span>
+          </div>
+          <div className="flex items-center gap-6">
+            {[
+              { key: "menu", label: "Menu" },
+              { key: "orders", label: "My Orders" },
+              { key: "loyalty", label: "Loyalty" },
+            ].map(nav => (
+              <button
+                key={nav.key}
+                onClick={() => {
+                  setActiveNav(nav.key);
+                  if (nav.key === "orders") navigate(`/customer`);
+                  if (nav.key === "loyalty") navigate(`/customer`);
+                }}
+                className={`text-sm font-medium transition-colors duration-200 relative pb-1 ${
+                  activeNav === nav.key
+                    ? "text-secondary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {nav.label}
+                {activeNav === nav.key && (
+                  <motion.div layoutId="nav-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-secondary rounded-full" />
+                )}
+              </button>
+            ))}
           </div>
           {customer && (
-            <div className="flex items-center gap-2">
-              <div className="text-right"><p className="text-xs font-medium text-primary-foreground">{customer.name}</p><p className="text-[10px] text-accent">{customer.points || 0} points</p></div>
-              <div className="w-8 h-8 rounded-full bg-gold-gradient flex items-center justify-center"><span className="font-display font-bold text-accent-foreground text-xs">{customer.name?.charAt(0) || "?"}</span></div>
-            </div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="w-9 h-9 rounded-full bg-muted border-2 border-border flex items-center justify-center cursor-pointer"
+              onClick={() => navigate("/customer")}
+            >
+              <User className="w-4 h-4 text-muted-foreground" />
+            </motion.div>
           )}
-        </div>
-        <div className="mt-3 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-foreground/30" />
-          <Input placeholder="Raadi cunto..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-9 bg-primary/20 border-border/20 text-primary-foreground placeholder:text-primary-foreground/30 h-9 text-sm" />
         </div>
       </header>
 
-      <div className="px-4 py-3 overflow-x-auto flex gap-2 no-scrollbar">
-        <button onClick={() => setActiveCategory("all")} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-200 ${activeCategory === "all" ? "bg-gold-gradient text-accent-foreground shadow-gold" : "glass text-primary-foreground/60"}`}>
-          <UtensilsCrossed className="w-3.5 h-3.5" /> Dhammaan
-        </button>
-        {categories.map(cat => (
-          <button key={cat.id} onClick={() => setActiveCategory(cat.id)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-200 ${activeCategory === cat.id ? "bg-gold-gradient text-accent-foreground shadow-gold" : "glass text-primary-foreground/60"}`}>
-            {isImageUrl(cat.icon) ? <img src={cat.icon} alt="" className="w-4 h-4 rounded-full object-cover" /> : <span>{cat.icon}</span>} {cat.name}
-          </button>
-        ))}
-      </div>
-
-      <div className="px-4 grid grid-cols-2 gap-3">
-        {filteredItems.length === 0 ? (
-          <div className="col-span-2 text-center py-12"><p className="text-primary-foreground/40 text-sm">Menu items ma jiraan.</p></div>
-        ) : filteredItems.map((item, i) => {
-          const inCart = cart.find(c => c.id === item.id);
-          return (
-            <motion.div key={item.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }} className="glass rounded-xl overflow-hidden hover:shadow-gold transition-shadow duration-300">
-              <div className="h-24 flex items-center justify-center text-4xl bg-primary/20 overflow-hidden">
-                {isImageUrl(item.image) ? (
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                ) : (
-                  item.image
-                )}
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
+        {/* Loyalty Card */}
+        {customer && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="bg-card border border-border rounded-2xl p-5 mb-8 shadow-card-custom"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-secondary" />
+                <span className="font-display font-bold text-foreground">{customerLevel} Level</span>
               </div>
-              <div className="p-3">
-                <h3 className="font-display font-semibold text-primary-foreground text-sm truncate">{item.name}</h3>
-                <p className="text-[10px] text-primary-foreground/40 mt-0.5 line-clamp-1">{item.description}</p>
-                {item.rating > 0 && (<div className="flex items-center gap-1 mt-1"><Star className="w-3 h-3 text-accent fill-accent" /><span className="text-[10px] text-accent font-medium">{item.rating}</span></div>)}
-                <div className="flex items-center justify-between mt-2">
-                  <span className="font-display font-bold text-accent text-sm">${item.price}</span>
-                  {inCart ? (
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => updateQuantity(item.id, -1)} className="w-6 h-6 rounded-full bg-destructive/20 flex items-center justify-center text-destructive"><Minus className="w-3 h-3" /></button>
-                      <span className="text-xs font-bold text-primary-foreground w-4 text-center">{inCart.quantity}</span>
-                      <button onClick={() => addToCart(item)} className="w-6 h-6 rounded-full bg-gold-gradient flex items-center justify-center text-accent-foreground"><Plus className="w-3 h-3" /></button>
+              <Badge className="bg-secondary/10 text-secondary border-secondary/20 font-bold">
+                {customerPoints} pts
+              </Badge>
+            </div>
+            <div className="w-full h-3 rounded-full bg-muted overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${progressPercent}%` }}
+                transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
+                className="h-full rounded-full bg-secondary"
+              />
+            </div>
+            {levelTarget.next && pointsToNext > 0 && (
+              <p className="text-xs text-muted-foreground mt-2">{pointsToNext} points to {levelTarget.next}</p>
+            )}
+          </motion.div>
+        )}
+
+        {/* Search */}
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search menu..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="pl-9 bg-card border-border h-10"
+          />
+        </div>
+
+        {/* Menu Categories - Tab Style */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="mb-6"
+        >
+          <h2 className="font-display font-bold text-xl text-foreground mb-4">Menu Categories</h2>
+          <div className="flex gap-1 border-b border-border overflow-x-auto no-scrollbar">
+            <button
+              onClick={() => setActiveCategory("all")}
+              className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-200 relative ${
+                activeCategory === "all"
+                  ? "text-secondary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              All
+              {activeCategory === "all" && (
+                <motion.div layoutId="cat-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-secondary rounded-full" />
+              )}
+            </button>
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-200 relative ${
+                  activeCategory === cat.id
+                    ? "text-secondary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {cat.name}
+                {activeCategory === cat.id && (
+                  <motion.div layoutId="cat-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-secondary rounded-full" />
+                )}
+              </button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Menu Items - Horizontal Cards */}
+        <div className="grid md:grid-cols-2 gap-4">
+          {filteredItems.length === 0 ? (
+            <div className="col-span-2 text-center py-16">
+              <p className="text-muted-foreground">No items found.</p>
+            </div>
+          ) : filteredItems.map((item, i) => {
+            const inCart = cart.find(c => c.id === item.id);
+            return (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05, duration: 0.4, ease: "easeOut" }}
+                whileHover={{ y: -4, boxShadow: "0 12px 40px -12px hsl(var(--border))" }}
+                className="bg-card border border-border rounded-xl overflow-hidden flex group cursor-default transition-shadow duration-300"
+              >
+                {/* Text side */}
+                <div className="flex-1 p-4 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-display font-semibold text-foreground text-sm">{item.name}</h3>
+                      <span className="font-display font-bold text-secondary text-sm whitespace-nowrap">${item.price.toFixed(2)}</span>
                     </div>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
+                    {item.rating > 0 && (
+                      <div className="flex items-center gap-1 mt-2">
+                        <Star className="w-3 h-3 text-secondary fill-secondary" />
+                        <span className="text-xs text-muted-foreground font-medium">{item.rating}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-3">
+                    {inCart ? (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => updateQuantity(item.id, -1)}
+                          className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-all duration-200"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <motion.span
+                          key={inCart.quantity}
+                          initial={{ scale: 1.3 }}
+                          animate={{ scale: 1 }}
+                          className="text-sm font-bold text-foreground w-5 text-center"
+                        >
+                          {inCart.quantity}
+                        </motion.span>
+                        <button
+                          onClick={() => addToCart(item)}
+                          className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground hover:opacity-90 transition-all duration-200"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => addToCart(item)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-secondary-foreground text-xs font-medium hover:opacity-90 transition-all duration-200"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> Add to Cart
+                      </motion.button>
+                    )}
+                  </div>
+                </div>
+                {/* Image side */}
+                <div className="w-32 h-32 flex-shrink-0 bg-muted flex items-center justify-center overflow-hidden">
+                  {isImageUrl(item.image) ? (
+                    <motion.img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
                   ) : (
-                    <button onClick={() => addToCart(item)} className="w-7 h-7 rounded-full bg-gold-gradient flex items-center justify-center text-accent-foreground shadow-gold hover:scale-110 transition-transform"><Plus className="w-4 h-4" /></button>
+                    <span className="text-4xl group-hover:scale-110 transition-transform duration-300">{item.image}</span>
                   )}
                 </div>
-              </div>
-            </motion.div>
-          );
-        })}
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
 
+      {/* Floating Cart Bar */}
       <AnimatePresence>
         {cartCount > 0 && (
-          <motion.div initial={{ y: 100 }} animate={{ y: 0 }} exit={{ y: 100 }} className="fixed bottom-0 left-0 right-0 z-50">
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed bottom-6 right-6 left-6 md:left-auto md:right-8 md:max-w-sm z-50"
+          >
+            {/* Expanded cart */}
             <AnimatePresence>
               {showCart && (
-                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="glass border-t border-border/20 px-4 pt-4 pb-2 max-h-[50vh] overflow-y-auto">
-                  <h3 className="font-display font-bold text-primary-foreground text-sm mb-3">Liiskaaga 🛒</h3>
-                  <div className="space-y-2">
-                    {cart.map(item => (
-                      <div key={item.id} className="flex items-center justify-between py-2 border-b border-border/10">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded overflow-hidden flex items-center justify-center bg-primary/10">
-                            {isImageUrl(item.image) ? <img src={item.image} alt="" className="w-full h-full object-cover" /> : <span className="text-lg">{item.image}</span>}
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="bg-card border border-border rounded-t-2xl shadow-hero overflow-hidden mb-0"
+                >
+                  <div className="p-4 max-h-[40vh] overflow-y-auto">
+                    <h3 className="font-display font-bold text-foreground text-sm mb-3">Your Cart 🛒</h3>
+                    <div className="space-y-2">
+                      {cart.map(item => (
+                        <motion.div
+                          key={item.id}
+                          layout
+                          className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center bg-muted">
+                              {isImageUrl(item.image) ? <img src={item.image} alt="" className="w-full h-full object-cover" /> : <span className="text-lg">{item.image}</span>}
+                            </div>
+                            <div>
+                              <p className="text-xs font-medium text-foreground">{item.name}</p>
+                              <p className="text-[10px] text-muted-foreground">${item.price.toFixed(2)} × {item.quantity}</p>
+                            </div>
                           </div>
-                          <div><p className="text-xs font-medium text-primary-foreground">{item.name}</p><p className="text-[10px] text-primary-foreground/40">${item.price} × {item.quantity}</p></div>
-                        </div>
-                        <div className="flex items-center gap-2"><span className="text-sm font-bold text-accent">${(item.price * item.quantity).toFixed(2)}</span><button onClick={() => updateQuantity(item.id, -item.quantity)} className="text-destructive/60"><Trash2 className="w-3.5 h-3.5" /></button></div>
-                      </div>
-                    ))}
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-secondary">${(item.price * item.quantity).toFixed(2)}</span>
+                            <button onClick={() => updateQuantity(item.id, -item.quantity)} className="text-destructive/60 hover:text-destructive transition-colors">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
-            <div className="glass border-t border-border/20 px-4 py-3 flex items-center gap-3">
-              <button onClick={() => setShowCart(!showCart)} className="relative w-10 h-10 rounded-full bg-gold-gradient flex items-center justify-center text-accent-foreground shadow-gold">
+
+            {/* Cart summary bar */}
+            <motion.div
+              className={`bg-foreground text-background flex items-center gap-3 px-4 py-3 cursor-pointer ${showCart ? "rounded-b-2xl" : "rounded-2xl"} shadow-hero`}
+              onClick={() => setShowCart(!showCart)}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+            >
+              <div className="relative">
                 <ShoppingCart className="w-5 h-5" />
-                <Badge className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[10px] px-1.5 h-4 min-w-4">{cartCount}</Badge>
-              </button>
-              <div className="flex-1"><p className="text-xs text-primary-foreground/40">{cartCount} items</p><p className="font-display font-bold text-accent">${cartTotal.toFixed(2)}</p></div>
-              <Button variant="hero" size="default" onClick={confirmOrder} className="gap-1.5"><Send className="w-4 h-4" /> Dalbo</Button>
-            </div>
+                <span className="absolute -top-2 -right-2 bg-secondary text-secondary-foreground text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                  {cartCount}
+                </span>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs opacity-70">{cartCount} item{cartCount > 1 ? "s" : ""}</p>
+                <p className="font-display font-bold text-sm">${cartTotal.toFixed(2)}</p>
+              </div>
+              <Button
+                onClick={(e) => { e.stopPropagation(); confirmOrder(); }}
+                className="bg-secondary text-secondary-foreground hover:bg-secondary/90 gap-1.5 rounded-xl text-xs h-9"
+              >
+                View Cart <ChevronRight className="w-3.5 h-3.5" />
+              </Button>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
