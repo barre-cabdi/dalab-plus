@@ -29,6 +29,26 @@ const CustomerMenu = () => {
   useEffect(() => { const stored = localStorage.getItem("dp_customer"); if (stored) setCustomer(JSON.parse(stored)); }, []);
   useEffect(() => { if (!businessId) return; seedDemoData(businessId); setCategories(getCategories(businessId)); setMenuItems(getMenuItems(businessId).filter(m => m.available)); }, [businessId]);
 
+  // Poll for active order status updates
+  useEffect(() => {
+    const pollOrders = () => {
+      const stored = localStorage.getItem("dp_customer");
+      if (!stored) return;
+      const c = JSON.parse(stored);
+      const allOrders = JSON.parse(localStorage.getItem("dp_orders") || "[]");
+      const myOrders = allOrders.filter((o: any) => o.customerId === c.id && o.businessId === businessId && o.status !== "delivered" && o.status !== "cancelled");
+      setActiveOrders(myOrders);
+      if (myOrders.length > 0) setShowOrderTracker(true);
+      // Load messages for active orders
+      const allMsgs = JSON.parse(localStorage.getItem("dp_order_messages") || "[]");
+      const myMsgs = allMsgs.filter((m: any) => myOrders.some((o: any) => o.id === m.orderId));
+      setOrderMessages(myMsgs);
+    };
+    pollOrders();
+    const interval = setInterval(pollOrders, 3000);
+    return () => clearInterval(interval);
+  }, [businessId]);
+
   const business = getBusinesses().find(b => b.id === businessId);
   const businessName = business?.name || "DALABplus+";
 
