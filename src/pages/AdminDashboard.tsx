@@ -40,6 +40,7 @@ import StaffTab from "@/components/admin/StaffTab";
 import CustomersTab from "@/components/admin/CustomersTab";
 import HotelManagementTab from "@/components/admin/HotelManagementTab";
 import HotelReportTab from "@/components/admin/HotelReportTab";
+import OrderHistoryTab from "@/components/admin/OrderHistoryTab";
 
 const emojiOptions = ["🍛","🍔","🐟","🥗","🍵","🥤","🫓","🍝","🍰","🍦","🦞","🥭","☕","🍕","🥩","🍗","🌮","🍣","🧁","🥚","🍳","🥐","🧀","🍱"];
 
@@ -641,6 +642,9 @@ const AdminDashboard = () => {
         );
       }
 
+      case "order-history":
+        return <OrderHistoryTab businessId={business.id} />;
+
       case "qr":
         return (
           <div>
@@ -742,6 +746,7 @@ const AdminDashboard = () => {
     categories: "Categories",
     tables: "Table Management",
     orders: "Order Management",
+    "order-history": "Order History",
     qr: "QR Codes",
     staff: "Staff Management",
     customers: "Customers",
