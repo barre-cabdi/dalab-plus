@@ -746,6 +746,7 @@ const AdminDashboard = () => {
     categories: "Categories",
     tables: "Table Management",
     orders: "Order Management",
+    "order-history": "Order History",
     qr: "QR Codes",
     staff: "Staff Management",
     customers: "Customers",
