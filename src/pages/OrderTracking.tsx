@@ -23,15 +23,23 @@ const OrderTracking = () => {
   const [messages, setMessages] = useState<any[]>([]);
 
   useEffect(() => {
-    const orders = JSON.parse(localStorage.getItem("dp_orders") || "[]");
-    const found = orders.find((o: any) => o.id === orderId);
-    if (found) setOrder(found);
-    const stored = localStorage.getItem("dp_customer");
-    if (stored) {
-      const c = JSON.parse(stored);
-      setCustomer(c);
-      if (c.points >= 100 && c.level === "Silver") setShowReward(true);
-    }
+    const loadData = () => {
+      const orders = JSON.parse(localStorage.getItem("dp_orders") || "[]");
+      const found = orders.find((o: any) => o.id === orderId);
+      if (found) setOrder(found);
+      const stored = localStorage.getItem("dp_customer");
+      if (stored) {
+        const c = JSON.parse(stored);
+        setCustomer(c);
+        if (c.points >= 100 && c.level === "Silver") setShowReward(true);
+      }
+      // Load messages
+      const allMessages = JSON.parse(localStorage.getItem("dp_order_messages") || "[]");
+      setMessages(allMessages.filter((m: any) => m.orderId === orderId));
+    };
+    loadData();
+    const interval = setInterval(loadData, 3000);
+    return () => clearInterval(interval);
   }, [orderId]);
 
   useEffect(() => {
