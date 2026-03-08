@@ -19,6 +19,7 @@ type ReportView = "sales" | "items" | "categories" | "waiters";
 
 const ReportsTab = ({ orders, menuItems, categories, businessId, initialView }: ReportsTabProps) => {
   const [view, setView] = useState<ReportView>((initialView as ReportView) || "sales");
+  useEffect(() => { if (initialView) setView(initialView as ReportView); }, [initialView]);
 
   const tabs = [
     { id: "sales" as const, label: "Sales Report", icon: DollarSign },
