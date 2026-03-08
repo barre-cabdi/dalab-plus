@@ -1,0 +1,205 @@
+import { createContext, useContext, useState, ReactNode } from "react";
+
+type Lang = "en" | "so";
+
+const translations = {
+  en: {
+    // Navbar
+    home: "Home",
+    services: "Services",
+    about: "About",
+    contact: "Contact",
+    login: "Login",
+    getStarted: "Get Started",
+    // Hero
+    heroBadge: "Smart Restaurant Technology",
+    heroTitle1: "Smart Digital Menu",
+    heroTitle2: "for Hotels & Restaurants",
+    heroDesc: "QR ordering, loyalty rewards, real-time tracking, and powerful analytics — all in one beautiful platform built for modern hospitality.",
+    requestDemo: "Request Demo",
+    businesses: "Businesses",
+    ordersDay: "Orders/Day",
+    uptime: "Uptime",
+    liveOrders: "🔥 Live Orders",
+    // Services
+    servicesTag: "Services",
+    servicesTitle1: "Everything You Need to Run",
+    servicesTitle2: " Smart Hospitality",
+    servicesDesc: "A complete suite of tools designed for hotels and restaurants to modernize operations and delight customers.",
+    svc1Title: "QR Code Ordering",
+    svc1Desc: "Customers scan, browse, and order — no app download needed.",
+    svc2Title: "Admin Dashboard",
+    svc2Desc: "Full control over menus, tables, orders, and staff.",
+    svc3Title: "Waiter Tracking",
+    svc3Desc: "Real-time order status and waiter assignment tracking.",
+    svc4Title: "Loyalty Points",
+    svc4Desc: "Bronze to Platinum tiers with automatic reward unlocks.",
+    svc5Title: "Customer Analytics",
+    svc5Desc: "Deep insights into customer behavior and spending.",
+    svc6Title: "Sales Reports",
+    svc6Desc: "Daily, weekly, monthly reports with export options.",
+    svc7Title: "Multi-Business",
+    svc7Desc: "Manage multiple restaurants from one super admin.",
+    svc8Title: "Staff Management",
+    svc8Desc: "Manage waiters, assign roles, track performance.",
+    // About
+    aboutTag: "About Us",
+    aboutTitle1: "Built for the Future of",
+    aboutTitle2: " Hospitality",
+    aboutDesc1: "DALABplus+ is a complete SaaS platform designed for hotels and restaurants in the modern era. We combine QR-based ordering, intelligent loyalty systems, and real-time analytics into one seamless experience.",
+    aboutDesc2: "Our mission is to empower every hospitality business — from small cafés to large hotel chains — with technology that drives revenue, delights customers, and simplifies operations.",
+    feat1: "Multi-Tenant SaaS Architecture",
+    feat2: "Role-Based Access Control",
+    feat3: "Real-Time Order Tracking",
+    feat4: "Gamified Loyalty System",
+    feat5: "Customer Self-Registration via QR",
+    feat6: "Comprehensive Analytics & Reports",
+    countries: "Countries",
+    ordersProcessed: "Orders Processed",
+    // Contact
+    contactTag: "Contact",
+    contactTitle1: "Get in ",
+    contactTitle2: "Touch",
+    contactDesc: "Ready to transform your restaurant? Reach out and let's get started.",
+    phone: "Phone",
+    email: "Email",
+    location: "Location",
+    yourName: "Your Name",
+    yourEmail: "Your Email",
+    yourMessage: "Your Message",
+    sendMessage: "Send Message",
+    messageSent: "Message sent! We'll get back to you soon.",
+    // CTA
+    ctaTitle: "Ready to upgrade your dining experience?",
+    ctaDesc: "Join thousands of restaurants already using DALABplus+.",
+    getStartedNow: "Get Started Now",
+    // Footer
+    allRights: "© 2026 DALABplus+. All rights reserved.",
+    // Login
+    signIn: "Sign in to your account",
+    username: "Username",
+    password: "Password",
+    enterUsername: "Enter your username",
+    enterPassword: "Enter your password",
+    signingIn: "Signing in...",
+    signInBtn: "Sign In",
+    welcome: "Welcome",
+    wrongPassword: "Wrong password!",
+    businessInactive: "This business is disabled. Contact Super Admin.",
+    demoCredentials: "Demo Credentials:",
+    superAdmin: "Super Admin",
+    businessAdmin: "Create a new business from Super Admin",
+    backHome: "Back to Home",
+  },
+  so: {
+    home: "Guriga",
+    services: "Adeegyada",
+    about: "Naga",
+    contact: "Nala Soo Xiriir",
+    login: "Gal",
+    getStarted: "Bilow",
+    heroBadge: "Tignoolajiyada Makhaayadaha Casriga",
+    heroTitle1: "Menu Digital Casri ah",
+    heroTitle2: "ee Hoteellada & Makhaayadaha",
+    heroDesc: "QR dalbasho, abaalmarin daacadnimo, raadraac toos ah, iyo falanqayn xooggan — dhamaan hal platform qurux badan oo loo dhisay martida casriga ah.",
+    requestDemo: "Dalbo Demo",
+    businesses: "Meherado",
+    ordersDay: "Dalbo/Maalin",
+    uptime: "Shaqaynta",
+    liveOrders: "🔥 Dalabyo Toos ah",
+    servicesTag: "Adeegyada",
+    servicesTitle1: "Wax Walba Oo Aad U Baahan Tahay",
+    servicesTitle2: " Marti-gelinta Casriga",
+    servicesDesc: "Qalab dhamaystiran oo loo qorsheeyay hoteellada iyo makhaayadaha si ay u casriyeeyaan hawlgallada oo ay ku farxiyaan macaamiisha.",
+    svc1Title: "QR Dalbasho",
+    svc1Desc: "Macaamiishu waa scan-gareyaan, daawadaan, oo dalban karaan — app soo dejin la'aan.",
+    svc2Title: "Dashboard Maamulka",
+    svc2Desc: "Xakameynta buuxda ee menus, miisaska, dalabka, iyo shaqaalaha.",
+    svc3Title: "Raadraaca Adeegaha",
+    svc3Desc: "Xaalada dalbashada waqtiga dhabta ah iyo raadraaca adeegaha.",
+    svc4Title: "Dhibcaha Daacadnimada",
+    svc4Desc: "Bronze ilaa Platinum oo leh abaalmarin toos ah.",
+    svc5Title: "Falanqaynta Macaamiisha",
+    svc5Desc: "Aragti qoto dheer oo ku saabsan dhaqanka macaamiisha.",
+    svc6Title: "Warbixinta Iibka",
+    svc6Desc: "Warbixinnada maalinlaha, toddobaadlaha, bilaha oo leh xulashada soo saarista.",
+    svc7Title: "Meherad Badan",
+    svc7Desc: "Maamul makhaayaddo badan hal super admin.",
+    svc8Title: "Maamulka Shaqaalaha",
+    svc8Desc: "Maamul adeegyada, doorar u qoondee, waxqabadka raadraac.",
+    aboutTag: "Naga",
+    aboutTitle1: "Loo Dhisay Mustaqbalka",
+    aboutTitle2: " Marti-gelinta",
+    aboutDesc1: "DALABplus+ waa platform SaaS dhamaystiran oo loo qorsheeyay hoteellada iyo makhaayadaha casriga ah. Waxaan isku xiraa QR dalbasho, nidaamyo daacadnimo caqli ah, iyo falanqayn waqti-dhabta ah mid keli ah oo sahlan.",
+    aboutDesc2: "Hadafkayagu waa in aan xoog siino dhammaan meheradda marti-gelinta — kafeeyad yar ilaa silsiladaha hoteellada waaweyn — tignoolajiyad dakhliga kordhisa, macaamiisha farxiya, hawlgallada fududaysa.",
+    feat1: "Qaab-dhismeedka SaaS Kiro-badan",
+    feat2: "Xakameynta Marin u Helka Doorka",
+    feat3: "Raadraaca Dalashada Waqtiga Dhabta ah",
+    feat4: "Nidaamka Daacadnimada",
+    feat5: "Isdiiwaangelinta Macaamiisha QR",
+    feat6: "Falanqayn & Warbixin Dhamaystiran",
+    countries: "Wadamo",
+    ordersProcessed: "Dalabyo La Fuliyey",
+    contactTag: "Nala Soo Xiriir",
+    contactTitle1: "Nala Soo ",
+    contactTitle2: "Xiriir",
+    contactDesc: "Ma diyaar baad u tahay inaad doorato makhaayadaada? Nala soo xiriir.",
+    phone: "Telefon",
+    email: "Iimeel",
+    location: "Goobta",
+    yourName: "Magacaaga",
+    yourEmail: "Iimeel-kaaga",
+    yourMessage: "Fariin-taada",
+    sendMessage: "Dir Fariinta",
+    messageSent: "Fariinta waa la diray! Dhawaan ayaan kugula soo noqon doonaa.",
+    ctaTitle: "Ma diyaar baad u tahay inaad casriyeyso khibraddaada?",
+    ctaDesc: "Ku biir kummaananka makhaayadaha ee horey u isticmaala DALABplus+.",
+    getStartedNow: "Bilow Hadda",
+    allRights: "© 2026 DALABplus+. Dhammaan xuquuqaha way dhowran yihiin.",
+    signIn: "Gal akoon-kaaga",
+    username: "Username",
+    password: "Password",
+    enterUsername: "Gali username-kaaga",
+    enterPassword: "Gali password-kaaga",
+    signingIn: "Galitaanka...",
+    signInBtn: "Gal",
+    welcome: "Ku soo dhawoow",
+    wrongPassword: "Password-ka waa khalad!",
+    businessInactive: "Meheraddan waa la xidhay. La xiriir Super Admin.",
+    demoCredentials: "Credentials-ka Demo:",
+    superAdmin: "Super Admin",
+    businessAdmin: "Super Admin-ka ka samee meherad cusub",
+    backHome: "Ku noqo Guriga",
+  },
+};
+
+type Translations = typeof translations.en;
+
+interface I18nContextType {
+  lang: Lang;
+  setLang: (lang: Lang) => void;
+  t: Translations;
+}
+
+const I18nContext = createContext<I18nContextType>({
+  lang: "en",
+  setLang: () => {},
+  t: translations.en,
+});
+
+export const I18nProvider = ({ children }: { children: ReactNode }) => {
+  const [lang, setLang] = useState<Lang>(() => (localStorage.getItem("dp_lang") as Lang) || "en");
+
+  const handleSetLang = (l: Lang) => {
+    setLang(l);
+    localStorage.setItem("dp_lang", l);
+  };
+
+  return (
+    <I18nContext.Provider value={{ lang, setLang: handleSetLang, t: translations[lang] }}>
+      {children}
+    </I18nContext.Provider>
+  );
+};
+
+export const useI18n = () => useContext(I18nContext);
