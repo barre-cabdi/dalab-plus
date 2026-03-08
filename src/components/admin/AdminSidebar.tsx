@@ -16,6 +16,7 @@ const baseNavItems = [
   { id: "tables", label: "Tables", icon: Grid3X3 },
   { id: "qr", label: "QR Codes", icon: QrCode },
   { id: "orders", label: "Orders", icon: ClipboardList },
+  { id: "order-history", label: "Order History", icon: History },
   { id: "staff", label: "Staff", icon: UserCog },
   { id: "customers", label: "Customers", icon: Users },
   { id: "loyalty", label: "Loyalty", icon: Heart },
