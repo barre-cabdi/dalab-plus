@@ -17,9 +17,15 @@ const CustomersTab = ({ businessId }: CustomersTabProps) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [search, setSearch] = useState("");
 
-  useEffect(() => {
+  const refreshData = () => {
     setCustomers(getCustomers(businessId));
     setOrders(getOrders(businessId));
+  };
+
+  useEffect(() => {
+    refreshData();
+    const interval = setInterval(refreshData, 5000);
+    return () => clearInterval(interval);
   }, [businessId]);
 
   // Build customer stats from orders if no customer records exist
