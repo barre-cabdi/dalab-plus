@@ -3,17 +3,15 @@ import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, ArrowLeft, Sun, Moon, Globe } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { getBusinessByAdmin } from "@/lib/store";
 import { useI18n } from "@/lib/i18n";
-import { useTheme } from "@/lib/theme";
 
 const Login = () => {
   const navigate = useNavigate();
   const { t, lang, setLang } = useI18n();
-  const { theme, toggleTheme } = useTheme();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -69,7 +67,6 @@ const Login = () => {
         className="absolute bottom-20 left-20 w-96 h-96 rounded-full bg-accent/5 blur-3xl"
       />
 
-      {/* Top controls */}
       <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
         <button
           onClick={() => setLang(lang === "en" ? "so" : "en")}
@@ -77,12 +74,6 @@ const Login = () => {
         >
           <Globe className="w-3.5 h-3.5" />
           {lang === "en" ? "SO" : "EN"}
-        </button>
-        <button
-          onClick={toggleTheme}
-          className="p-2 rounded-full glass text-primary-foreground/60 hover:text-accent transition-all"
-        >
-          {theme === "light" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
         </button>
       </div>
 

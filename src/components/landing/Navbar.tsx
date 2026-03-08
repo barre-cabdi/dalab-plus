@@ -1,15 +1,13 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Sun, Moon, Globe } from "lucide-react";
+import { Menu, X, Globe } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { useTheme } from "@/lib/theme";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { t, lang, setLang } = useI18n();
-  const { theme, toggleTheme } = useTheme();
 
   const links = [
     { label: t.home, href: "#home" },
@@ -40,21 +38,12 @@ const Navbar = () => {
             </a>
           ))}
 
-          {/* Language Toggle */}
           <button
             onClick={() => setLang(lang === "en" ? "so" : "en")}
             className="flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-full border border-border hover:border-accent"
           >
             <Globe className="w-3.5 h-3.5" />
             {lang === "en" ? "SO" : "EN"}
-          </button>
-
-          {/* Theme Toggle */}
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-full border border-border hover:border-accent text-muted-foreground hover:text-foreground transition-all duration-300"
-          >
-            {theme === "light" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
           </button>
 
           <Link to="/login">
@@ -65,9 +54,6 @@ const Navbar = () => {
         <div className="flex md:hidden items-center gap-2">
           <button onClick={() => setLang(lang === "en" ? "so" : "en")} className="p-2 text-foreground">
             <Globe className="w-4 h-4" />
-          </button>
-          <button onClick={toggleTheme} className="p-2 text-foreground">
-            {theme === "light" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
           </button>
           <button className="text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
             {mobileOpen ? <X size={24} /> : <Menu size={24} />}
