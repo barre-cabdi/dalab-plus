@@ -51,6 +51,22 @@ const CustomerRegister = () => {
     setIsSubmitting(true);
     const customer = { id: customerId, ...formData, tableId, businessId, points: 0, level: "Bronze", totalOrders: 0, totalSpent: 0, registeredAt: new Date().toISOString() };
     localStorage.setItem("dp_customer", JSON.stringify(customer));
+    // Also save to dp_customers store so admin can see this customer
+    const existing = getCustomers(businessId);
+    const alreadyExists = existing.find(c => c.phone === formData.phone);
+    if (!alreadyExists) {
+      saveCustomer({
+        id: customerId,
+        businessId,
+        name: formData.name,
+        phone: formData.phone,
+        email: "",
+        totalOrders: 0,
+        totalSpent: 0,
+        loyaltyPoints: 0,
+        registeredAt: new Date().toISOString(),
+      });
+    }
     setTimeout(() => { navigate(`/customer-home?table=${tableId}&business=${businessId}`); }, 1500);
   };
 

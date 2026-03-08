@@ -116,16 +116,16 @@ const CustomerMenu = () => {
           </div>
           <div className="flex items-center gap-6">
             {[
+              { key: "home", label: "Home" },
               { key: "menu", label: "Menu" },
               { key: "orders", label: "My Orders" },
-              { key: "loyalty", label: "Loyalty" },
             ].map(nav => (
               <button
                 key={nav.key}
                 onClick={() => {
                   setActiveNav(nav.key);
+                  if (nav.key === "home") navigate(`/customer-home?business=${businessId}&table=${tableId}`);
                   if (nav.key === "orders") navigate(`/customer`);
-                  if (nav.key === "loyalty") navigate(`/customer`);
                 }}
                 className={`text-sm font-medium transition-colors duration-200 relative pb-1 ${
                   activeNav === nav.key
