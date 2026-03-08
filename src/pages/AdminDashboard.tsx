@@ -38,6 +38,7 @@ import ReportsTab from "@/components/admin/ReportsTab";
 import StaffTab from "@/components/admin/StaffTab";
 import CustomersTab from "@/components/admin/CustomersTab";
 import HotelManagementTab from "@/components/admin/HotelManagementTab";
+import HotelReportTab from "@/components/admin/HotelReportTab";
 
 const emojiOptions = ["🍛","🍔","🐟","🥗","🍵","🥤","🫓","🍝","🍰","🍦","🦞","🥭","☕","🍕","🥩","🍗","🌮","🍣","🧁","🥚","🍳","🥐","🧀","🍱"];
 
@@ -512,6 +513,19 @@ const AdminDashboard = () => {
         return <HotelManagementTab businessId={business.id} initialView={hotelViewMap[activeTab] || "overview"} />;
       }
 
+      case "hotel-report-overview":
+      case "hotel-report-sales":
+      case "hotel-report-occupancy":
+      case "hotel-report-guests": {
+        const hotelReportViewMap: Record<string, string> = {
+          "hotel-report-overview": "overview",
+          "hotel-report-sales": "sales",
+          "hotel-report-occupancy": "occupancy",
+          "hotel-report-guests": "guests",
+        };
+        return <HotelReportTab businessId={business.id} initialView={hotelReportViewMap[activeTab] || "overview"} />;
+      }
+
       case "settings":
         return <AdminSettings business={business} onUpdate={refreshData} />;
 
@@ -539,6 +553,10 @@ const AdminDashboard = () => {
     "hotel-rooms": "Room Management",
     "hotel-bookings": "Bookings",
     "hotel-guests": "Guest Directory",
+    "hotel-report-overview": "Hotel Report Overview",
+    "hotel-report-sales": "Hotel Sales Report",
+    "hotel-report-occupancy": "Occupancy Report",
+    "hotel-report-guests": "Guest Analytics",
     settings: "Settings",
   };
 

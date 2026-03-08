@@ -40,6 +40,15 @@ const hotelNavItems = [
       { id: "hotel-guests", label: "Guests", icon: Contact },
     ],
   },
+  {
+    id: "hotel-report", label: "Hotel Reports", icon: BarChart3,
+    children: [
+      { id: "hotel-report-overview", label: "Overview", icon: BarChart3 },
+      { id: "hotel-report-sales", label: "Hotel Sales", icon: DollarSign },
+      { id: "hotel-report-occupancy", label: "Occupancy", icon: BedDouble },
+      { id: "hotel-report-guests", label: "Guest Analytics", icon: Users },
+    ],
+  },
 ];
 
 interface AdminSidebarProps {
@@ -54,7 +63,8 @@ const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollaps
   const isHotel = business.type === "hotel";
   const navItems = isHotel ? [...baseNavItems.slice(0, 1), ...hotelNavItems, ...baseNavItems.slice(1)] : baseNavItems;
   const [reportsOpen, setReportsOpen] = useState(activeTab.startsWith("reports"));
-  const [hotelOpen, setHotelOpen] = useState(activeTab.startsWith("hotel"));
+  const [hotelOpen, setHotelOpen] = useState(activeTab.startsWith("hotel-") && !activeTab.startsWith("hotel-report"));
+  const [hotelReportOpen, setHotelReportOpen] = useState(activeTab.startsWith("hotel-report"));
 
   return (
     <motion.aside
@@ -86,8 +96,8 @@ const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollaps
         {navItems.map((item) => {
           const isActive = activeTab === item.id || (item.children && activeTab.startsWith(item.id));
           const hasChildren = item.children && !collapsed;
-          const isOpen = item.id === "reports" ? reportsOpen : item.id === "hotel" ? hotelOpen : false;
-          const setOpen = item.id === "reports" ? setReportsOpen : item.id === "hotel" ? setHotelOpen : () => {};
+          const isOpen = item.id === "reports" ? reportsOpen : item.id === "hotel" ? hotelOpen : item.id === "hotel-report" ? hotelReportOpen : false;
+          const setOpen = item.id === "reports" ? setReportsOpen : item.id === "hotel" ? setHotelOpen : item.id === "hotel-report" ? setHotelReportOpen : () => {};
 
           return (
             <div key={item.id}>
