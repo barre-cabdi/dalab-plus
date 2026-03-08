@@ -10,14 +10,15 @@ interface ReportsTabProps {
   menuItems: MenuItem[];
   categories: Category[];
   businessId: string;
+  initialView?: string;
 }
 
 const COLORS = ["hsl(152 60% 54%)", "hsl(45 100% 55%)", "hsl(222 60% 50%)", "hsl(0 84% 60%)", "hsl(280 60% 55%)", "hsl(200 80% 50%)"];
 
 type ReportView = "sales" | "items" | "categories" | "waiters";
 
-const ReportsTab = ({ orders, menuItems, categories, businessId }: ReportsTabProps) => {
-  const [view, setView] = useState<ReportView>("sales");
+const ReportsTab = ({ orders, menuItems, categories, businessId, initialView }: ReportsTabProps) => {
+  const [view, setView] = useState<ReportView>((initialView as ReportView) || "sales");
 
   const tabs = [
     { id: "sales" as const, label: "Sales Report", icon: DollarSign },

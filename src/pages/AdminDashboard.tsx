@@ -492,8 +492,10 @@ const AdminDashboard = () => {
       case "reports-sales":
       case "reports-items":
       case "reports-categories":
-      case "reports-waiters":
-        return <ReportsTab orders={orders} menuItems={menuItems} categories={categories} businessId={business.id} />;
+      case "reports-waiters": {
+        const viewMap: Record<string, string> = { "reports-sales": "sales", "reports-items": "items", "reports-categories": "categories", "reports-waiters": "waiters" };
+        return <ReportsTab orders={orders} menuItems={menuItems} categories={categories} businessId={business.id} initialView={viewMap[activeTab] || "sales"} />;
+      }
 
       case "staff":
         return <StaffTab businessId={business.id} />;
