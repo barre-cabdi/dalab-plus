@@ -90,23 +90,53 @@ const AdminDashboard = () => {
     }
   }, [business]);
 
+  // Play notification sound
+  const playNotificationSound = () => {
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      const ctx = audioContextRef.current;
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      oscillator.frequency.setValueAtTime(800, ctx.currentTime);
+      oscillator.frequency.setValueAtTime(1000, ctx.currentTime + 0.1);
+      oscillator.frequency.setValueAtTime(800, ctx.currentTime + 0.2);
+      gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.5);
+    } catch (e) { /* silently fail */ }
+  };
+
   const refreshData = () => {
     if (!business) return;
     setCategories(getCategories(business.id));
     setMenuItemsState(getMenuItems(business.id));
     setTables(getTables(business.id));
-    setOrders(getOrders(business.id));
+    const currentOrders = getOrders(business.id);
+    
+    // Check for new orders and play sound
+    if (prevOrderCountRef.current > 0 && currentOrders.length > prevOrderCountRef.current) {
+      const newCount = currentOrders.length - prevOrderCountRef.current;
+      playNotificationSound();
+      toast.success(`🔔 ${newCount} dalab cusub ayaa soo galay!`, { duration: 5000 });
+    }
+    prevOrderCountRef.current = currentOrders.length;
+    
+    setOrders(currentOrders);
     const stored = localStorage.getItem("dp_active_business");
     if (stored) setBusiness(JSON.parse(stored));
     // Build notifications from recent orders
-    const allOrders = getOrders(business.id);
-    const recent = allOrders.filter(o => {
+    const recent = currentOrders.filter(o => {
       const diff = Date.now() - new Date(o.createdAt).getTime();
       return diff < 24 * 60 * 60 * 1000;
     });
-    setNotifications(recent.slice(-5).reverse().map(o => ({
+    setNotifications(recent.slice(-10).reverse().map(o => ({
       id: o.id,
-      text: `Order ${o.id.slice(0, 10)} - ${o.status} ($${o.total.toFixed(2)})`,
+      text: `${(o as any).customerName || "Guest"} - ${o.status} ($${o.total.toFixed(2)})`,
       time: new Date(o.createdAt).toLocaleTimeString(),
     })));
   };
