@@ -123,7 +123,6 @@ const CustomerMenu = () => {
                 key={nav.key}
                 onClick={() => {
                   setActiveNav(nav.key);
-                  if (nav.key === "home") navigate(`/customer-home?business=${businessId}&table=${tableId}`);
                   if (nav.key === "orders") navigate(`/customer`);
                 }}
                 className={`text-sm font-medium transition-colors duration-200 relative pb-1 ${
