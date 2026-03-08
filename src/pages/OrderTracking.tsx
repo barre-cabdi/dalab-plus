@@ -20,6 +20,7 @@ const OrderTracking = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [customer, setCustomer] = useState<any>(null);
   const [showReward, setShowReward] = useState(false);
+  const [messages, setMessages] = useState<any[]>([]);
 
   useEffect(() => {
     const orders = JSON.parse(localStorage.getItem("dp_orders") || "[]");
