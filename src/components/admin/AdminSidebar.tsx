@@ -4,12 +4,13 @@ import {
   LayoutDashboard, UtensilsCrossed, Grid3X3, QrCode,
   ClipboardList, Heart, BarChart3, Settings, LogOut,
   ChevronLeft, ChevronRight, Users, UserCheck,
-  DollarSign, Package, Layers, UserCog,
+  DollarSign, Package, Layers, UserCog, Hotel,
+  BedDouble, CalendarCheck, BookOpen, Contact,
 } from "lucide-react";
 import { Business } from "@/lib/store";
 import { useState } from "react";
 
-const navItems = [
+const baseNavItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "menu", label: "Menu", icon: UtensilsCrossed },
   { id: "tables", label: "Tables", icon: Grid3X3 },
@@ -25,6 +26,18 @@ const navItems = [
       { id: "reports-items", label: "Item Report", icon: Package },
       { id: "reports-categories", label: "Category Report", icon: Layers },
       { id: "reports-waiters", label: "Waiter Report", icon: UserCheck },
+    ],
+  },
+];
+
+const hotelNavItems = [
+  {
+    id: "hotel", label: "Hotel Management", icon: Hotel,
+    children: [
+      { id: "hotel-overview", label: "Overview", icon: LayoutDashboard },
+      { id: "hotel-rooms", label: "Rooms", icon: BedDouble },
+      { id: "hotel-bookings", label: "Bookings", icon: CalendarCheck },
+      { id: "hotel-guests", label: "Guests", icon: Contact },
     ],
   },
 ];
