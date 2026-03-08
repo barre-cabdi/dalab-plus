@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import {
   UtensilsCrossed, Hotel, Coffee, Phone, Mail, MapPin,
-  Clock, ShoppingBag, ChevronRight, Info,
+  Clock, Info,
 } from "lucide-react";
 import { getBusinesses, Business, getDefaultServices, BusinessService } from "@/lib/store";
 
