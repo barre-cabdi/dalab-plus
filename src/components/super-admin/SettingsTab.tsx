@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings, Bell, Shield, Globe, Save, Database, RefreshCw, CreditCard, Edit2, Check, X, Plus, Trash2 } from "lucide-react";
+import { Settings, Bell, Shield, Globe, Save, Database, RefreshCw, CreditCard, Edit2, Check, X, Plus, Trash2, Upload, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,6 +36,10 @@ const savePlans = (plans: SubscriptionPlan[]) => {
 };
 
 const SettingsTab = () => {
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const [platformLogo, setPlatformLogo] = useState<string>(
+    localStorage.getItem("dp_platform_logo") || ""
+  );
   const [settings, setSettings] = useState({
     platformName: "DALABplus+",
     supportEmail: "support@dalabplus.com",
@@ -46,6 +50,29 @@ const SettingsTab = () => {
     maintenanceMode: false,
     analyticsEnabled: true,
   });
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Logo must be under 2MB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      setPlatformLogo(base64);
+      localStorage.setItem("dp_platform_logo", base64);
+      toast.success("Logo uploaded! ✅");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeLogo = () => {
+    setPlatformLogo("");
+    localStorage.removeItem("dp_platform_logo");
+    toast.success("Logo removed");
+  };
 
   const [plans, setPlans] = useState<SubscriptionPlan[]>(getPlans());
   const [editingPlan, setEditingPlan] = useState<string | null>(null);
@@ -266,6 +293,38 @@ const SettingsTab = () => {
           <h3 className="font-display font-bold text-foreground">General Settings</h3>
         </div>
         <div className="space-y-4">
+          {/* Logo Upload */}
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">Platform Logo</Label>
+            <div className="flex items-center gap-4">
+              <div
+                onClick={() => logoInputRef.current?.click()}
+                className="w-20 h-20 rounded-xl border-2 border-dashed border-border hover:border-primary/50 bg-muted/30 flex items-center justify-center cursor-pointer transition-colors overflow-hidden group"
+              >
+                {platformLogo ? (
+                  <img src={platformLogo} alt="Platform logo" className="w-full h-full object-contain p-1" />
+                ) : (
+                  <div className="flex flex-col items-center gap-1 text-muted-foreground group-hover:text-primary transition-colors">
+                    <ImageIcon className="w-6 h-6" />
+                    <span className="text-[9px]">Upload</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col gap-2">
+                <Button variant="outline" size="sm" onClick={() => logoInputRef.current?.click()}>
+                  <Upload className="w-3.5 h-3.5 mr-1.5" /> Choose Logo
+                </Button>
+                {platformLogo && (
+                  <Button variant="ghost" size="sm" onClick={removeLogo} className="text-destructive hover:text-destructive">
+                    <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Remove
+                  </Button>
+                )}
+                <p className="text-[10px] text-muted-foreground">PNG, JPG, SVG. Max 2MB</p>
+              </div>
+              <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Platform Name</Label>
