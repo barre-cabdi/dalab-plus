@@ -422,6 +422,92 @@ const CustomerMenu = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Active Order Tracker */}
+      <AnimatePresence>
+        {showOrderTracker && activeOrders.length > 0 && cartCount === 0 && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed bottom-6 left-4 right-4 md:left-auto md:right-8 md:max-w-sm z-50"
+          >
+            <div className="bg-card border border-border rounded-2xl shadow-hero overflow-hidden">
+              <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="font-display font-bold text-sm text-foreground">Dalabyadaada ({activeOrders.length})</span>
+                </div>
+                <button onClick={() => setShowOrderTracker(false)} className="text-muted-foreground hover:text-foreground">
+                  <XCircle className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="max-h-[50vh] overflow-y-auto">
+                {activeOrders.map(o => {
+                  const statusConfig: Record<string, { icon: any; label: string; color: string }> = {
+                    pending: { icon: Clock, label: "La sugayo...", color: "text-secondary" },
+                    preparing: { icon: ChefHat, label: "La kariyaa 👨‍🍳", color: "text-accent" },
+                    ready: { icon: Package, label: "Diyaar! ✅", color: "text-green-600" },
+                  };
+                  const status = statusConfig[o.status] || statusConfig.pending;
+                  const StatusIcon = status.icon;
+                  const msgs = orderMessages.filter((m: any) => m.orderId === o.id);
+
+                  return (
+                    <div key={o.id} className="p-4 border-b border-border/50 last:border-0">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <motion.div
+                            animate={{ scale: [1, 1.2, 1] }}
+                            transition={{ repeat: Infinity, duration: 2 }}
+                          >
+                            <StatusIcon className={`w-5 h-5 ${status.color}`} />
+                          </motion.div>
+                          <span className={`text-sm font-semibold ${status.color}`}>{status.label}</span>
+                        </div>
+                        <span className="font-display font-bold text-sm text-accent">${o.total.toFixed(2)}</span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground mb-1">
+                        {o.items.map((i: any) => `${i.quantity}× ${i.name}`).join(", ")}
+                      </p>
+                      <div className="flex gap-1 mt-2">
+                        {["pending", "preparing", "ready"].map((step, idx) => (
+                          <div
+                            key={step}
+                            className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
+                              ["pending", "preparing", "ready"].indexOf(o.status) >= idx
+                                ? "bg-secondary"
+                                : "bg-muted"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      {/* Admin messages */}
+                      {msgs.length > 0 && (
+                        <div className="mt-2 space-y-1">
+                          {msgs.slice(-2).map((msg: any) => (
+                            <div key={msg.id} className="flex items-start gap-1.5 bg-secondary/10 rounded-lg px-2.5 py-1.5">
+                              <MessageSquare className="w-3 h-3 text-secondary mt-0.5 shrink-0" />
+                              <p className="text-[11px] text-foreground">{msg.message}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <button
+                        onClick={() => navigate(`/order-tracking/${o.id}`)}
+                        className="text-[11px] text-secondary font-medium mt-2 flex items-center gap-1 hover:underline"
+                      >
+                        Faahfaahin <ChevronRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
