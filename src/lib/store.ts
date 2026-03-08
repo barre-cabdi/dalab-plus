@@ -156,6 +156,56 @@ export const getCustomers = (businessId: string): Customer[] => {
 export const saveCustomer = (customer: Customer) => { const all: Customer[] = JSON.parse(localStorage.getItem(CUSTOMERS_KEY) || "[]"); all.push(customer); localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(all)); };
 export const updateCustomer = (id: string, updates: Partial<Customer>) => { const all: Customer[] = JSON.parse(localStorage.getItem(CUSTOMERS_KEY) || "[]"); localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(all.map(c => c.id === id ? { ...c, ...updates } : c))); };
 
+export interface HotelRoom {
+  id: string;
+  businessId: string;
+  roomNumber: string;
+  type: "single" | "double" | "suite" | "deluxe" | "family";
+  floor: number;
+  pricePerNight: number;
+  status: "available" | "occupied" | "maintenance" | "reserved";
+  amenities: string[];
+  image: string;
+  maxGuests: number;
+}
+
+export interface HotelBooking {
+  id: string;
+  businessId: string;
+  roomId: string;
+  guestName: string;
+  guestPhone: string;
+  guestEmail: string;
+  guestNationality: string;
+  idNumber: string;
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  totalPrice: number;
+  status: "confirmed" | "checked-in" | "checked-out" | "cancelled";
+  specialRequests: string;
+  createdAt: string;
+}
+
+const HOTEL_ROOMS_KEY = "dp_hotel_rooms";
+const HOTEL_BOOKINGS_KEY = "dp_hotel_bookings";
+
+export const getHotelRooms = (businessId: string): HotelRoom[] => {
+  const all: HotelRoom[] = JSON.parse(localStorage.getItem(HOTEL_ROOMS_KEY) || "[]");
+  return all.filter(r => r.businessId === businessId);
+};
+export const saveHotelRoom = (room: HotelRoom) => { const all: HotelRoom[] = JSON.parse(localStorage.getItem(HOTEL_ROOMS_KEY) || "[]"); all.push(room); localStorage.setItem(HOTEL_ROOMS_KEY, JSON.stringify(all)); };
+export const updateHotelRoom = (id: string, updates: Partial<HotelRoom>) => { const all: HotelRoom[] = JSON.parse(localStorage.getItem(HOTEL_ROOMS_KEY) || "[]"); localStorage.setItem(HOTEL_ROOMS_KEY, JSON.stringify(all.map(r => r.id === id ? { ...r, ...updates } : r))); };
+export const deleteHotelRoom = (id: string) => { const all: HotelRoom[] = JSON.parse(localStorage.getItem(HOTEL_ROOMS_KEY) || "[]"); localStorage.setItem(HOTEL_ROOMS_KEY, JSON.stringify(all.filter(r => r.id !== id))); };
+
+export const getHotelBookings = (businessId: string): HotelBooking[] => {
+  const all: HotelBooking[] = JSON.parse(localStorage.getItem(HOTEL_BOOKINGS_KEY) || "[]");
+  return all.filter(b => b.businessId === businessId);
+};
+export const saveHotelBooking = (booking: HotelBooking) => { const all: HotelBooking[] = JSON.parse(localStorage.getItem(HOTEL_BOOKINGS_KEY) || "[]"); all.push(booking); localStorage.setItem(HOTEL_BOOKINGS_KEY, JSON.stringify(all)); };
+export const updateHotelBooking = (id: string, updates: Partial<HotelBooking>) => { const all: HotelBooking[] = JSON.parse(localStorage.getItem(HOTEL_BOOKINGS_KEY) || "[]"); localStorage.setItem(HOTEL_BOOKINGS_KEY, JSON.stringify(all.map(b => b.id === id ? { ...b, ...updates } : b))); };
+export const deleteHotelBooking = (id: string) => { const all: HotelBooking[] = JSON.parse(localStorage.getItem(HOTEL_BOOKINGS_KEY) || "[]"); localStorage.setItem(HOTEL_BOOKINGS_KEY, JSON.stringify(all.filter(b => b.id !== id))); };
+
 export const generateId = (prefix: string) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 
 export const seedDemoData = (businessId: string) => {
