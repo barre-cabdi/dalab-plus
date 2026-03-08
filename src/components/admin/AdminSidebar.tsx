@@ -51,7 +51,10 @@ interface AdminSidebarProps {
 }
 
 const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollapsed }: AdminSidebarProps) => {
+  const isHotel = business.type === "hotel";
+  const navItems = isHotel ? [...baseNavItems.slice(0, 1), ...hotelNavItems, ...baseNavItems.slice(1)] : baseNavItems;
   const [reportsOpen, setReportsOpen] = useState(activeTab.startsWith("reports"));
+  const [hotelOpen, setHotelOpen] = useState(activeTab.startsWith("hotel"));
 
   return (
     <motion.aside
