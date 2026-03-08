@@ -516,8 +516,14 @@ const AdminDashboard = () => {
     tables: "Table Management",
     orders: "Order Management",
     qr: "QR Codes",
+    staff: "Staff Management",
+    customers: "Customers",
     loyalty: "Loyalty Program",
     reports: "Reports",
+    "reports-sales": "Sales Report",
+    "reports-items": "Item Report",
+    "reports-categories": "Category Report",
+    "reports-waiters": "Waiter Report",
     settings: "Settings",
   };
 
