@@ -40,6 +40,15 @@ const hotelNavItems = [
       { id: "hotel-guests", label: "Guests", icon: Contact },
     ],
   },
+  {
+    id: "hotel-report", label: "Hotel Reports", icon: BarChart3,
+    children: [
+      { id: "hotel-report-overview", label: "Overview", icon: BarChart3 },
+      { id: "hotel-report-sales", label: "Hotel Sales", icon: DollarSign },
+      { id: "hotel-report-occupancy", label: "Occupancy", icon: BedDouble },
+      { id: "hotel-report-guests", label: "Guest Analytics", icon: Users },
+    ],
+  },
 ];
 
 interface AdminSidebarProps {
