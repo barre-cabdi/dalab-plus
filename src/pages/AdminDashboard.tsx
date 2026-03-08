@@ -76,7 +76,13 @@ const AdminDashboard = () => {
     else navigate("/login");
   }, [navigate]);
 
-  useEffect(() => { if (business) refreshData(); }, [business]);
+  useEffect(() => {
+    if (business) {
+      refreshData();
+      const interval = setInterval(refreshData, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [business]);
 
   const refreshData = () => {
     if (!business) return;
