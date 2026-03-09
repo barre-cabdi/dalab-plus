@@ -346,7 +346,7 @@ const OrderHistoryTab = ({ businessId }: OrderHistoryTabProps) => {
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setViewOrder(o)} title="View Details">
                       <Eye className="w-3.5 h-3.5" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => printOrder(o)} title="Print Receipt">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handlePrintReceipt(o)} title="Print Receipt">
                       <Printer className="w-3.5 h-3.5" />
                     </Button>
                   </div>
