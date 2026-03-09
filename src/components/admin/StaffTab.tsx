@@ -51,7 +51,10 @@ const StaffTab = ({ businessId }: StaffTabProps) => {
       setEditing(null);
       setForm({ name: "", phone: "", nationality: "", jobTitle: "Waiter", customJobTitle: "", shifts: "Morning", startTime: "08:00", endTime: "16:00", username: "", password: "" });
     }
-    setDialog(true);LoginRole = form.jobTitle === "Waiter" || form.jobTitle === "Hotel Manager" || (form.jobTitle === "Other" && (form.customJobTitle.toLowerCase().includes("waiter") || form.customJobTitle.toLowerCase().includes("hotel manager")includes("waiter"));
+    setDialog(true);
+  };
+
+  const isLoginRole = form.jobTitle === "Waiter" || form.jobTitle === "Hotel Manager" || (form.jobTitle === "Other" && (form.customJobTitle.toLowerCase().includes("waiter") || form.customJobTitle.toLowerCase().includes("hotel manager")));
 
   const handleSave = () => {
     if (!form.name.trim() || !form.phone.trim()) { toast.error("Name and phone required"); return; }
