@@ -762,6 +762,7 @@ const AdminDashboard = () => {
     "hotel-report-occupancy": "Occupancy Report",
     "hotel-report-guests": "Guest Analytics",
     settings: "Settings",
+    "receipt-settings": "Receipt Settings",
   };
 
   return (
