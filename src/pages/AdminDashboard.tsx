@@ -357,61 +357,7 @@ const AdminDashboard = () => {
         );
 
       case "menu":
-        return (
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <div><h2 className="text-xl font-display font-bold">Menu Items</h2><p className="text-sm text-muted-foreground">{menuItems.length} items</p></div>
-              <div className="flex gap-3">
-                <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><Input placeholder="Search..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-9 w-48" /></div>
-                <Button onClick={() => openMenuDialog()} variant="hero"><Plus className="w-4 h-4 mr-1" /> Add Item</Button>
-              </div>
-            </div>
-            <div className="flex gap-2 mb-4 flex-wrap">
-              <Button variant="outline" size="sm" className="text-xs" onClick={() => setSearchQuery("")}>All</Button>
-              {categories.map(c => (
-                <Button key={c.id} variant="outline" size="sm" className="text-xs" onClick={() => setSearchQuery(c.name)}>
-                  {isImageUrl(c.icon) ? <img src={c.icon} alt="" className="w-4 h-4 rounded object-cover mr-1" /> : <span className="mr-1">{c.icon}</span>}
-                  {c.name}
-                </Button>
-              ))}
-              <Button variant="ghost" size="sm" className="text-xs text-accent" onClick={() => setActiveTab("categories")}>
-                Manage Categories
-              </Button>
-            </div>
-            <div className="bg-card border border-border rounded-xl shadow-card-custom overflow-hidden">
-              <Table>
-                <TableHeader><TableRow><TableHead>Item</TableHead><TableHead>Category</TableHead><TableHead>Price</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
-                <TableBody>
-                  {filteredMenuItems.length === 0 ? (
-                    <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No menu items found</TableCell></TableRow>
-                  ) : filteredMenuItems.map(item => (
-                    <TableRow key={item.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-muted flex items-center justify-center shrink-0">
-                            {isImageUrl(item.image) ? (
-                              <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                            ) : (
-                              <span className="text-2xl">{item.image}</span>
-                            )}
-                          </div>
-                          <div><p className="font-medium text-sm">{item.name}</p><p className="text-xs text-muted-foreground">{item.description}</p></div>
-                        </div>
-                      </TableCell>
-                      <TableCell><Badge variant="secondary">{getCategoryName(item.categoryId)}</Badge></TableCell>
-                      <TableCell className="font-semibold text-accent">${item.price.toFixed(2)}</TableCell>
-                      <TableCell><Badge variant={item.available ? "secondary" : "destructive"}>{item.available ? "Available" : "Unavailable"}</Badge></TableCell>
-                      <TableCell className="text-right space-x-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openMenuDialog(item)}><Pencil className="w-4 h-4" /></Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteConfirm({ type: "menu", id: item.id, name: item.name })}><Trash2 className="w-4 h-4 text-destructive" /></Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-        );
+        return <MenuManagementTab businessId={business.id} onDataChange={refreshData} />;
 
       case "categories":
         return (
