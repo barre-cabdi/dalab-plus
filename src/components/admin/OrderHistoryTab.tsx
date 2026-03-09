@@ -185,42 +185,13 @@ const OrderHistoryTab = ({ businessId }: OrderHistoryTabProps) => {
     toast.success("CSV soo dejiyay ✓");
   };
 
-  const printOrder = (order: Order) => {
-    const biz = getBusinessInfo();
-    const printWindow = window.open("", "_blank", "width=400,height=600");
-    if (!printWindow) return;
-    
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html><head><title>Order #${order.id.slice(0, 10)}</title>
-      <style>
-        body { font-family: Arial, sans-serif; padding: 20px; max-width: 300px; margin: 0 auto; }
-        h1 { font-size: 18px; margin-bottom: 5px; text-align: center; }
-        h2 { font-size: 14px; color: #666; margin-bottom: 15px; text-align: center; font-weight: normal; }
-        .divider { border-top: 1px dashed #ccc; margin: 10px 0; }
-        .item { display: flex; justify-content: space-between; font-size: 12px; margin: 5px 0; }
-        .total { font-weight: bold; font-size: 16px; margin-top: 10px; }
-        .footer { font-size: 10px; color: #999; text-align: center; margin-top: 20px; }
-        .info { font-size: 11px; color: #666; margin: 3px 0; }
-      </style></head>
-      <body>
-        <h1>${biz.name}</h1>
-        <h2>Order Receipt</h2>
-        <div class="divider"></div>
-        <p class="info"><strong>Order:</strong> #${order.id.slice(0, 10)}</p>
-        <p class="info"><strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
-        <p class="info"><strong>Customer:</strong> ${(order as any).customerName || "Guest"}</p>
-        <p class="info"><strong>Table:</strong> #${order.tableId}</p>
-        <div class="divider"></div>
-        ${order.items.map(i => `<div class="item"><span>${i.quantity}× ${i.name}</span><span>$${(i.price * i.quantity).toFixed(2)}</span></div>`).join("")}
-        <div class="divider"></div>
-        <div class="item total"><span>TOTAL</span><span>$${order.total.toFixed(2)}</span></div>
-        <div class="divider"></div>
-        <p class="footer">Thank you for your order!</p>
-        <script>window.onload = () => { window.print(); }</script>
-      </body></html>
-    `);
-    printWindow.document.close();
+  const handlePrintReceipt = (order: Order) => {
+    const business = getBusinesses().find(b => b.id === businessId);
+    if (!business) {
+      toast.error("Business not found");
+      return;
+    }
+    printReceipt({ order, business, servedBy: "Staff" });
   };
 
   const clearFilters = () => {
