@@ -729,6 +729,9 @@ const AdminDashboard = () => {
       case "settings":
         return <AdminSettings business={business} onUpdate={refreshData} />;
 
+      case "receipt-settings":
+        return <ReceiptSettings business={business} />;
+
       default:
         return null;
     }
