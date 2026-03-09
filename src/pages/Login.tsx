@@ -48,7 +48,7 @@ const Login = () => {
         return;
       }
 
-      // Check waiter login
+      // Check waiter / hotel manager login
       const waiter = getStaffByUsername(username);
       if (waiter) {
         if (waiter.password !== password) {
@@ -59,6 +59,16 @@ const Login = () => {
         const businesses = getBusinesses();
         const waiterBiz = businesses.find(b => b.id === waiter.businessId);
         if (waiterBiz) {
+          // Hotel Manager → hotel manager dashboard
+          if (waiter.jobTitle.toLowerCase() === "hotel manager") {
+            localStorage.setItem("dp_active_hotel_manager", JSON.stringify(waiter));
+            localStorage.setItem("dp_active_business", JSON.stringify(waiterBiz));
+            toast.success(`${t.welcome}, ${waiter.name}! (Hotel Manager)`);
+            navigate("/hotel-manager");
+            setLoading(false);
+            return;
+          }
+          // Regular waiter
           localStorage.setItem("dp_active_waiter", JSON.stringify(waiter));
           localStorage.setItem("dp_active_business", JSON.stringify(waiterBiz));
           toast.success(`${t.welcome}, ${waiter.name}!`);

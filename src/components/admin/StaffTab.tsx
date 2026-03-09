@@ -16,7 +16,7 @@ import {
 import { StaffMember, getStaff, saveStaff, updateStaff, deleteStaff, generateId } from "@/lib/store";
 import { toast } from "sonner";
 
-const JOB_TITLES = ["Waiter", "Chef", "Cashier", "Manager", "Cleaner", "Security", "Other"];
+const JOB_TITLES = ["Waiter", "Hotel Manager", "Hotel Manager", "Chef", "Cashier", "Manager", "Cleaner", "Security", "Other"];
 const SHIFTS = ["Morning", "Afternoon", "Evening", "Night", "Full Day"];
 
 interface StaffTabProps {
@@ -54,7 +54,7 @@ const StaffTab = ({ businessId }: StaffTabProps) => {
     setDialog(true);
   };
 
-  const isWaiter = form.jobTitle === "Waiter" || (form.jobTitle === "Other" && form.customJobTitle.toLowerCase().includes("waiter"));
+  const isLoginRole = form.jobTitle === "Waiter" || form.jobTitle === "Hotel Manager" || (form.jobTitle === "Other" && (form.customJobTitle.toLowerCase().includes("waiter") || form.customJobTitle.toLowerCase().includes("hotel manager")));
 
   const handleSave = () => {
     if (!form.name.trim() || !form.phone.trim()) { toast.error("Name and phone required"); return; }
@@ -65,8 +65,8 @@ const StaffTab = ({ businessId }: StaffTabProps) => {
       name: form.name, phone: form.phone, nationality: form.nationality,
       jobTitle: actualTitle, shifts: form.shifts,
       startTime: form.startTime, endTime: form.endTime,
-      username: isWaiter ? form.username : undefined,
-      password: isWaiter ? form.password : undefined,
+      username: isLoginRole ? form.username : undefined,
+      password: isLoginRole ? form.password : undefined,
     };
 
     if (editing) {
@@ -240,16 +240,20 @@ const StaffTab = ({ businessId }: StaffTabProps) => {
                 <Input type="time" value={form.endTime} onChange={e => setForm({ ...form, endTime: e.target.value })} /></div>
             </div>
 
-            {isWaiter && (
+            {isLoginRole && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                 className="p-4 rounded-xl bg-accent/5 border border-accent/20 space-y-3">
                 <p className="text-sm font-semibold text-accent flex items-center gap-2">
-                  <Shield className="w-4 h-4" /> Waiter Login Credentials
+                  <Shield className="w-4 h-4" /> {form.jobTitle === "Hotel Manager" ? "Hotel Manager Login" : "Waiter Login"} Credentials
                 </p>
-                <p className="text-xs text-muted-foreground">This waiter will be able to log in and place orders for customers.</p>
+                <p className="text-xs text-muted-foreground">
+                  {form.jobTitle === "Hotel Manager" 
+                    ? "This hotel manager will be able to log in and manage hotel operations only (sub-admin)."
+                    : "This waiter will be able to log in and place orders for customers."}
+                </p>
                 <div className="grid grid-cols-2 gap-3">
                   <div><label className="text-sm font-medium mb-1 block">Username</label>
-                    <Input value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} placeholder="e.g. waiter_ahmed" /></div>
+                    <Input value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} placeholder={form.jobTitle === "Hotel Manager" ? "e.g. hotel_manager1" : "e.g. waiter_ahmed"} /></div>
                   <div><label className="text-sm font-medium mb-1 block">Password</label>
                     <Input type="text" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} placeholder="e.g. pass1234" /></div>
                 </div>
