@@ -16,7 +16,7 @@ import {
 import { StaffMember, getStaff, saveStaff, updateStaff, deleteStaff, generateId } from "@/lib/store";
 import { toast } from "sonner";
 
-const JOB_TITLES = ["Waiter", "Hotel Manager", "Chef", "Cashier", "Manager", "Cleaner", "Security", "Other"];
+const JOB_TITLES = ["Waiter", "Hotel Manager", "Hotel Manager", "Chef", "Cashier", "Manager", "Cleaner", "Security", "Other"];
 const SHIFTS = ["Morning", "Afternoon", "Evening", "Night", "Full Day"];
 
 interface StaffTabProps {
@@ -51,10 +51,7 @@ const StaffTab = ({ businessId }: StaffTabProps) => {
       setEditing(null);
       setForm({ name: "", phone: "", nationality: "", jobTitle: "Waiter", customJobTitle: "", shifts: "Morning", startTime: "08:00", endTime: "16:00", username: "", password: "" });
     }
-    setDialog(true);
-  };
-
-  const isWaiter = form.jobTitle === "Waiter" || (form.jobTitle === "Other" && form.customJobTitle.toLowerCase().includes("waiter"));
+    setDialog(true);LoginRole = form.jobTitle === "Waiter" || form.jobTitle === "Hotel Manager" || (form.jobTitle === "Other" && (form.customJobTitle.toLowerCase().includes("waiter") || form.customJobTitle.toLowerCase().includes("hotel manager")includes("waiter"));
 
   const handleSave = () => {
     if (!form.name.trim() || !form.phone.trim()) { toast.error("Name and phone required"); return; }
