@@ -13,10 +13,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Order, getOrders } from "@/lib/store";
+import { Order, getOrders, getBusinesses } from "@/lib/store";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import { printReceipt } from "@/lib/printReceipt";
 
 interface OrderHistoryTabProps {
   businessId: string;
