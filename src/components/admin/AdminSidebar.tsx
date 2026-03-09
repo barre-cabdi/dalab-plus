@@ -5,7 +5,7 @@ import {
   ClipboardList, Heart, BarChart3, Settings, LogOut,
   ChevronLeft, ChevronRight, Users, UserCheck,
   DollarSign, Package, Layers, UserCog, Hotel,
-  BedDouble, CalendarCheck, BookOpen, Contact, History,
+  BedDouble, CalendarCheck, BookOpen, Contact, History, Receipt,
 } from "lucide-react";
 import { Business } from "@/lib/store";
 import { useState } from "react";
