@@ -220,7 +220,20 @@ export interface HotelBooking {
   status: "confirmed" | "checked-in" | "checked-out" | "cancelled";
   specialRequests: string;
   createdAt: string;
+  checkedInAt?: string; // actual check-in timestamp for auto-charge calculation
 }
+
+// Calculate running total for a checked-in guest based on elapsed nights
+export const calcRunningTotal = (booking: HotelBooking, pricePerNight: number): { elapsedNights: number; runningTotal: number } => {
+  if (booking.status !== "checked-in" || !booking.checkedInAt) {
+    return { elapsedNights: booking.nights, runningTotal: booking.totalPrice };
+  }
+  const checkedInTime = new Date(booking.checkedInAt).getTime();
+  const now = Date.now();
+  const elapsedMs = now - checkedInTime;
+  const elapsedNights = Math.max(1, Math.ceil(elapsedMs / (24 * 60 * 60 * 1000)));
+  return { elapsedNights, runningTotal: elapsedNights * pricePerNight };
+};
 
 const HOTEL_ROOMS_KEY = "dp_hotel_rooms";
 const HOTEL_BOOKINGS_KEY = "dp_hotel_bookings";

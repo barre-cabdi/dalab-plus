@@ -170,16 +170,28 @@ const HotelManagementTab = ({ businessId, initialView = "overview" }: HotelManag
   };
 
   const handleCheckIn = (booking: HotelBooking) => {
-    updateHotelBooking(booking.id, { status: "checked-in" });
+    updateHotelBooking(booking.id, { status: "checked-in", checkedInAt: new Date().toISOString() });
     updateHotelRoom(booking.roomId, { status: "occupied" });
     toast.success(`${booking.guestName} checked in ✅`);
     refresh();
   };
 
   const handleCheckOut = (booking: HotelBooking) => {
-    updateHotelBooking(booking.id, { status: "checked-out" });
+    // Calculate final total based on actual stay duration
+    const room = rooms.find(r => r.id === booking.roomId);
+    if (room && booking.checkedInAt) {
+      const { elapsedNights, runningTotal } = calcRunningTotal(booking, room.pricePerNight);
+      updateHotelBooking(booking.id, { 
+        status: "checked-out", 
+        nights: elapsedNights, 
+        totalPrice: runningTotal 
+      });
+      toast.success(`${booking.guestName} checked out 👋 — ${elapsedNights} night(s), $${runningTotal.toFixed(2)}`);
+    } else {
+      updateHotelBooking(booking.id, { status: "checked-out" });
+      toast.success(`${booking.guestName} checked out 👋`);
+    }
     updateHotelRoom(booking.roomId, { status: "available" });
-    toast.success(`${booking.guestName} checked out 👋`);
     refresh();
   };
 
