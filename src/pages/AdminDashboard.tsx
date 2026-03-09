@@ -91,24 +91,55 @@ const AdminDashboard = () => {
     }
   }, [business]);
 
-  // Play notification sound
-  const playNotificationSound = () => {
+  const [hasNewNotification, setHasNewNotification] = useState(false);
+  const [flashOrder, setFlashOrder] = useState(false);
+  const prevFeedbackCountRef = useRef(0);
+
+  // Play order notification sound - melodic chime
+  const playOrderSound = () => {
     try {
       if (!audioContextRef.current) {
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       }
       const ctx = audioContextRef.current;
-      const oscillator = ctx.createOscillator();
-      const gainNode = ctx.createGain();
-      oscillator.connect(gainNode);
-      gainNode.connect(ctx.destination);
-      oscillator.frequency.setValueAtTime(800, ctx.currentTime);
-      oscillator.frequency.setValueAtTime(1000, ctx.currentTime + 0.1);
-      oscillator.frequency.setValueAtTime(800, ctx.currentTime + 0.2);
-      gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-      oscillator.start(ctx.currentTime);
-      oscillator.stop(ctx.currentTime + 0.5);
+      const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.12);
+        gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.12);
+        gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + i * 0.12 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.4);
+        osc.start(ctx.currentTime + i * 0.12);
+        osc.stop(ctx.currentTime + i * 0.12 + 0.4);
+      });
+    } catch (e) { /* silently fail */ }
+  };
+
+  // Play feedback notification sound - gentle bell
+  const playFeedbackSound = () => {
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      const ctx = audioContextRef.current;
+      const notes = [880, 1108.73, 880]; // A5, C#6, A5
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.15);
+        gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.15);
+        gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + i * 0.15 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.35);
+        osc.start(ctx.currentTime + i * 0.15);
+        osc.stop(ctx.currentTime + i * 0.15 + 0.35);
+      });
     } catch (e) { /* silently fail */ }
   };
 
