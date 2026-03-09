@@ -546,6 +546,7 @@ const AdminDashboard = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.03 }}
                   className={`bg-card border rounded-xl p-5 shadow-card-custom transition-all duration-300 hover:shadow-gold ${
+                    flashOrder && i === 0 ? "border-accent shadow-[0_0_15px_rgba(234,179,8,0.5)] animate-pulse" :
                     o.status === "pending" ? "border-secondary/50" :
                     o.status === "preparing" ? "border-accent/50" :
                     o.status === "ready" ? "border-green-500/50" :
