@@ -416,65 +416,89 @@ const HotelManagementTab = ({ businessId, initialView = "overview" }: HotelManag
     </div>
   );
 
+  const activeBookingsList = filteredBookings.filter(b => b.status === "confirmed" || b.status === "checked-in");
+  const completedBookingsList = filteredBookings.filter(b => b.status === "checked-out" || b.status === "cancelled");
+
+  const renderBookingTable = (list: HotelBooking[], emptyMsg: string) => (
+    <div className="bg-card border border-border rounded-xl shadow-card-custom overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Guest</TableHead>
+            <TableHead>Room</TableHead>
+            <TableHead>Check-in</TableHead>
+            <TableHead>Check-out</TableHead>
+            <TableHead>Nights</TableHead>
+            <TableHead>Total</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {list.length === 0 ? (
+            <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">{emptyMsg}</TableCell></TableRow>
+          ) : list.map(b => {
+            const room = getRoomInfo(b.roomId);
+            return (
+              <TableRow key={b.id} className="hover:bg-muted/30 transition-colors">
+                <TableCell>
+                  <div><p className="font-medium text-sm">{b.guestName}</p><p className="text-xs text-muted-foreground">{b.guestPhone}</p></div>
+                </TableCell>
+                <TableCell><Badge variant="secondary">{room ? `Room ${room.roomNumber}` : "—"}</Badge></TableCell>
+                <TableCell className="text-sm">{b.checkIn}</TableCell>
+                <TableCell className="text-sm">{b.checkOut}</TableCell>
+                <TableCell className="text-sm font-medium">{b.nights}</TableCell>
+                <TableCell className="font-bold text-accent">${b.totalPrice.toFixed(2)}</TableCell>
+                <TableCell><Badge className={`${statusColors[b.status]} border text-[10px]`}>{b.status}</Badge></TableCell>
+                <TableCell className="text-right">
+                  <div className="flex gap-1 justify-end">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setViewBooking(b)}><Eye className="w-3.5 h-3.5" /></Button>
+                    {b.status === "confirmed" && (
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-emerald-600" onClick={() => handleCheckIn(b)} title="Check In"><LogIn className="w-3.5 h-3.5" /></Button>
+                    )}
+                    {b.status === "checked-in" && (
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-amber-600" onClick={() => handleCheckOut(b)} title="Check Out"><LogOut className="w-3.5 h-3.5" /></Button>
+                    )}
+                    {(b.status === "confirmed" || b.status === "checked-in") && (
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCancelBooking(b)}><X className="w-3.5 h-3.5 text-destructive" /></Button>
+                    )}
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openBookingDialog(b)}><Pencil className="w-3.5 h-3.5" /></Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
+  );
+
   const renderBookings = () => (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Search guests..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 w-56" />
         </div>
         <Button onClick={() => openBookingDialog()} variant="hero"><Plus className="w-4 h-4 mr-1" /> New Booking</Button>
       </div>
-      <div className="bg-card border border-border rounded-xl shadow-card-custom overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Guest</TableHead>
-              <TableHead>Room</TableHead>
-              <TableHead>Check-in</TableHead>
-              <TableHead>Check-out</TableHead>
-              <TableHead>Nights</TableHead>
-              <TableHead>Total</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredBookings.length === 0 ? (
-              <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">No bookings yet</TableCell></TableRow>
-            ) : filteredBookings.map(b => {
-              const room = getRoomInfo(b.roomId);
-              return (
-                <TableRow key={b.id} className="hover:bg-muted/30 transition-colors">
-                  <TableCell>
-                    <div><p className="font-medium text-sm">{b.guestName}</p><p className="text-xs text-muted-foreground">{b.guestPhone}</p></div>
-                  </TableCell>
-                  <TableCell><Badge variant="secondary">{room ? `Room ${room.roomNumber}` : "—"}</Badge></TableCell>
-                  <TableCell className="text-sm">{b.checkIn}</TableCell>
-                  <TableCell className="text-sm">{b.checkOut}</TableCell>
-                  <TableCell className="text-sm font-medium">{b.nights}</TableCell>
-                  <TableCell className="font-bold text-accent">${b.totalPrice.toFixed(2)}</TableCell>
-                  <TableCell><Badge className={`${statusColors[b.status]} border text-[10px]`}>{b.status}</Badge></TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex gap-1 justify-end">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setViewBooking(b)}><Eye className="w-3.5 h-3.5" /></Button>
-                      {b.status === "confirmed" && (
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-emerald-600" onClick={() => handleCheckIn(b)} title="Check In"><LogIn className="w-3.5 h-3.5" /></Button>
-                      )}
-                      {b.status === "checked-in" && (
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-amber-600" onClick={() => handleCheckOut(b)} title="Check Out"><LogOut className="w-3.5 h-3.5" /></Button>
-                      )}
-                      {(b.status === "confirmed" || b.status === "checked-in") && (
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCancelBooking(b)}><X className="w-3.5 h-3.5 text-destructive" /></Button>
-                      )}
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openBookingDialog(b)}><Pencil className="w-3.5 h-3.5" /></Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+
+      {/* Active Bookings */}
+      <div>
+        <h3 className="font-display font-bold text-lg mb-3 flex items-center gap-2">
+          <CalendarCheck className="w-5 h-5 text-emerald-500" /> Active Bookings
+          <Badge variant="secondary" className="ml-1">{activeBookingsList.length}</Badge>
+        </h3>
+        {renderBookingTable(activeBookingsList, "No active bookings")}
+      </div>
+
+      {/* Completed & Cancelled */}
+      <div>
+        <h3 className="font-display font-bold text-lg mb-3 flex items-center gap-2">
+          <LogOut className="w-5 h-5 text-muted-foreground" /> Completed & Cancelled
+          <Badge variant="secondary" className="ml-1">{completedBookingsList.length}</Badge>
+        </h3>
+        {renderBookingTable(completedBookingsList, "No completed or cancelled bookings")}
       </div>
     </div>
   );

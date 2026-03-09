@@ -842,12 +842,12 @@ const AdminDashboard = () => {
             )}
             <div className="relative">
               <button
-                onClick={() => { setShowNotifications(!showNotifications); setShowHelp(false); }}
-                className="w-9 h-9 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors relative"
+                onClick={() => { setShowNotifications(!showNotifications); setShowHelp(false); setHasNewNotification(false); }}
+                className={`w-9 h-9 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all relative ${hasNewNotification ? "animate-bounce" : ""}`}
               >
-                <Bell className="w-4 h-4" />
+                <Bell className={`w-4 h-4 ${hasNewNotification ? "text-accent" : ""}`} />
                 {notifications.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] flex items-center justify-center font-bold">
+                  <span className={`absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] flex items-center justify-center font-bold ${hasNewNotification ? "animate-pulse" : ""}`}>
                     {notifications.length}
                   </span>
                 )}
