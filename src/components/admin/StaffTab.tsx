@@ -62,8 +62,8 @@ const StaffTab = ({ businessId }: StaffTabProps) => {
       name: form.name, phone: form.phone, nationality: form.nationality,
       jobTitle: actualTitle, shifts: form.shifts,
       startTime: form.startTime, endTime: form.endTime,
-      username: isWaiter ? form.username : undefined,
-      password: isWaiter ? form.password : undefined,
+      username: isLoginRole ? form.username : undefined,
+      password: isLoginRole ? form.password : undefined,
     };
 
     if (editing) {
