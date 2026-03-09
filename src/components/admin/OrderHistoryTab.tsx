@@ -412,7 +412,7 @@ const OrderHistoryTab = ({ businessId }: OrderHistoryTabProps) => {
               </div>
 
               <div className="flex gap-2 pt-2">
-                <Button variant="outline" className="flex-1" onClick={() => printOrder(viewOrder)}>
+                <Button variant="outline" className="flex-1" onClick={() => viewOrder && handlePrintReceipt(viewOrder)}>
                   <Printer className="w-4 h-4 mr-1.5" /> Print Receipt
                 </Button>
                 <Button variant="outline" onClick={() => setViewOrder(null)}>Close</Button>
