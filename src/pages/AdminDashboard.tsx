@@ -599,6 +599,14 @@ const AdminDashboard = () => {
                         <MessageSquare className="w-3.5 h-3.5" /> Fariin U Dir
                       </Button>
                     )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5 text-xs"
+                      onClick={() => printReceipt({ order: o, business, servedBy: "Staff" })}
+                    >
+                      <Receipt className="w-3.5 h-3.5" /> Receipt
+                    </Button>
                   </div>
                 </motion.div>
               ))}
