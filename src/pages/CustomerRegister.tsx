@@ -171,8 +171,10 @@ const CustomerRegister = () => {
             onSubmit={handleSubmit}
             className="bg-card border border-border rounded-2xl p-6 space-y-5 shadow-sm"
           >
-            <div className="text-center mb-2">
-              <p className="text-xs text-muted-foreground font-mono">{customerId}</p>
+            {/* Auto-generated Customer ID */}
+            <div className="text-center mb-2 bg-muted/30 border border-border rounded-xl py-3 px-4">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Customer ID</p>
+              <p className="text-lg font-mono font-bold text-secondary">{customerId}</p>
             </div>
             <div className="space-y-2">
               <Label className="text-foreground/80 text-sm flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> Magacaaga</Label>
@@ -181,19 +183,6 @@ const CustomerRegister = () => {
             <div className="space-y-2">
               <Label className="text-foreground/80 text-sm flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" /> Telefoon Number</Label>
               <Input type="tel" placeholder="e.g. +252 61 xxx xxxx" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/50 focus:border-secondary" required />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-foreground/80 text-sm flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Deegaanka</Label>
-              <Select onValueChange={v => setFormData({ ...formData, residency: v })}>
-                <SelectTrigger className="bg-muted/50 border-border text-foreground"><SelectValue placeholder="Dooro deegaankaaga" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="mogadishu">Mogadishu</SelectItem>
-                  <SelectItem value="hargeisa">Hargeisa</SelectItem>
-                  <SelectItem value="kismayo">Kismayo</SelectItem>
-                  <SelectItem value="garowe">Garowe</SelectItem>
-                  <SelectItem value="other">Kale</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             <Button type="submit" className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl py-3 font-bold gap-2 shadow-gold" disabled={isSubmitting || !formData.name || !formData.phone}>
               {isSubmitting ? (
