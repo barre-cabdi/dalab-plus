@@ -23,7 +23,7 @@ import {
   HotelRoom, HotelBooking,
   getHotelRooms, saveHotelRoom, updateHotelRoom, deleteHotelRoom,
   getHotelBookings, saveHotelBooking, updateHotelBooking, deleteHotelBooking,
-  generateId,
+  generateId, calcRunningTotal,
 } from "@/lib/store";
 import { toast } from "sonner";
 
