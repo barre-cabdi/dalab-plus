@@ -451,6 +451,10 @@ const HotelManagementTab = ({ businessId, initialView = "overview" }: HotelManag
             <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">{emptyMsg}</TableCell></TableRow>
           ) : list.map(b => {
             const room = getRoomInfo(b.roomId);
+            const isCheckedIn = b.status === "checked-in" && room;
+            const { elapsedNights, runningTotal } = isCheckedIn 
+              ? calcRunningTotal(b, room!.pricePerNight)
+              : { elapsedNights: b.nights, runningTotal: b.totalPrice };
             return (
               <TableRow key={b.id} className="hover:bg-muted/30 transition-colors">
                 <TableCell>
@@ -459,8 +463,17 @@ const HotelManagementTab = ({ businessId, initialView = "overview" }: HotelManag
                 <TableCell><Badge variant="secondary">{room ? `Room ${room.roomNumber}` : "—"}</Badge></TableCell>
                 <TableCell className="text-sm">{b.checkIn}</TableCell>
                 <TableCell className="text-sm">{b.checkOut}</TableCell>
-                <TableCell className="text-sm font-medium">{b.nights}</TableCell>
-                <TableCell className="font-bold text-accent">${b.totalPrice.toFixed(2)}</TableCell>
+                <TableCell className="text-sm font-medium">
+                  {isCheckedIn ? (
+                    <span className="text-accent font-bold">{elapsedNights} <span className="text-xs text-muted-foreground font-normal">(running)</span></span>
+                  ) : b.nights}
+                </TableCell>
+                <TableCell className="font-bold text-accent">
+                  ${runningTotal.toFixed(2)}
+                  {isCheckedIn && elapsedNights > b.nights && (
+                    <span className="block text-[10px] text-destructive">+${(runningTotal - b.totalPrice).toFixed(2)} extra</span>
+                  )}
+                </TableCell>
                 <TableCell><Badge className={`${statusColors[b.status]} border text-[10px]`}>{b.status}</Badge></TableCell>
                 <TableCell className="text-right">
                   <div className="flex gap-1 justify-end">
