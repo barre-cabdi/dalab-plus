@@ -91,24 +91,55 @@ const AdminDashboard = () => {
     }
   }, [business]);
 
-  // Play notification sound
-  const playNotificationSound = () => {
+  const [hasNewNotification, setHasNewNotification] = useState(false);
+  const [flashOrder, setFlashOrder] = useState(false);
+  const prevFeedbackCountRef = useRef(0);
+
+  // Play order notification sound - melodic chime
+  const playOrderSound = () => {
     try {
       if (!audioContextRef.current) {
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       }
       const ctx = audioContextRef.current;
-      const oscillator = ctx.createOscillator();
-      const gainNode = ctx.createGain();
-      oscillator.connect(gainNode);
-      gainNode.connect(ctx.destination);
-      oscillator.frequency.setValueAtTime(800, ctx.currentTime);
-      oscillator.frequency.setValueAtTime(1000, ctx.currentTime + 0.1);
-      oscillator.frequency.setValueAtTime(800, ctx.currentTime + 0.2);
-      gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-      oscillator.start(ctx.currentTime);
-      oscillator.stop(ctx.currentTime + 0.5);
+      const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.12);
+        gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.12);
+        gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + i * 0.12 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.4);
+        osc.start(ctx.currentTime + i * 0.12);
+        osc.stop(ctx.currentTime + i * 0.12 + 0.4);
+      });
+    } catch (e) { /* silently fail */ }
+  };
+
+  // Play feedback notification sound - gentle bell
+  const playFeedbackSound = () => {
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      const ctx = audioContextRef.current;
+      const notes = [880, 1108.73, 880]; // A5, C#6, A5
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.15);
+        gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.15);
+        gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + i * 0.15 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.35);
+        osc.start(ctx.currentTime + i * 0.15);
+        osc.stop(ctx.currentTime + i * 0.15 + 0.35);
+      });
     } catch (e) { /* silently fail */ }
   };
 
@@ -122,10 +153,23 @@ const AdminDashboard = () => {
     // Check for new orders and play sound
     if (prevOrderCountRef.current > 0 && currentOrders.length > prevOrderCountRef.current) {
       const newCount = currentOrders.length - prevOrderCountRef.current;
-      playNotificationSound();
+      playOrderSound();
+      setHasNewNotification(true);
+      setFlashOrder(true);
+      setTimeout(() => setFlashOrder(false), 3000);
       toast.success(`🔔 ${newCount} dalab cusub ayaa soo galay!`, { duration: 5000 });
     }
     prevOrderCountRef.current = currentOrders.length;
+
+    // Check for new customer feedback/messages
+    const allMessages = JSON.parse(localStorage.getItem("dp_order_messages") || "[]");
+    const customerMessages = allMessages.filter((msg: any) => msg.businessId === business.id && msg.from === "customer");
+    if (prevFeedbackCountRef.current > 0 && customerMessages.length > prevFeedbackCountRef.current) {
+      playFeedbackSound();
+      setHasNewNotification(true);
+      toast.info("💬 Macmiil cusub ayaa fariin ku soo diray!", { duration: 5000 });
+    }
+    prevFeedbackCountRef.current = customerMessages.length;
     
     setOrders(currentOrders);
     const stored = localStorage.getItem("dp_active_business");
@@ -502,6 +546,7 @@ const AdminDashboard = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.03 }}
                   className={`bg-card border rounded-xl p-5 shadow-card-custom transition-all duration-300 hover:shadow-gold ${
+                    flashOrder && i === 0 ? "border-accent shadow-[0_0_15px_rgba(234,179,8,0.5)] animate-pulse" :
                     o.status === "pending" ? "border-secondary/50" :
                     o.status === "preparing" ? "border-accent/50" :
                     o.status === "ready" ? "border-green-500/50" :
@@ -798,12 +843,12 @@ const AdminDashboard = () => {
             )}
             <div className="relative">
               <button
-                onClick={() => { setShowNotifications(!showNotifications); setShowHelp(false); }}
-                className="w-9 h-9 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors relative"
+                onClick={() => { setShowNotifications(!showNotifications); setShowHelp(false); setHasNewNotification(false); }}
+                className={`w-9 h-9 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all relative ${hasNewNotification ? "animate-bounce" : ""}`}
               >
-                <Bell className="w-4 h-4" />
+                <Bell className={`w-4 h-4 ${hasNewNotification ? "text-accent" : ""}`} />
                 {notifications.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] flex items-center justify-center font-bold">
+                  <span className={`absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] flex items-center justify-center font-bold ${hasNewNotification ? "animate-pulse" : ""}`}>
                     {notifications.length}
                   </span>
                 )}

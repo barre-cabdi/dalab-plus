@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from "recharts";
 import { Order, MenuItem, Category, StaffMember, getStaff } from "@/lib/store";
-import { DollarSign, ShoppingBag, TrendingUp, ArrowUpRight, Package, Layers, Users, FileText } from "lucide-react";
+import { DollarSign, ShoppingBag, TrendingUp, ArrowUpRight, Package, Layers, Users, FileText, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 interface ReportsTabProps {
   orders: Order[];
@@ -16,6 +18,60 @@ interface ReportsTabProps {
 const COLORS = ["hsl(152 60% 54%)", "hsl(45 100% 55%)", "hsl(222 60% 50%)", "hsl(0 84% 60%)", "hsl(280 60% 55%)", "hsl(200 80% 50%)"];
 
 type ReportView = "sales" | "items" | "categories" | "waiters";
+
+const getBusinessInfo = () => {
+  try {
+    const stored = localStorage.getItem("dp_active_business");
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return { name: "Business", logo: "" };
+};
+
+const exportToPDF = (title: string, headers: string[], rows: (string | number)[][], extraInfo?: string) => {
+  const biz = getBusinessInfo();
+  const doc = new jsPDF();
+  
+  // Header with logo
+  let yPos = 15;
+  if (biz.logo && biz.logo.startsWith("data:")) {
+    try { doc.addImage(biz.logo, "PNG", 14, yPos, 20, 20); } catch {}
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text(biz.name || "Business", 40, yPos + 10);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(biz.address || "", 40, yPos + 16);
+    yPos = 42;
+  } else {
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text(biz.name || "Business", 14, yPos + 5);
+    yPos = 28;
+  }
+
+  // Report title
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text(title, 14, yPos);
+  yPos += 6;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Generated: ${new Date().toLocaleString()}`, 14, yPos);
+  if (extraInfo) { yPos += 5; doc.text(extraInfo, 14, yPos); }
+  yPos += 8;
+
+  // Table
+  (doc as any).autoTable({
+    startY: yPos,
+    head: [headers],
+    body: rows,
+    styles: { fontSize: 9 },
+    headStyles: { fillColor: [41, 128, 85], textColor: 255 },
+    alternateRowStyles: { fillColor: [245, 245, 245] },
+  });
+
+  doc.save(`${biz.name.replace(/\s+/g, "_")}_${title.replace(/\s+/g, "_")}_${new Date().toISOString().slice(0, 10)}.pdf`);
+};
 
 const ReportsTab = ({ orders, menuItems, categories, businessId, initialView }: ReportsTabProps) => {
   const [view, setView] = useState<ReportView>((initialView as ReportView) || "sales");
@@ -30,12 +86,13 @@ const ReportsTab = ({ orders, menuItems, categories, businessId, initialView }: 
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-display font-bold text-foreground">Reports & Analytics</h1>
-        <p className="text-sm text-muted-foreground">Comprehensive performance insights</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-display font-bold text-foreground">Reports & Analytics</h1>
+          <p className="text-sm text-muted-foreground">Comprehensive performance insights</p>
+        </div>
       </div>
 
-      {/* Report Tabs */}
       <div className="flex gap-2 flex-wrap">
         {tabs.map(tab => (
           <Button key={tab.id} variant={view === tab.id ? "default" : "outline"} size="sm"
@@ -69,7 +126,6 @@ const SalesReport = ({ orders }: { orders: Order[] }) => {
       .reduce((s, o) => s + o.total, 0),
   }));
 
-  // Hourly distribution
   const hourlyData = Array.from({ length: 24 }, (_, h) => ({
     name: `${h}:00`,
     orders: orders.filter(o => new Date(o.createdAt).getHours() === h).length,
@@ -90,8 +146,26 @@ const SalesReport = ({ orders }: { orders: Order[] }) => {
     { name: "Cancelled", value: cancelledOrders },
   ].filter(s => s.value > 0);
 
+  const handleExportPDF = () => {
+    const headers = ["Date", "Order ID", "Customer", "Items", "Total", "Status"];
+    const rows = orders.map(o => [
+      new Date(o.createdAt).toLocaleDateString(),
+      o.id.slice(0, 12),
+      (o as any).customerName || "Guest",
+      o.items.map(i => `${i.quantity}x ${i.name}`).join(", "),
+      `$${o.total.toFixed(2)}`,
+      o.status,
+    ]);
+    exportToPDF("Sales Report", headers, rows, `Total Revenue: $${totalRevenue.toFixed(2)} | Orders: ${orders.length}`);
+  };
+
   return (
     <div className="space-y-5">
+      <div className="flex justify-end">
+        <Button variant="outline" size="sm" onClick={handleExportPDF}>
+          <Download className="w-4 h-4 mr-1.5" /> Export PDF
+        </Button>
+      </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
@@ -167,8 +241,21 @@ const ItemReport = ({ orders, menuItems }: { orders: Order[]; menuItems: MenuIte
 
   const topItems = itemStats.slice(0, 10).map(i => ({ name: i.name.length > 12 ? i.name.slice(0, 12) + "…" : i.name, sold: i.sold, revenue: i.revenue }));
 
+  const handleExportPDF = () => {
+    const headers = ["#", "Item", "Price", "Sold", "Revenue", "Status"];
+    const rows = itemStats.map((item, i) => [
+      i + 1, item.name, `$${item.price.toFixed(2)}`, item.sold, `$${item.revenue.toFixed(2)}`, item.available ? "Available" : "Unavailable",
+    ]);
+    exportToPDF("Item Report", headers, rows, `Total Items: ${menuItems.length} | Total Sold: ${itemStats.reduce((s, i) => s + i.sold, 0)}`);
+  };
+
   return (
     <div className="space-y-5">
+      <div className="flex justify-end">
+        <Button variant="outline" size="sm" onClick={handleExportPDF}>
+          <Download className="w-4 h-4 mr-1.5" /> Export PDF
+        </Button>
+      </div>
       <div className="grid sm:grid-cols-3 gap-4">
         {[
           { label: "Total Items", value: menuItems.length },
@@ -199,7 +286,6 @@ const ItemReport = ({ orders, menuItems }: { orders: Order[]; menuItems: MenuIte
         </motion.div>
       )}
 
-      {/* Full item list */}
       <div className="bg-card border border-border rounded-xl shadow-card-custom overflow-hidden">
         <table className="w-full text-sm">
           <thead><tr className="border-b border-border bg-muted/50">
@@ -238,8 +324,19 @@ const CategoryReport = ({ orders, menuItems, categories }: { orders: Order[]; me
 
   const pieData = catStats.filter(c => c.revenue > 0).map(c => ({ name: c.name, value: c.revenue }));
 
+  const handleExportPDF = () => {
+    const headers = ["Category", "Items", "Sold", "Revenue"];
+    const rows = catStats.map(c => [c.name, c.itemCount, c.sold, `$${c.revenue.toFixed(2)}`]);
+    exportToPDF("Category Report", headers, rows, `Total Categories: ${categories.length}`);
+  };
+
   return (
     <div className="space-y-5">
+      <div className="flex justify-end">
+        <Button variant="outline" size="sm" onClick={handleExportPDF}>
+          <Download className="w-4 h-4 mr-1.5" /> Export PDF
+        </Button>
+      </div>
       <div className="grid lg:grid-cols-2 gap-5">
         {pieData.length > 0 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
@@ -272,7 +369,6 @@ const CategoryReport = ({ orders, menuItems, categories }: { orders: Order[]; me
         </motion.div>
       </div>
 
-      {/* Category details */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {catStats.map((cat, i) => (
           <motion.div key={cat.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.04 }}
@@ -307,7 +403,6 @@ const WaiterReport = ({ orders, businessId }: { orders: Order[]; businessId: str
   const staff = getStaff(businessId);
   const waiters = staff.filter(s => s.jobTitle.toLowerCase().includes("waiter"));
 
-  // For now, simulate waiter assignments based on order distribution
   const waiterStats = waiters.map((w, idx) => {
     const waiterOrders = orders.filter((_, i) => i % Math.max(waiters.length, 1) === idx);
     const totalRevenue = waiterOrders.reduce((s, o) => s + o.total, 0);
@@ -323,6 +418,12 @@ const WaiterReport = ({ orders, businessId }: { orders: Order[]; businessId: str
     };
   });
 
+  const handleExportPDF = () => {
+    const headers = ["Waiter", "Orders", "Revenue", "Completed", "Cancelled", "Avg Order"];
+    const rows = waiterStats.map(w => [w.name, w.orderCount, `$${w.revenue.toFixed(2)}`, w.completed, w.cancelled, `$${w.avgOrder.toFixed(2)}`]);
+    exportToPDF("Waiter Report", headers, rows, `Total Waiters: ${waiters.length}`);
+  };
+
   return (
     <div className="space-y-5">
       {waiters.length === 0 ? (
@@ -333,6 +434,11 @@ const WaiterReport = ({ orders, businessId }: { orders: Order[]; businessId: str
         </div>
       ) : (
         <>
+          <div className="flex justify-end">
+            <Button variant="outline" size="sm" onClick={handleExportPDF}>
+              <Download className="w-4 h-4 mr-1.5" /> Export PDF
+            </Button>
+          </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {waiterStats.map((w, i) => (
               <motion.div key={w.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
