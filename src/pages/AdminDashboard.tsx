@@ -153,10 +153,23 @@ const AdminDashboard = () => {
     // Check for new orders and play sound
     if (prevOrderCountRef.current > 0 && currentOrders.length > prevOrderCountRef.current) {
       const newCount = currentOrders.length - prevOrderCountRef.current;
-      playNotificationSound();
+      playOrderSound();
+      setHasNewNotification(true);
+      setFlashOrder(true);
+      setTimeout(() => setFlashOrder(false), 3000);
       toast.success(`🔔 ${newCount} dalab cusub ayaa soo galay!`, { duration: 5000 });
     }
     prevOrderCountRef.current = currentOrders.length;
+
+    // Check for new customer feedback/messages
+    const allMessages = JSON.parse(localStorage.getItem("dp_order_messages") || "[]");
+    const customerMessages = allMessages.filter((msg: any) => msg.businessId === business.id && msg.from === "customer");
+    if (prevFeedbackCountRef.current > 0 && customerMessages.length > prevFeedbackCountRef.current) {
+      playFeedbackSound();
+      setHasNewNotification(true);
+      toast.info("💬 Macmiil cusub ayaa fariin ku soo diray!", { duration: 5000 });
+    }
+    prevFeedbackCountRef.current = customerMessages.length;
     
     setOrders(currentOrders);
     const stored = localStorage.getItem("dp_active_business");
