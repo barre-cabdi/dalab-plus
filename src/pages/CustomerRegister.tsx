@@ -44,7 +44,8 @@ const CustomerRegister = () => {
     }
   }, [navigate, tableId, businessId]);
 
-  const businessName = business?.name || "DALABplus+";
+  const businessName = business?.name || qrBusinessName || "DALABplus+";
+  const businessLogo = business?.logo || qrBusinessLogo || "";
   const businessType = business?.type || "restaurant";
   const config = typeConfig[businessType] || typeConfig.restaurant;
   const TypeIcon = config.icon;
