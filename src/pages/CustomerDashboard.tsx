@@ -27,10 +27,10 @@ const CustomerDashboard = () => {
 
   // Get business info for branding
   const lastOrder = orders[orders.length - 1];
-  const businessId = customer.businessId || lastOrder?.businessId || "1001";
+  const businessId = urlBusinessId || customer.businessId || lastOrder?.businessId || "1001";
   const business = getBusinessById(businessId);
-  const businessName = business?.name || "DALABplus+";
-  const businessLogo = business?.logo || "";
+  const businessName = business?.name || customer?.businessName || "DALABplus+";
+  const businessLogo = business?.logo || customer?.businessLogo || "";
   const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");
 
   const getLevelInfo = (level: string) => {
