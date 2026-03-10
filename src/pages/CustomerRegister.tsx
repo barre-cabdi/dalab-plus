@@ -32,15 +32,18 @@ const CustomerRegister = () => {
   useEffect(() => {
     const b = getBusinessById(businessId);
     if (b) setBusiness(b);
-    if (b) setBusiness(b);
   }, [businessId]);
 
   useEffect(() => {
+    // Save branding from QR params if available
+    if (qrBusinessName || qrBusinessLogo) {
+      localStorage.setItem("dp_customer_branding", JSON.stringify({ businessId, businessName: qrBusinessName || businessName, businessLogo: qrBusinessLogo || businessLogo }));
+    }
     const stored = localStorage.getItem("dp_customer");
     if (stored) {
       const customer = JSON.parse(stored);
       if (customer && customer.name) {
-        navigate(`/menu?table=${tableId}&business=${businessId}&name=${encodeURIComponent(qrBusinessName)}&logo=${encodeURIComponent(qrBusinessLogo)}`);
+        navigate(`/menu?table=${tableId}&business=${businessId}`);
       }
     }
   }, [navigate, tableId, businessId]);
@@ -58,6 +61,8 @@ const CustomerRegister = () => {
     setShowSuccess(true);
     const customer = { id: customerId, ...formData, tableId, businessId, businessName, businessLogo, points: 0, level: "Bronze", totalOrders: 0, totalSpent: 0, registeredAt: new Date().toISOString() };
     localStorage.setItem("dp_customer", JSON.stringify(customer));
+    // Save branding separately for persistence across all pages
+    localStorage.setItem("dp_customer_branding", JSON.stringify({ businessId, businessName, businessLogo }));
     const existing = getCustomers(businessId);
     const alreadyExists = existing.find(c => c.phone === formData.phone);
     if (!alreadyExists) {
@@ -66,7 +71,7 @@ const CustomerRegister = () => {
         totalOrders: 0, totalSpent: 0, loyaltyPoints: 0, registeredAt: new Date().toISOString(),
       });
     }
-    setTimeout(() => { navigate(`/menu?table=${tableId}&business=${businessId}&name=${encodeURIComponent(qrBusinessName)}&logo=${encodeURIComponent(qrBusinessLogo)}`); }, 2200);
+    setTimeout(() => { navigate(`/menu?table=${tableId}&business=${businessId}`); }, 2200);
   };
 
   return (

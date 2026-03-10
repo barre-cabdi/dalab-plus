@@ -508,7 +508,7 @@ const AdminDashboard = () => {
 
   // Print QR
   const handlePrintQR = (tableNum: number) => {
-    const url = `${window.location.origin}/register?table=${tableNum}&business=${business.id}&name=${encodeURIComponent(business.name)}&logo=${encodeURIComponent(business.logo || "")}`;
+    const url = `${window.location.origin}/register?table=${tableNum}&business=${business.id}&name=${encodeURIComponent(business.name)}`;
     const printWindow = window.open("", "_blank", "width=400,height=500");
     if (!printWindow) return;
     printWindow.document.write(`
@@ -865,7 +865,7 @@ const AdminDashboard = () => {
             ) : (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {tables.map(t => {
-                  const url = `${window.location.origin}/register?table=${t.number}&business=${business.id}&name=${encodeURIComponent(business.name)}&logo=${encodeURIComponent(business.logo || "")}`;
+                  const url = `${window.location.origin}/register?table=${t.number}&business=${business.id}&name=${encodeURIComponent(business.name)}`;
                   return (
                     <div key={t.id} className="bg-card border border-border rounded-xl p-6 shadow-card-custom text-center hover:shadow-gold transition-shadow">
                       <div className="mb-3 flex justify-center">
@@ -900,6 +900,134 @@ const AdminDashboard = () => {
             )}
           </div>
         );
+
+      case "payment-methods": {
+        const paidOrders = orders.filter(o => o.status === "paid");
+        const cashTotal = paidOrders.filter(o => o.paymentMethod === "cash").reduce((s, o) => s + o.total, 0);
+        const cardTotal = paidOrders.filter(o => o.paymentMethod === "card").reduce((s, o) => s + o.total, 0);
+        const mobileTotal = paidOrders.filter(o => o.paymentMethod === "mobile").reduce((s, o) => s + o.total, 0);
+        const totalRevAll = cashTotal + cardTotal + mobileTotal;
+        const todayPaid = paidOrders.filter(o => new Date(o.createdAt).toDateString() === new Date().toDateString());
+        const todayCash = todayPaid.filter(o => o.paymentMethod === "cash").reduce((s, o) => s + o.total, 0);
+        const todayCard = todayPaid.filter(o => o.paymentMethod === "card").reduce((s, o) => s + o.total, 0);
+        const todayMobile = todayPaid.filter(o => o.paymentMethod === "mobile").reduce((s, o) => s + o.total, 0);
+
+        return (
+          <div className="space-y-6">
+            {/* Total Revenue Stats */}
+            <div className="grid sm:grid-cols-4 gap-4">
+              {[
+                { label: "Total Revenue", value: `$${totalRevAll.toFixed(2)}`, icon: "💰", desc: `${paidOrders.length} orders` },
+                { label: "Cash Revenue", value: `$${cashTotal.toFixed(2)}`, icon: "💵", desc: `${paidOrders.filter(o => o.paymentMethod === "cash").length} payments` },
+                { label: "Card Revenue", value: `$${cardTotal.toFixed(2)}`, icon: "💳", desc: `${paidOrders.filter(o => o.paymentMethod === "card").length} payments` },
+                { label: "Mobile Revenue", value: `$${mobileTotal.toFixed(2)}`, icon: "📱", desc: `${paidOrders.filter(o => o.paymentMethod === "mobile").length} payments` },
+              ].map((s, i) => (
+                <motion.div key={s.label} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                  className="bg-card border border-border rounded-xl p-5 shadow-card-custom">
+                  <span className="text-2xl block mb-2">{s.icon}</span>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">{s.label}</p>
+                  <p className="text-2xl font-display font-bold mt-1">{s.value}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{s.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Revenue Breakdown Chart */}
+            <div className="grid lg:grid-cols-2 gap-6">
+              <div className="bg-card border border-border rounded-xl p-6 shadow-card-custom">
+                <h3 className="font-display font-bold mb-4">Revenue Breakdown (All Time)</h3>
+                <div className="space-y-4">
+                  {[
+                    { label: "Cash", total: cashTotal, color: "bg-green-500", pct: totalRevAll ? (cashTotal / totalRevAll * 100) : 0 },
+                    { label: "Card", total: cardTotal, color: "bg-blue-500", pct: totalRevAll ? (cardTotal / totalRevAll * 100) : 0 },
+                    { label: "Mobile Money", total: mobileTotal, color: "bg-purple-500", pct: totalRevAll ? (mobileTotal / totalRevAll * 100) : 0 },
+                  ].map(p => (
+                    <div key={p.label}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="font-medium">{p.label}</span>
+                        <span className="text-muted-foreground">${p.total.toFixed(2)} ({p.pct.toFixed(1)}%)</span>
+                      </div>
+                      <div className="w-full h-3 rounded-full bg-muted overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${p.pct}%` }}
+                          transition={{ duration: 0.8, delay: 0.2 }}
+                          className={`h-full rounded-full ${p.color}`}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-card border border-border rounded-xl p-6 shadow-card-custom">
+                <h3 className="font-display font-bold mb-4">Today's Payment Summary</h3>
+                <div className="space-y-3">
+                  {[
+                    { label: "Cash", value: todayCash, icon: "💵", count: todayPaid.filter(o => o.paymentMethod === "cash").length },
+                    { label: "Card", value: todayCard, icon: "💳", count: todayPaid.filter(o => o.paymentMethod === "card").length },
+                    { label: "Mobile Money", value: todayMobile, icon: "📱", count: todayPaid.filter(o => o.paymentMethod === "mobile").length },
+                  ].map(p => (
+                    <div key={p.label} className="flex items-center justify-between bg-muted/50 rounded-lg p-4">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{p.icon}</span>
+                        <div>
+                          <p className="font-medium text-sm">{p.label}</p>
+                          <p className="text-xs text-muted-foreground">{p.count} transactions today</p>
+                        </div>
+                      </div>
+                      <p className="font-display font-bold text-accent text-lg">${p.value.toFixed(2)}</p>
+                    </div>
+                  ))}
+                  <div className="border-t border-border pt-3 flex justify-between">
+                    <span className="font-display font-bold">Today's Total</span>
+                    <span className="font-display font-bold text-accent text-lg">${(todayCash + todayCard + todayMobile).toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent paid orders */}
+            <div className="bg-card border border-border rounded-xl shadow-card-custom overflow-hidden">
+              <div className="px-5 py-4 border-b border-border">
+                <h3 className="font-display font-bold">Recent Payments</h3>
+              </div>
+              {paidOrders.length === 0 ? (
+                <div className="py-12 text-center text-muted-foreground">
+                  <p className="text-sm">Wali lacag lama qaatin</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Method</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Cashier</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paidOrders.slice(-20).reverse().map(o => (
+                      <TableRow key={o.id}>
+                        <TableCell className="font-medium">{(o as any).customerName || "Guest"}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-[10px]">
+                            {o.paymentMethod === "cash" ? "💵 Cash" : o.paymentMethod === "card" ? "💳 Card" : "📱 Mobile"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-bold text-accent">${o.total.toFixed(2)}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{new Date(o.paidAt || o.createdAt).toLocaleString()}</TableCell>
+                        <TableCell className="text-xs">{o.orderedBy || "—"}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
+          </div>
+        );
+      }
 
       case "loyalty":
         return <LoyaltyTab businessId={business.id} />;
@@ -963,6 +1091,7 @@ const AdminDashboard = () => {
     orders: "Order Management",
     "order-history": "Order History",
     qr: "QR Codes",
+    "payment-methods": "Payment Methods",
     staff: "Staff Management",
     customers: "Customers",
     loyalty: "Loyalty Program",
