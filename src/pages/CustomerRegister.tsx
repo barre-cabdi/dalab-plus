@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { User, Phone, CheckCircle, UtensilsCrossed, Hotel, Coffee, Sparkles, Star, Shield, ArrowRight } from "lucide-react";
-import { getBusinesses, Business, saveCustomer, getCustomers, generateId, getDefaultServices, BusinessService } from "@/lib/store";
+import { getBusinessById, Business, saveCustomer, getCustomers, generateId, getDefaultServices, BusinessService } from "@/lib/store";
 
 const typeConfig: Record<string, { icon: any; emoji: string; welcome: string }> = {
   restaurant: { icon: UtensilsCrossed, emoji: "🍽️", welcome: "Cuntada ugu fiican!" },
