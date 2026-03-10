@@ -14,8 +14,6 @@ const CustomerMenu = () => {
   const [searchParams] = useSearchParams();
   const tableId = searchParams.get("table") || "1";
   const businessId = searchParams.get("business") || "";
-  const qrBusinessName = searchParams.get("name") || "";
-  const qrBusinessLogo = searchParams.get("logo") || "";
   const [categories, setCategories] = useState<Category[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -50,9 +48,13 @@ const CustomerMenu = () => {
     return () => clearInterval(interval);
   }, [businessId]);
 
+  // Get branding from multiple sources with priority
   const business = getBusinessById(businessId);
-  const businessName = business?.name || qrBusinessName || customer?.businessName || "DALABplus+";
-  const businessLogo = business?.logo || qrBusinessLogo || customer?.businessLogo || "";
+  const branding = (() => {
+    try { return JSON.parse(localStorage.getItem("dp_customer_branding") || "{}"); } catch { return {}; }
+  })();
+  const businessName = business?.name || branding.businessName || customer?.businessName || "DALABplus+";
+  const businessLogo = business?.logo || branding.businessLogo || customer?.businessLogo || "";
   const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");
 
   const filteredItems = menuItems.filter(item => {
