@@ -2,13 +2,15 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Gift, ShoppingBag, Star, Trophy, LogOut, Clock, ChevronRight, Sparkles, Crown, Zap, TrendingUp } from "lucide-react";
+import { Gift, ShoppingBag, Star, Trophy, LogOut, Clock, ChevronRight, Sparkles, Crown, Zap, TrendingUp, Eye, EyeOff, Store, Flame, Award, Gem } from "lucide-react";
+import { getBusinesses } from "@/lib/store";
 
 const CustomerDashboard = () => {
   const navigate = useNavigate();
   const [customer, setCustomer] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [animatePoints, setAnimatePoints] = useState(false);
+  const [showSpent, setShowSpent] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("dp_customer");
@@ -20,6 +22,14 @@ const CustomerDashboard = () => {
   }, [navigate]);
 
   if (!customer) return null;
+
+  // Get business info for branding
+  const lastOrder = orders[orders.length - 1];
+  const businessId = customer.businessId || lastOrder?.businessId || "1001";
+  const business = getBusinesses().find(b => b.id === businessId);
+  const businessName = business?.name || "DALABplus+";
+  const businessLogo = business?.logo || "";
+  const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");
 
   const getLevelInfo = (level: string) => {
     switch (level) {
@@ -42,23 +52,30 @@ const CustomerDashboard = () => {
 
   const currentLevelIndex = rewardLevels.findIndex(l => l.active);
 
+  const spentDisplay = showSpent ? `$${customer.totalSpent?.toFixed(0) || 0}` : "****";
+
   return (
     <div className="min-h-screen bg-hero relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-accent/5 blur-[150px] pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-accent/3 blur-[100px] pointer-events-none" />
 
-      {/* Header */}
+      {/* Header with Business Logo */}
       <header className="glass border-b border-border/10 px-4 py-3 flex items-center justify-between sticky top-0 z-50">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
           <motion.div
-            whileHover={{ rotate: 10 }}
-            className="w-9 h-9 rounded-xl bg-gold-gradient flex items-center justify-center shadow-gold"
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-10 h-10 rounded-xl overflow-hidden shadow-gold flex items-center justify-center bg-gold-gradient"
           >
-            <span className="font-display font-bold text-accent-foreground text-xs">D+</span>
+            {businessLogo && isImageUrl(businessLogo) ? (
+              <img src={businessLogo} alt={businessName} className="w-full h-full object-cover" />
+            ) : (
+              <Store className="w-5 h-5 text-accent-foreground" />
+            )}
           </motion.div>
           <div>
-            <span className="font-display font-bold text-primary-foreground text-sm block leading-tight">DALABplus+</span>
+            <span className="font-display font-bold text-primary-foreground text-sm block leading-tight">{businessName}</span>
             <span className="text-[10px] text-primary-foreground/40">Member Dashboard</span>
           </div>
         </div>
@@ -77,7 +94,6 @@ const CustomerDashboard = () => {
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           className="relative glass rounded-3xl p-6 overflow-hidden"
         >
-          {/* Decorative gradient overlay */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
           
           <div className="relative flex items-start gap-4">
@@ -135,9 +151,9 @@ const CustomerDashboard = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: "Orders", value: customer.totalOrders || 0, icon: ShoppingBag, delay: 0.3 },
-            { label: "Points", value: customer.points || 0, icon: Zap, delay: 0.4 },
-            { label: "Spent", value: `$${customer.totalSpent?.toFixed(0) || 0}`, icon: TrendingUp, delay: 0.5 },
+            { label: "Orders", value: customer.totalOrders || 0, icon: Flame, delay: 0.3 },
+            { label: "Points", value: customer.points || 0, icon: Gem, delay: 0.4 },
+            { label: "Spent", value: spentDisplay, icon: Award, delay: 0.5, hasToggle: true },
           ].map((s) => (
             <motion.div
               key={s.label}
@@ -145,7 +161,7 @@ const CustomerDashboard = () => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ delay: s.delay, type: "spring", stiffness: 200 }}
               whileHover={{ scale: 1.05, y: -2 }}
-              className="glass rounded-2xl p-4 text-center group cursor-default"
+              className="glass rounded-2xl p-4 text-center group cursor-default relative"
             >
               <motion.div
                 className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center mx-auto mb-2 group-hover:bg-accent/20 transition-colors duration-300"
@@ -163,6 +179,16 @@ const CustomerDashboard = () => {
                 {s.value}
               </motion.p>
               <p className="text-[10px] text-primary-foreground/40 font-medium uppercase tracking-wider mt-0.5">{s.label}</p>
+              {s.hasToggle && (
+                <motion.button
+                  whileHover={{ scale: 1.2 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setShowSpent(!showSpent)}
+                  className="absolute top-2 right-2 p-1 text-primary-foreground/25 hover:text-accent transition-colors"
+                >
+                  {showSpent ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                </motion.button>
+              )}
             </motion.div>
           ))}
         </div>
@@ -289,9 +315,12 @@ const CustomerDashboard = () => {
                   className="w-full flex items-center justify-between py-3 px-3 rounded-xl border border-transparent hover:border-accent/10 transition-all duration-300 group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center group-hover:bg-accent/15 transition-colors">
+                    <motion.div
+                      whileHover={{ rotate: [0, -5, 5, 0] }}
+                      className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center group-hover:bg-accent/15 transition-colors"
+                    >
                       <ShoppingBag className="w-4 h-4 text-accent" />
-                    </div>
+                    </motion.div>
                     <div className="text-left">
                       <p className="text-xs font-semibold text-primary-foreground">{order.id}</p>
                       <p className="text-[10px] text-primary-foreground/35">
@@ -316,21 +345,27 @@ const CustomerDashboard = () => {
             variant="hero"
             size="xl"
             className="w-full rounded-2xl gap-2"
-            onClick={() => navigate(`/menu?table=1&business=1001`)}
+            onClick={() => navigate(`/menu?table=1&business=${businessId}`)}
           >
             <ShoppingBag className="mr-1" /> Browse Menu & Order
           </Button>
         </motion.div>
 
-        {/* Powered by */}
-        <motion.p
+        {/* Powered by - Bigger & Bolder */}
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
-          className="text-center text-[10px] text-primary-foreground/20 pb-4"
+          className="text-center pb-6 pt-2"
         >
-          Powered by <span className="text-accent/30 font-semibold">DALABplus+</span>
-        </motion.p>
+          <p className="text-[11px] text-primary-foreground/25 mb-1">Powered by</p>
+          <motion.p
+            whileHover={{ scale: 1.05 }}
+            className="font-display font-black text-xl text-accent/40 tracking-tight"
+          >
+            DALABplus+
+          </motion.p>
+        </motion.div>
       </div>
     </div>
   );
