@@ -6,7 +6,7 @@ import {
   Clock, Info, ArrowRight, Sparkles, Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getBusinesses, Business, getDefaultServices, BusinessService } from "@/lib/store";
+import { getBusinessById, Business, getDefaultServices, BusinessService } from "@/lib/store";
 
 const typeConfig: Record<string, { icon: any; emoji: string; aboutText: string }> = {
   restaurant: {
@@ -32,7 +32,7 @@ const CustomerHome = () => {
   const [activeSection, setActiveSection] = useState("about");
 
   useEffect(() => {
-    const b = getBusinesses().find(b => b.id === businessId);
+    const b = getBusinessById(businessId);
     if (b) setBusiness(b);
   }, [businessId]);
 

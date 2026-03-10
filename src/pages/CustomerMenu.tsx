@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Plus, Minus, Search, Star, Trash2, Send, UtensilsCrossed, Trophy, ChevronRight, User, Clock, ChefHat, Package, CheckCircle, MessageSquare, XCircle, Sparkles, ArrowRight, Zap, Store } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { getCategories, getMenuItems, Category, MenuItem, seedDemoData, getBusinesses } from "@/lib/store";
+import { getCategories, getMenuItems, Category, MenuItem, seedDemoData, getBusinessById } from "@/lib/store";
 
 type CartItem = { id: string; name: string; price: number; quantity: number; image: string };
 
@@ -48,8 +48,8 @@ const CustomerMenu = () => {
     return () => clearInterval(interval);
   }, [businessId]);
 
-  const business = getBusinesses().find(b => b.id === businessId);
-  console.log("CustomerMenu: businessId =", businessId, "found =", business?.name, "all =", getBusinesses().map(b => ({ id: b.id, name: b.name })));
+  const business = getBusinessById(businessId);
+  console.log("CustomerMenu: businessId =", businessId, "found =", business?.name);
   const businessName = business?.name || "DALABplus+";
   const businessLogo = business?.logo || "";
   const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");

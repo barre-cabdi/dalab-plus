@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { User, Phone, CheckCircle, UtensilsCrossed, Hotel, Coffee, Sparkles, Star, Shield, ArrowRight } from "lucide-react";
-import { getBusinesses, Business, saveCustomer, getCustomers, generateId, getDefaultServices, BusinessService } from "@/lib/store";
+import { getBusinessById, Business, saveCustomer, getCustomers, generateId, getDefaultServices, BusinessService } from "@/lib/store";
 
 const typeConfig: Record<string, { icon: any; emoji: string; welcome: string }> = {
   restaurant: { icon: UtensilsCrossed, emoji: "🍽️", welcome: "Cuntada ugu fiican!" },
@@ -30,11 +30,9 @@ const CustomerRegister = () => {
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   useEffect(() => {
-    const allBiz = getBusinesses();
-    console.log("CustomerRegister: businessId =", businessId, "all businesses =", allBiz.map(b => ({ id: b.id, name: b.name })));
-    const b = allBiz.find(b => b.id === businessId);
+    const b = getBusinessById(businessId);
+    console.log("CustomerRegister: businessId =", businessId, "found =", b?.name);
     if (b) setBusiness(b);
-    else console.log("CustomerRegister: Business not found for id:", businessId);
   }, [businessId]);
 
   useEffect(() => {

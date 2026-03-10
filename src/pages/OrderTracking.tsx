@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Clock, ChefHat, Truck, CheckCircle, Home, Star, Trophy, Gift, ArrowRight, Package, MessageSquare, ShoppingBag, Sparkles, Store, Hourglass } from "lucide-react";
-import { getBusinesses } from "@/lib/store";
+import { getBusinessById } from "@/lib/store";
 
 const statusSteps = [
   { key: "pending", label: "La sugayo", sublabel: "Order-kaaga la helay", emoji: "⏳" },
@@ -73,7 +73,7 @@ const OrderTracking = () => {
     </div>
   );
 
-  const business = getBusinesses().find(b => b.id === order.businessId);
+  const business = getBusinessById(order.businessId);
   const businessName = business?.name || "DALABplus+";
   const businessLogo = business?.logo || "";
   const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");

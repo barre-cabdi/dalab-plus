@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Gift, ShoppingBag, Star, Trophy, LogOut, Clock, ChevronRight, Sparkles, Crown, Zap, TrendingUp, Eye, EyeOff, Store, Flame, Award, Gem } from "lucide-react";
-import { getBusinesses } from "@/lib/store";
+import { getBusinessById } from "@/lib/store";
 
 const CustomerDashboard = () => {
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ const CustomerDashboard = () => {
   // Get business info for branding
   const lastOrder = orders[orders.length - 1];
   const businessId = customer.businessId || lastOrder?.businessId || "1001";
-  const business = getBusinesses().find(b => b.id === businessId);
+  const business = getBusinessById(businessId);
   const businessName = business?.name || "DALABplus+";
   const businessLogo = business?.logo || "";
   const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");
