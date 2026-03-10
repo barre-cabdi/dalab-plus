@@ -322,7 +322,7 @@ const CashierDashboard = () => {
                           <Badge variant="secondary" className="text-[10px]">{o.status}</Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          {(o.status === "ready" || o.status === "delivered") && o.status !== "paid" && (
+                      {(o.status === "ready" || o.status === "delivered") && (
                             <Button size="sm" variant="hero" className="text-xs gap-1" onClick={() => { setPaymentDialog(o); setPaidAmount(String(o.total)); }}>
                               <CreditCard className="w-3 h-3" /> Pay
                             </Button>
