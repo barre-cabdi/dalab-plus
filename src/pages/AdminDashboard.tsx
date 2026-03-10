@@ -912,6 +912,9 @@ const AdminDashboard = () => {
         return <ReportsTab orders={orders} menuItems={menuItems} categories={categories} businessId={business.id} initialView={viewMap[activeTab] || "sales"} />;
       }
 
+      case "reports-cashiers":
+        return <CashierReportTab businessId={business.id} />;
+
       case "staff":
         return <StaffTab businessId={business.id} />;
 
