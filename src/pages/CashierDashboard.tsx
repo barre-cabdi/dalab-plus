@@ -17,31 +17,45 @@ import {
   LogOut, ShoppingBag, Plus, Minus, Search, ClipboardList, UtensilsCrossed,
   CreditCard, Banknote, Smartphone, Check, XCircle, Receipt, RefreshCw,
   BarChart3, Clock, DollarSign, TrendingUp, User, ChevronLeft, ChevronRight,
-  LayoutDashboard, ShoppingCart, FileText,
+  LayoutDashboard, ShoppingCart, FileText, Bell, Users, AlertCircle, Eye,
+  Phone, Mail, Award, Calendar, Filter, ArrowUpRight, Package,
 } from "lucide-react";
 import {
-  StaffMember, Business, MenuItem, Category, Order, TableItem,
+  StaffMember, Business, MenuItem, Category, Order, TableItem, Customer,
   getCategories, getMenuItems, getTables, getOrders, generateId,
-  saveOrder, updateOrder, deleteOrder,
+  saveOrder, updateOrder, deleteOrder, getCustomers,
 } from "@/lib/store";
 import { toast } from "sonner";
 import { printReceipt } from "@/lib/printReceipt";
+
+interface Notification {
+  id: string;
+  type: "new_order" | "order_ready" | "payment" | "cancel";
+  message: string;
+  time: string;
+  read: boolean;
+  orderId?: string;
+}
 
 const CashierDashboard = () => {
   const navigate = useNavigate();
   const [cashier, setCashier] = useState<StaffMember | null>(null);
   const [business, setBusiness] = useState<Business | null>(null);
-  const [activeTab, setActiveTab] = useState<"dashboard" | "orders" | "pos" | "shift-report">("dashboard");
+  const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [categories, setCategories] = useState<Category[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [tables, setTables] = useState<TableItem[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [selectedCat, setSelectedCat] = useState("all");
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState<{ id: string; name: string; price: number; quantity: number; image: string }[]>([]);
   const [selectedTable, setSelectedTable] = useState("");
   const [customerName, setCustomerName] = useState("Walking Customer");
   const [collapsed, setCollapsed] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [orderStatusFilter, setOrderStatusFilter] = useState("all");
+  const [customerSearch, setCustomerSearch] = useState("");
 
   // Payment dialog
   const [paymentDialog, setPaymentDialog] = useState<Order | null>(null);
@@ -52,7 +66,8 @@ const CashierDashboard = () => {
   const [refundDialog, setRefundDialog] = useState<Order | null>(null);
 
   const audioRef = useRef<AudioContext | null>(null);
-  const prevOrderCount = useRef(0);
+  const prevOrderIdsRef = useRef<Set<string>>(new Set());
+  const prevReadyIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     const c = localStorage.getItem("dp_active_cashier");
@@ -71,21 +86,53 @@ const CashierDashboard = () => {
       const interval = setInterval(refresh, 5000);
       return () => clearInterval(interval);
     }
-  }, [business]);
+  }, [business?.id]);
 
   const refresh = () => {
     if (!business) return;
     setCategories(getCategories(business.id));
     setMenuItems(getMenuItems(business.id));
     setTables(getTables(business.id));
+    setCustomers(getCustomers(business.id));
     const currentOrders = getOrders(business.id);
-    if (prevOrderCount.current > 0 && currentOrders.length > prevOrderCount.current) {
-      playSound();
-      toast.success("🔔 Dalab cusub ayaa soo galay!");
+
+    // Detect new orders for notifications
+    const currentIds = new Set(currentOrders.map(o => o.id));
+    const newOrders = currentOrders.filter(o => !prevOrderIdsRef.current.has(o.id));
+    const newReady = currentOrders.filter(o => o.status === "ready" && !prevReadyIdsRef.current.has(o.id));
+
+    if (prevOrderIdsRef.current.size > 0) {
+      newOrders.forEach(o => {
+        playSound();
+        addNotification("new_order", `Dalab cusub: ${(o as any).customerName || "Guest"} - $${o.total.toFixed(2)}`, o.id);
+      });
+      newReady.forEach(o => {
+        addNotification("order_ready", `Dalabka ${(o as any).customerName || "Guest"} diyaar ayuu yahay!`, o.id);
+      });
     }
-    prevOrderCount.current = currentOrders.length;
+
+    prevOrderIdsRef.current = currentIds;
+    prevReadyIdsRef.current = new Set(currentOrders.filter(o => o.status === "ready").map(o => o.id));
     setOrders(currentOrders);
   };
+
+  const addNotification = (type: Notification["type"], message: string, orderId?: string) => {
+    setNotifications(prev => [{
+      id: generateId("notif"),
+      type,
+      message,
+      time: new Date().toISOString(),
+      read: false,
+      orderId,
+    }, ...prev].slice(0, 50));
+    toast.success(`🔔 ${message}`);
+  };
+
+  const markAllNotificationsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   const playSound = () => {
     try {
@@ -132,7 +179,7 @@ const CashierDashboard = () => {
       customerName: customerName || "Walking Customer",
     } as any;
     saveOrder(order);
-    toast.success("Dalabka la sameeyay ✓");
+    addNotification("new_order", `Dalab cusub oo aad samaysay: $${cartTotal.toFixed(2)}`, order.id);
     setCart([]);
     setCustomerName("Walking Customer");
     setSelectedTable("");
@@ -147,7 +194,7 @@ const CashierDashboard = () => {
       paidAt: new Date().toISOString(),
       cashierId: cashier?.id,
     });
-    toast.success("Lacagta la qaatay ✓");
+    addNotification("payment", `Lacagta la qaatay: $${paymentDialog.total.toFixed(2)} (${paymentMethod})`, paymentDialog.id);
     if (business) {
       printReceipt({
         order: paymentDialog,
@@ -164,18 +211,32 @@ const CashierDashboard = () => {
   const handleRefund = () => {
     if (!refundDialog) return;
     updateOrder(refundDialog.id, { status: "cancelled" });
-    toast.info("Order la cancel-gareeye / refund");
+    addNotification("cancel", `Order la cancel-gareeye: $${refundDialog.total.toFixed(2)}`, refundDialog.id);
     setRefundDialog(null);
     refresh();
   };
 
   if (!business || !cashier) return null;
 
-  const todayOrders = orders.filter(o => new Date(o.createdAt).toDateString() === new Date().toDateString());
-  const myOrders = todayOrders.filter(o => o.cashierId === cashier.id || (o as any).orderedBy === `cashier:${cashier.name}`);
-  const todayRevenue = todayOrders.filter(o => o.status === "paid").reduce((s, o) => s + o.total, 0);
+  // ===== CASHIER-SPECIFIC STATS (only their own orders, starting from zero) =====
+  const todayStr = new Date().toDateString();
+  const allTodayOrders = orders.filter(o => new Date(o.createdAt).toDateString() === todayStr);
+  
+  // Only show this cashier's orders
+  const myOrders = allTodayOrders.filter(o => 
+    o.cashierId === cashier.id || (o as any).orderedBy === `cashier:${cashier.name}`
+  );
   const myRevenue = myOrders.filter(o => o.status === "paid").reduce((s, o) => s + o.total, 0);
-  const pendingOrders = orders.filter(o => o.status === "pending");
+  const myPendingOrders = myOrders.filter(o => o.status === "pending");
+  const myPreparing = myOrders.filter(o => o.status === "preparing");
+  const myReady = myOrders.filter(o => o.status === "ready");
+
+  // Also show customer-originated orders that need cashier attention
+  const customerPendingOrders = allTodayOrders.filter(o => 
+    o.status === "pending" && (o as any).orderedBy === "customer"
+  );
+  const allPending = orders.filter(o => o.status === "pending");
+
   const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");
 
   const filteredMenu = menuItems
@@ -183,16 +244,30 @@ const CashierDashboard = () => {
     .filter(m => selectedCat === "all" || m.categoryId === selectedCat)
     .filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
 
-  const navItems = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { id: "orders", label: "Orders", icon: ClipboardList },
-    { id: "pos", label: "POS / Walk-in", icon: ShoppingCart },
-    { id: "shift-report", label: "Shift Report", icon: FileText },
-  ];
+  // Filtered orders for Orders tab
+  const filteredOrders = (orderStatusFilter === "all" 
+    ? orders 
+    : orders.filter(o => o.status === orderStatusFilter)
+  ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  // Filtered customers
+  const filteredCustomers = customers.filter(c => 
+    c.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
+    c.phone.toLowerCase().includes(customerSearch.toLowerCase())
+  );
 
   const cashPayments = myOrders.filter(o => o.paymentMethod === "cash" && o.status === "paid");
   const cardPayments = myOrders.filter(o => o.paymentMethod === "card" && o.status === "paid");
   const mobilePayments = myOrders.filter(o => o.paymentMethod === "mobile" && o.status === "paid");
+
+  const navItems = [
+    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { id: "orders", label: "Orders", icon: ClipboardList, badge: allPending.length || undefined },
+    { id: "pos", label: "POS / Walk-in", icon: ShoppingCart },
+    { id: "customers", label: "Customers", icon: Users },
+    { id: "notifications", label: "Notifications", icon: Bell, badge: unreadCount || undefined },
+    { id: "shift-report", label: "Shift Report", icon: FileText },
+  ];
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -224,16 +299,26 @@ const CashierDashboard = () => {
           {navItems.map(item => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id as any)}
+              onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group relative ${
                 activeTab === item.id ? "bg-accent/15 text-accent" : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
-              <item.icon className={`w-5 h-5 shrink-0 ${activeTab === item.id ? "text-accent" : ""}`} />
+              <div className="relative shrink-0">
+                <item.icon className={`w-5 h-5 ${activeTab === item.id ? "text-accent" : ""}`} />
+                {item.badge && (
+                  <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
+                    {item.badge > 9 ? "9+" : item.badge}
+                  </span>
+                )}
+              </div>
               {!collapsed && <span>{item.label}</span>}
+              {!collapsed && item.badge && (
+                <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0">{item.badge}</Badge>
+              )}
               {collapsed && (
                 <span className="absolute left-full ml-2 px-2 py-1 rounded-md bg-foreground text-background text-xs font-medium opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
-                  {item.label}
+                  {item.label} {item.badge ? `(${item.badge})` : ""}
                 </span>
               )}
             </button>
@@ -264,174 +349,270 @@ const CashierDashboard = () => {
       {/* Main content */}
       <main className={`flex-1 transition-all duration-300 ${collapsed ? "ml-[72px]" : "ml-[240px]"}`}>
         <header className="border-b border-border bg-card px-8 py-5">
-          <h1 className="font-display font-bold text-2xl">
-            {activeTab === "dashboard" ? "Cashier Dashboard" : activeTab === "orders" ? "Order Management" : activeTab === "pos" ? "POS / Walk-in Order" : "Shift Report"}
-          </h1>
-          <p className="text-sm text-muted-foreground">{cashier.name} · {new Date().toLocaleDateString()}</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="font-display font-bold text-2xl">
+                {activeTab === "dashboard" ? "Cashier Dashboard" : 
+                 activeTab === "orders" ? "Order Management" : 
+                 activeTab === "pos" ? "POS / Walk-in Order" : 
+                 activeTab === "customers" ? "Customers" :
+                 activeTab === "notifications" ? "Notifications" :
+                 "Shift Report"}
+              </h1>
+              <p className="text-sm text-muted-foreground">{cashier.name} · {new Date().toLocaleDateString()}</p>
+            </div>
+            {/* Quick notification bell in header */}
+            <button 
+              onClick={() => setActiveTab("notifications")}
+              className="relative p-2 rounded-lg hover:bg-muted transition-colors"
+            >
+              <Bell className="w-5 h-5 text-muted-foreground" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center animate-pulse">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+          </div>
         </header>
 
         <div className="p-8">
+          {/* ===== DASHBOARD ===== */}
           {activeTab === "dashboard" && (
             <div className="space-y-6">
-              {/* Stats */}
+              {/* Alert for customer orders needing attention */}
+              {customerPendingOrders.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-secondary/10 border border-secondary/30 rounded-xl p-4 flex items-center gap-3"
+                >
+                  <AlertCircle className="w-5 h-5 text-secondary shrink-0" />
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">{customerPendingOrders.length} dalab cusub oo macaamiisha ka yimid!</p>
+                    <p className="text-xs text-muted-foreground">Fadlan ka jawaab dalabyadaas</p>
+                  </div>
+                  <Button size="sm" variant="hero" onClick={() => setActiveTab("orders")} className="text-xs gap-1">
+                    <Eye className="w-3 h-3" /> Arag
+                  </Button>
+                </motion.div>
+              )}
+
+              {/* My Stats (cashier-specific, zero-based) */}
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: "Orders Today", value: todayOrders.length, icon: ShoppingBag, color: "text-accent" },
-                  { label: "Revenue Today", value: `$${todayRevenue.toFixed(2)}`, icon: DollarSign, color: "text-accent" },
-                  { label: "My Orders", value: myOrders.length, icon: ClipboardList, color: "text-accent" },
-                  { label: "Pending", value: pendingOrders.length, icon: Clock, color: "text-secondary" },
+                  { label: "My Orders", value: myOrders.length, icon: ShoppingBag, desc: "Maanta" },
+                  { label: "My Revenue", value: `$${myRevenue.toFixed(2)}`, icon: DollarSign, desc: "Lacag la qaatay" },
+                  { label: "My Pending", value: myPendingOrders.length, icon: Clock, desc: "Sugaya" },
+                  { label: "Ready to Serve", value: myReady.length, icon: Package, desc: "Diyaar" },
                 ].map((s, i) => (
                   <motion.div key={s.label} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                     className="bg-card border border-border rounded-xl p-4 shadow-card-custom">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{s.label}</p>
                       <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
-                        <s.icon className={`w-4 h-4 ${s.color}`} />
+                        <s.icon className="w-4 h-4 text-accent" />
                       </div>
                     </div>
                     <p className="text-2xl font-display font-bold">{s.value}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">{s.desc}</p>
                   </motion.div>
                 ))}
+              </div>
+
+              {/* Quick Actions */}
+              <div className="grid sm:grid-cols-3 gap-4">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setActiveTab("pos")}
+                  className="bg-card border border-border rounded-xl p-5 shadow-card-custom text-left hover:border-accent/30 transition-all"
+                >
+                  <ShoppingCart className="w-8 h-8 text-accent mb-3" />
+                  <p className="font-display font-bold text-sm">New Order</p>
+                  <p className="text-xs text-muted-foreground mt-1">Dalab cusub samee</p>
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setActiveTab("orders")}
+                  className="bg-card border border-border rounded-xl p-5 shadow-card-custom text-left hover:border-accent/30 transition-all"
+                >
+                  <ClipboardList className="w-8 h-8 text-accent mb-3" />
+                  <p className="font-display font-bold text-sm">Manage Orders</p>
+                  <p className="text-xs text-muted-foreground mt-1">{allPending.length} pending</p>
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setActiveTab("customers")}
+                  className="bg-card border border-border rounded-xl p-5 shadow-card-custom text-left hover:border-accent/30 transition-all"
+                >
+                  <Users className="w-8 h-8 text-accent mb-3" />
+                  <p className="font-display font-bold text-sm">Customers</p>
+                  <p className="text-xs text-muted-foreground mt-1">{customers.length} registered</p>
+                </motion.button>
               </div>
 
               {/* Recent orders quick view */}
               <div className="bg-card border border-border rounded-xl shadow-card-custom overflow-hidden">
                 <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-                  <h3 className="font-display font-bold">Recent Orders</h3>
+                  <h3 className="font-display font-bold">Recent Orders (Mine)</h3>
                   <Button variant="outline" size="sm" onClick={() => setActiveTab("orders")}>View All</Button>
                 </div>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Table</TableHead>
-                      <TableHead>Items</TableHead>
-                      <TableHead>Total</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {todayOrders.slice(-10).reverse().map(o => (
-                      <TableRow key={o.id}>
-                        <TableCell className="font-medium">{(o as any).customerName || "Guest"}</TableCell>
-                        <TableCell>{o.tableId}</TableCell>
-                        <TableCell className="text-xs">{o.items.map(i => `${i.quantity}× ${i.name}`).join(", ").slice(0, 40)}</TableCell>
-                        <TableCell className="font-bold text-accent">${o.total.toFixed(2)}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="text-[10px]">{o.status}</Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                      {(o.status === "ready" || o.status === "delivered") && (
-                            <Button size="sm" variant="hero" className="text-xs gap-1" onClick={() => { setPaymentDialog(o); setPaidAmount(String(o.total)); }}>
-                              <CreditCard className="w-3 h-3" /> Pay
-                            </Button>
-                          )}
-                        </TableCell>
+                {myOrders.length === 0 ? (
+                  <div className="py-12 text-center text-muted-foreground">
+                    <ShoppingBag className="w-10 h-10 mx-auto mb-3 opacity-20" />
+                    <p className="text-sm font-medium">Wali dalab ma samaysan</p>
+                    <p className="text-xs mt-1">POS tab-ka tag si aad dalab cusub u samayso</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Table</TableHead>
+                        <TableHead>Items</TableHead>
+                        <TableHead>Total</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {myOrders.slice(-10).reverse().map(o => (
+                        <TableRow key={o.id}>
+                          <TableCell className="font-medium">{(o as any).customerName || "Guest"}</TableCell>
+                          <TableCell>{o.tableId}</TableCell>
+                          <TableCell className="text-xs">{o.items.map(i => `${i.quantity}× ${i.name}`).join(", ").slice(0, 40)}</TableCell>
+                          <TableCell className="font-bold text-accent">${o.total.toFixed(2)}</TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="text-[10px]">{o.status}</Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {(o.status === "ready" || o.status === "delivered") && (
+                              <Button size="sm" variant="hero" className="text-xs gap-1" onClick={() => { setPaymentDialog(o); setPaidAmount(String(o.total)); }}>
+                                <CreditCard className="w-3 h-3" /> Pay
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </div>
             </div>
           )}
 
+          {/* ===== ORDERS ===== */}
           {activeTab === "orders" && (
             <div className="space-y-6">
               {/* Status filter */}
               <div className="flex gap-2 flex-wrap">
                 {["all", "pending", "preparing", "ready", "delivered", "paid", "cancelled"].map(s => (
-                  <Button key={s} variant="outline" size="sm" className="text-xs capitalize">
-                    {s}
+                  <Button key={s} variant={orderStatusFilter === s ? "default" : "outline"} size="sm" className="text-xs capitalize"
+                    onClick={() => setOrderStatusFilter(s)}>
+                    {s === "all" ? "All" : s}
+                    {s === "pending" && allPending.length > 0 && (
+                      <Badge variant="destructive" className="ml-1.5 text-[9px] px-1 py-0">{allPending.length}</Badge>
+                    )}
                   </Button>
                 ))}
               </div>
 
               <div className="space-y-4">
-                {orders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((o, i) => (
-                  <motion.div key={o.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }}
-                    className={`bg-card border rounded-xl p-5 shadow-card-custom ${
-                      o.status === "pending" ? "border-secondary/50" :
-                      o.status === "preparing" ? "border-accent/50" :
-                      o.status === "ready" ? "border-green-500/50" :
-                      o.status === "paid" ? "border-accent/30" :
-                      "border-border"
-                    }`}>
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold">
-                          {((o as any).customerName || "G").charAt(0).toUpperCase()}
+                {filteredOrders.length === 0 ? (
+                  <div className="bg-card border border-border rounded-xl p-12 text-center">
+                    <ClipboardList className="w-10 h-10 mx-auto mb-3 text-muted-foreground opacity-20" />
+                    <p className="text-sm text-muted-foreground">Dalab la helin</p>
+                  </div>
+                ) : (
+                  filteredOrders.map((o, i) => (
+                    <motion.div key={o.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }}
+                      className={`bg-card border rounded-xl p-5 shadow-card-custom ${
+                        o.status === "pending" ? "border-secondary/50" :
+                        o.status === "preparing" ? "border-accent/50" :
+                        o.status === "ready" ? "border-green-500/50" :
+                        o.status === "paid" ? "border-accent/30" :
+                        "border-border"
+                      }`}>
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold">
+                            {((o as any).customerName || "G").charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="font-display font-bold text-sm">{(o as any).customerName || "Guest"}</p>
+                            <p className="text-xs text-muted-foreground">Table: {o.tableId} · {new Date(o.createdAt).toLocaleTimeString()}</p>
+                            {o.orderedBy && <p className="text-[10px] text-muted-foreground">By: {o.orderedBy}</p>}
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-display font-bold text-sm">{(o as any).customerName || "Guest"}</p>
-                          <p className="text-xs text-muted-foreground">Table: {o.tableId} · {new Date(o.createdAt).toLocaleTimeString()}</p>
-                          {o.orderedBy && <p className="text-[10px] text-muted-foreground">By: {o.orderedBy}</p>}
+                        <Badge variant="secondary" className="text-xs">{o.status}</Badge>
+                      </div>
+
+                      <div className="bg-muted/50 rounded-lg p-3 mb-3">
+                        {o.items.map((item, idx) => (
+                          <div key={idx} className="flex justify-between text-sm">
+                            <span>{item.quantity}× {item.name}</span>
+                            <span className="text-muted-foreground">${(item.price * item.quantity).toFixed(2)}</span>
+                          </div>
+                        ))}
+                        <div className="border-t border-border mt-2 pt-2 flex justify-between font-bold">
+                          <span>Total</span>
+                          <span className="text-accent">${o.total.toFixed(2)}</span>
                         </div>
                       </div>
-                      <Badge variant="secondary" className="text-xs">{o.status}</Badge>
-                    </div>
 
-                    <div className="bg-muted/50 rounded-lg p-3 mb-3">
-                      {o.items.map((item, idx) => (
-                        <div key={idx} className="flex justify-between text-sm">
-                          <span>{item.quantity}× {item.name}</span>
-                          <span className="text-muted-foreground">${(item.price * item.quantity).toFixed(2)}</span>
-                        </div>
-                      ))}
-                      <div className="border-t border-border mt-2 pt-2 flex justify-between font-bold">
-                        <span>Total</span>
-                        <span className="text-accent">${o.total.toFixed(2)}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2 flex-wrap">
-                      {o.status === "pending" && (
-                        <>
+                      <div className="flex gap-2 flex-wrap">
+                        {o.status === "pending" && (
+                          <>
+                            <Button size="sm" variant="hero" className="text-xs gap-1"
+                              onClick={() => { updateOrder(o.id, { status: "preparing" }); toast.success("Aqbalay ✓"); refresh(); }}>
+                              <Check className="w-3 h-3" /> Aqbal
+                            </Button>
+                            <Button size="sm" variant="destructive" className="text-xs gap-1"
+                              onClick={() => { updateOrder(o.id, { status: "cancelled" }); toast.info("La joojiyay"); refresh(); }}>
+                              <XCircle className="w-3 h-3" /> Diid
+                            </Button>
+                          </>
+                        )}
+                        {o.status === "preparing" && (
+                          <Button size="sm" className="text-xs gap-1 bg-green-600 hover:bg-green-700 text-white"
+                            onClick={() => { updateOrder(o.id, { status: "ready" }); toast.success("Diyaar ✓"); refresh(); }}>
+                            <Check className="w-3 h-3" /> Diyaar
+                          </Button>
+                        )}
+                        {o.status === "ready" && (
+                          <Button size="sm" variant="outline" className="text-xs gap-1"
+                            onClick={() => { updateOrder(o.id, { status: "delivered" }); toast.success("La geeyay ✓"); refresh(); }}>
+                            <Check className="w-3 h-3" /> Served
+                          </Button>
+                        )}
+                        {(o.status === "ready" || o.status === "delivered") && (
                           <Button size="sm" variant="hero" className="text-xs gap-1"
-                            onClick={() => { updateOrder(o.id, { status: "preparing" }); toast.success("Aqbalay ✓"); refresh(); }}>
-                            <Check className="w-3 h-3" /> Aqbal
+                            onClick={() => { setPaymentDialog(o); setPaidAmount(String(o.total)); }}>
+                            <CreditCard className="w-3 h-3" /> Confirm Payment
                           </Button>
-                          <Button size="sm" variant="destructive" className="text-xs gap-1"
-                            onClick={() => { updateOrder(o.id, { status: "cancelled" }); toast.info("La joojiyay"); refresh(); }}>
-                            <XCircle className="w-3 h-3" /> Diid
+                        )}
+                        {o.status !== "cancelled" && o.status !== "paid" && (
+                          <Button size="sm" variant="outline" className="text-xs gap-1"
+                            onClick={() => setRefundDialog(o)}>
+                            <RefreshCw className="w-3 h-3" /> Cancel/Refund
                           </Button>
-                        </>
-                      )}
-                      {o.status === "preparing" && (
-                        <Button size="sm" className="text-xs gap-1 bg-green-600 hover:bg-green-700 text-white"
-                          onClick={() => { updateOrder(o.id, { status: "ready" }); toast.success("Diyaar ✓"); refresh(); }}>
-                          <Check className="w-3 h-3" /> Diyaar
-                        </Button>
-                      )}
-                      {o.status === "ready" && (
+                        )}
                         <Button size="sm" variant="outline" className="text-xs gap-1"
-                          onClick={() => { updateOrder(o.id, { status: "delivered" }); toast.success("La geeyay ✓"); refresh(); }}>
-                          <Check className="w-3 h-3" /> Served
+                          onClick={() => printReceipt({ order: o, business, servedBy: cashier.name })}>
+                          <Receipt className="w-3 h-3" /> Receipt
                         </Button>
-                      )}
-                      {(o.status === "ready" || o.status === "delivered") && (
-                        <Button size="sm" variant="hero" className="text-xs gap-1"
-                          onClick={() => { setPaymentDialog(o); setPaidAmount(String(o.total)); }}>
-                          <CreditCard className="w-3 h-3" /> Confirm Payment
-                        </Button>
-                      )}
-                      {o.status !== "cancelled" && o.status !== "paid" && (
-                        <Button size="sm" variant="outline" className="text-xs gap-1"
-                          onClick={() => setRefundDialog(o)}>
-                          <RefreshCw className="w-3 h-3" /> Cancel/Refund
-                        </Button>
-                      )}
-                      <Button size="sm" variant="outline" className="text-xs gap-1"
-                        onClick={() => printReceipt({ order: o, business, servedBy: cashier.name })}>
-                        <Receipt className="w-3 h-3" /> Receipt
-                      </Button>
-                    </div>
-                  </motion.div>
-                ))}
+                      </div>
+                    </motion.div>
+                  ))
+                )}
               </div>
             </div>
           )}
 
+          {/* ===== POS ===== */}
           {activeTab === "pos" && (
             <div className="grid lg:grid-cols-5 gap-6">
               {/* Menu side */}
@@ -542,12 +723,151 @@ const CashierDashboard = () => {
             </div>
           )}
 
+          {/* ===== CUSTOMERS ===== */}
+          {activeTab === "customers" && (
+            <div className="space-y-6">
+              {/* Stats */}
+              <div className="grid sm:grid-cols-3 gap-4">
+                {[
+                  { label: "Total Customers", value: customers.length, icon: Users },
+                  { label: "Registered Today", value: customers.filter(c => new Date(c.registeredAt).toDateString() === todayStr).length, icon: Calendar },
+                  { label: "Active Spenders", value: customers.filter(c => c.totalSpent > 0).length, icon: Award },
+                ].map((s, i) => (
+                  <motion.div key={s.label} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                    className="bg-card border border-border rounded-xl p-4 shadow-card-custom">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{s.label}</p>
+                      <s.icon className="w-4 h-4 text-accent" />
+                    </div>
+                    <p className="text-2xl font-display font-bold">{s.value}</p>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Search */}
+              <div className="relative max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input placeholder="Raadi macmiil... (magac ama telefoon)" value={customerSearch} onChange={e => setCustomerSearch(e.target.value)} className="pl-9" />
+              </div>
+
+              {/* Customer list */}
+              <div className="bg-card border border-border rounded-xl shadow-card-custom overflow-hidden">
+                {filteredCustomers.length === 0 ? (
+                  <div className="py-12 text-center text-muted-foreground">
+                    <Users className="w-10 h-10 mx-auto mb-3 opacity-20" />
+                    <p className="text-sm">Macmiil la helin</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Phone</TableHead>
+                        <TableHead>Orders</TableHead>
+                        <TableHead>Total Spent</TableHead>
+                        <TableHead>Points</TableHead>
+                        <TableHead>Registered</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredCustomers.map(c => (
+                        <TableRow key={c.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold text-xs">
+                                {c.name.charAt(0).toUpperCase()}
+                              </div>
+                              <span className="font-medium text-sm">{c.name}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm">{c.phone || "—"}</TableCell>
+                          <TableCell className="font-medium">{c.totalOrders}</TableCell>
+                          <TableCell className="font-bold text-accent">${c.totalSpent.toFixed(2)}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="text-[10px]">
+                              {c.loyaltyPoints} pts
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {new Date(c.registeredAt).toLocaleDateString()}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ===== NOTIFICATIONS ===== */}
+          {activeTab === "notifications" && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">{unreadCount} unread notification{unreadCount !== 1 ? "s" : ""}</p>
+                {unreadCount > 0 && (
+                  <Button variant="outline" size="sm" className="text-xs" onClick={markAllNotificationsRead}>
+                    <Check className="w-3 h-3 mr-1" /> Mark all read
+                  </Button>
+                )}
+              </div>
+
+              {notifications.length === 0 ? (
+                <div className="bg-card border border-border rounded-xl p-12 text-center">
+                  <Bell className="w-10 h-10 mx-auto mb-3 text-muted-foreground opacity-20" />
+                  <p className="text-sm text-muted-foreground font-medium">Wali ogeysiis ma jiro</p>
+                  <p className="text-xs text-muted-foreground mt-1">Marka dalab cusub yimaado halkan ayuu ka soo muuqan doonaa</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {notifications.map((n, i) => (
+                    <motion.div
+                      key={n.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.02 }}
+                      className={`bg-card border rounded-xl p-4 flex items-start gap-3 transition-all ${
+                        n.read ? "border-border opacity-70" : "border-accent/30 bg-accent/5"
+                      }`}
+                      onClick={() => {
+                        setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, read: true } : x));
+                        if (n.orderId) setActiveTab("orders");
+                      }}
+                    >
+                      <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
+                        n.type === "new_order" ? "bg-accent/15 text-accent" :
+                        n.type === "order_ready" ? "bg-green-500/15 text-green-600" :
+                        n.type === "payment" ? "bg-accent/15 text-accent" :
+                        "bg-destructive/15 text-destructive"
+                      }`}>
+                        {n.type === "new_order" ? <ShoppingBag className="w-4 h-4" /> :
+                         n.type === "order_ready" ? <Package className="w-4 h-4" /> :
+                         n.type === "payment" ? <CreditCard className="w-4 h-4" /> :
+                         <XCircle className="w-4 h-4" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium">{n.message}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">
+                          {new Date(n.time).toLocaleTimeString()}
+                        </p>
+                      </div>
+                      {!n.read && (
+                        <div className="w-2 h-2 rounded-full bg-accent shrink-0 mt-2" />
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ===== SHIFT REPORT ===== */}
           {activeTab === "shift-report" && (
             <div className="space-y-6">
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: "Total Orders", value: myOrders.length, icon: ShoppingBag },
-                  { label: "Total Revenue", value: `$${myRevenue.toFixed(2)}`, icon: DollarSign },
+                  { label: "My Total Orders", value: myOrders.length, icon: ShoppingBag },
+                  { label: "My Revenue", value: `$${myRevenue.toFixed(2)}`, icon: DollarSign },
                   { label: "Cash Payments", value: `$${cashPayments.reduce((s, o) => s + o.total, 0).toFixed(2)} (${cashPayments.length})`, icon: Banknote },
                   { label: "Mobile Payments", value: `$${mobilePayments.reduce((s, o) => s + o.total, 0).toFixed(2)} (${mobilePayments.length})`, icon: Smartphone },
                 ].map((s, i) => (
@@ -588,30 +908,37 @@ const CashierDashboard = () => {
                 <div className="px-5 py-4 border-b border-border">
                   <h3 className="font-display font-bold">My Orders Today</h3>
                 </div>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Time</TableHead>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Items</TableHead>
-                      <TableHead>Total</TableHead>
-                      <TableHead>Payment</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {myOrders.reverse().map(o => (
-                      <TableRow key={o.id}>
-                        <TableCell className="text-xs">{new Date(o.createdAt).toLocaleTimeString()}</TableCell>
-                        <TableCell className="font-medium">{(o as any).customerName || "Guest"}</TableCell>
-                        <TableCell className="text-xs">{o.items.length} items</TableCell>
-                        <TableCell className="font-bold">${o.total.toFixed(2)}</TableCell>
-                        <TableCell><Badge variant="outline" className="text-[10px]">{o.paymentMethod || "—"}</Badge></TableCell>
-                        <TableCell><Badge variant="secondary" className="text-[10px]">{o.status}</Badge></TableCell>
+                {myOrders.length === 0 ? (
+                  <div className="py-12 text-center text-muted-foreground">
+                    <FileText className="w-10 h-10 mx-auto mb-3 opacity-20" />
+                    <p className="text-sm">Maanta wali dalab ma samaysan</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Time</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Items</TableHead>
+                        <TableHead>Total</TableHead>
+                        <TableHead>Payment</TableHead>
+                        <TableHead>Status</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {[...myOrders].reverse().map(o => (
+                        <TableRow key={o.id}>
+                          <TableCell className="text-xs">{new Date(o.createdAt).toLocaleTimeString()}</TableCell>
+                          <TableCell className="font-medium">{(o as any).customerName || "Guest"}</TableCell>
+                          <TableCell className="text-xs">{o.items.length} items</TableCell>
+                          <TableCell className="font-bold">${o.total.toFixed(2)}</TableCell>
+                          <TableCell><Badge variant="outline" className="text-[10px]">{o.paymentMethod || "—"}</Badge></TableCell>
+                          <TableCell><Badge variant="secondary" className="text-[10px]">{o.status}</Badge></TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </div>
             </div>
           )}
