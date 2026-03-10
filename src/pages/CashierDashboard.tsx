@@ -264,6 +264,7 @@ const CashierDashboard = () => {
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "orders", label: "Orders", icon: ClipboardList, badge: allPending.length || undefined },
     { id: "pos", label: "POS / Walk-in", icon: ShoppingCart },
+    { id: "payment-methods", label: "Payments", icon: CreditCard },
     { id: "customers", label: "Customers", icon: Users },
     { id: "notifications", label: "Notifications", icon: Bell, badge: unreadCount || undefined },
     { id: "shift-report", label: "Shift Report", icon: FileText },

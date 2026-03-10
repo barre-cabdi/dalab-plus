@@ -1091,6 +1091,7 @@ const AdminDashboard = () => {
     orders: "Order Management",
     "order-history": "Order History",
     qr: "QR Codes",
+    "payment-methods": "Payment Methods",
     staff: "Staff Management",
     customers: "Customers",
     loyalty: "Loyalty Program",
