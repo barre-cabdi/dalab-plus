@@ -558,6 +558,9 @@ const AdminDashboard = () => {
           </div>
         );
 
+      case "admin-order":
+        return <AdminOrderTab business={business} categories={categories} menuItems={menuItems} tables={tables} onOrderPlaced={refreshData} />;
+
       case "menu":
         return <MenuManagementTab businessId={business.id} onDataChange={refreshData} />;
 
