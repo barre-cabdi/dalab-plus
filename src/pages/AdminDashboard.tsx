@@ -48,6 +48,207 @@ import { printReceipt } from "@/lib/printReceipt";
 
 const emojiOptions = ["🍛","🍔","🐟","🥗","🍵","🥤","🫓","🍝","🍰","🍦","🦞","🥭","☕","🍕","🥩","🍗","🌮","🍣","🧁","🥚","🍳","🥐","🧀","🍱"];
 
+// Admin Order component
+const AdminOrderTab = ({ business, categories, menuItems, tables, onOrderPlaced }: {
+  business: Business; categories: Category[]; menuItems: MenuItem[]; tables: TableItem[]; onOrderPlaced: () => void;
+}) => {
+  const [selectedCat, setSelectedCat] = useState("all");
+  const [search, setSearch] = useState("");
+  const [cart, setCart] = useState<{ id: string; name: string; price: number; quantity: number; image: string }[]>([]);
+  const [selectedTable, setSelectedTable] = useState("");
+
+  const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");
+  const addToCart = (item: MenuItem) => {
+    setCart(prev => {
+      const existing = prev.find(c => c.id === item.id);
+      if (existing) return prev.map(c => c.id === item.id ? { ...c, quantity: c.quantity + 1 } : c);
+      return [...prev, { id: item.id, name: item.name, price: item.price, quantity: 1, image: item.image }];
+    });
+  };
+  const updateQty = (id: string, delta: number) => {
+    setCart(prev => prev.map(c => c.id === id ? { ...c, quantity: Math.max(0, c.quantity + delta) } : c).filter(c => c.quantity > 0));
+  };
+  const cartTotal = cart.reduce((s, c) => s + c.price * c.quantity, 0);
+  const filteredMenu = menuItems.filter(m => m.available)
+    .filter(m => selectedCat === "all" || m.categoryId === selectedCat)
+    .filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
+
+  const placeOrder = () => {
+    if (cart.length === 0) return;
+    const order: Order = {
+      id: generateId("ord"), businessId: business.id,
+      tableId: selectedTable || "Admin", items: cart, total: cartTotal,
+      status: "pending", createdAt: new Date().toISOString(),
+      orderedBy: "admin",
+    } as any;
+    (order as any).customerName = "Admin Order";
+    saveOrder(order);
+    toast.success("Admin order placed ✓");
+    setCart([]); setSelectedTable("");
+    onOrderPlaced();
+  };
+
+  return (
+    <div className="grid lg:grid-cols-5 gap-6">
+      <div className="lg:col-span-3 space-y-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input placeholder="Search menu..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+        </div>
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          <Button variant={selectedCat === "all" ? "default" : "outline"} size="sm" onClick={() => setSelectedCat("all")}>All</Button>
+          {categories.map(c => (
+            <Button key={c.id} variant={selectedCat === c.id ? "default" : "outline"} size="sm" onClick={() => setSelectedCat(c.id)} className="whitespace-nowrap">
+              {isImageUrl(c.icon) ? "📁" : c.icon} {c.name}
+            </Button>
+          ))}
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {filteredMenu.map(item => (
+            <motion.div key={item.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+              onClick={() => addToCart(item)}
+              className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:shadow-gold transition-all">
+              <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-2xl mb-2 mx-auto overflow-hidden">
+                {isImageUrl(item.image) ? <img src={item.image} alt="" className="w-full h-full object-cover" /> : item.image}
+              </div>
+              <p className="font-medium text-sm text-center">{item.name}</p>
+              <p className="text-accent font-bold text-center">${item.price.toFixed(2)}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+      <div className="lg:col-span-2">
+        <div className="bg-card border border-border rounded-xl shadow-card-custom sticky top-8">
+          <div className="px-5 py-4 border-b border-border">
+            <h3 className="font-display font-bold">🛒 Admin Order</h3>
+          </div>
+          <div className="p-5 space-y-4">
+            <div>
+              <label className="text-xs font-medium mb-1 block">Table</label>
+              <Select value={selectedTable} onValueChange={setSelectedTable}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select table" /></SelectTrigger>
+                <SelectContent>
+                  {tables.map(t => <SelectItem key={t.id} value={String(t.number)}>Table #{t.number}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            {cart.length === 0 ? (
+              <p className="text-center py-8 text-sm text-muted-foreground">Click menu items to add</p>
+            ) : (
+              <div className="space-y-2">
+                {cart.map(c => (
+                  <div key={c.id} className="flex items-center justify-between bg-muted/50 rounded-lg px-3 py-2">
+                    <span className="text-sm font-medium truncate flex-1">{c.name}</span>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => updateQty(c.id, -1)}><Minus className="w-3 h-3" /></Button>
+                      <span className="w-6 text-center font-bold text-sm">{c.quantity}</span>
+                      <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => updateQty(c.id, 1)}><Plus className="w-3 h-3" /></Button>
+                    </div>
+                    <p className="font-bold text-sm ml-3">${(c.price * c.quantity).toFixed(2)}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+            {cart.length > 0 && (
+              <div className="border-t border-border pt-4 space-y-3">
+                <div className="flex justify-between font-display font-bold text-lg">
+                  <span>Total</span><span className="text-accent">${cartTotal.toFixed(2)}</span>
+                </div>
+                <Button variant="hero" className="w-full" onClick={placeOrder}>
+                  <Check className="w-4 h-4 mr-2" /> Place Admin Order
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Cashier Report component
+const CashierReportTab = ({ businessId }: { businessId: string }) => {
+  const staff = getStaff(businessId).filter(s => s.jobTitle.toLowerCase() === "cashier");
+  const allOrders = getOrders(businessId);
+  const todayOrders = allOrders.filter(o => new Date(o.createdAt).toDateString() === new Date().toDateString());
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-display font-bold">Cashier Performance Report</h2>
+      
+      {/* Overall stats */}
+      <div className="grid sm:grid-cols-3 gap-4">
+        {[
+          { label: "Total Cashiers", value: staff.length },
+          { label: "Today's Cashier Orders", value: todayOrders.filter(o => o.orderedBy?.startsWith("cashier")).length },
+          { label: "Today's Cashier Revenue", value: `$${todayOrders.filter(o => o.orderedBy?.startsWith("cashier") && o.status === "paid").reduce((s, o) => s + o.total, 0).toFixed(2)}` },
+        ].map((s, i) => (
+          <motion.div key={s.label} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+            className="bg-card border border-border rounded-xl p-4 shadow-card-custom">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">{s.label}</p>
+            <p className="text-2xl font-display font-bold mt-1">{s.value}</p>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Per cashier breakdown */}
+      <div className="space-y-4">
+        {staff.length === 0 ? (
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <p className="text-muted-foreground">No cashiers registered yet. Add staff with "Cashier" job title.</p>
+          </div>
+        ) : staff.map((s, i) => {
+          const cashierOrders = allOrders.filter(o => o.cashierId === s.id || o.orderedBy === `cashier:${s.name}`);
+          const todayCashierOrders = cashierOrders.filter(o => new Date(o.createdAt).toDateString() === new Date().toDateString());
+          const paidOrders = cashierOrders.filter(o => o.status === "paid");
+          const totalRevenue = paidOrders.reduce((sum, o) => sum + o.total, 0);
+          const cashTotal = paidOrders.filter(o => o.paymentMethod === "cash").reduce((sum, o) => sum + o.total, 0);
+          const cardTotal = paidOrders.filter(o => o.paymentMethod === "card").reduce((sum, o) => sum + o.total, 0);
+          const mobileTotal = paidOrders.filter(o => o.paymentMethod === "mobile").reduce((sum, o) => sum + o.total, 0);
+
+          return (
+            <motion.div key={s.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+              className="bg-card border border-border rounded-xl p-5 shadow-card-custom">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold text-lg">
+                  {s.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className="font-display font-bold">{s.name}</p>
+                  <p className="text-xs text-muted-foreground">{s.shifts} shift · {s.startTime}-{s.endTime}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="bg-muted/50 rounded-lg p-3 text-center">
+                  <p className="text-xs text-muted-foreground">Total Orders</p>
+                  <p className="font-bold text-lg">{cashierOrders.length}</p>
+                </div>
+                <div className="bg-muted/50 rounded-lg p-3 text-center">
+                  <p className="text-xs text-muted-foreground">Total Revenue</p>
+                  <p className="font-bold text-lg text-accent">${totalRevenue.toFixed(2)}</p>
+                </div>
+                <div className="bg-muted/50 rounded-lg p-3 text-center">
+                  <p className="text-xs text-muted-foreground">Today Orders</p>
+                  <p className="font-bold text-lg">{todayCashierOrders.length}</p>
+                </div>
+                <div className="bg-muted/50 rounded-lg p-3 text-center">
+                  <p className="text-xs text-muted-foreground">Paid Orders</p>
+                  <p className="font-bold text-lg">{paidOrders.length}</p>
+                </div>
+              </div>
+              <div className="mt-3 flex gap-4 text-xs text-muted-foreground">
+                <span>💵 Cash: ${cashTotal.toFixed(2)}</span>
+                <span>💳 Card: ${cardTotal.toFixed(2)}</span>
+                <span>📱 Mobile: ${mobileTotal.toFixed(2)}</span>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [business, setBusiness] = useState<Business | null>(null);
