@@ -264,6 +264,9 @@ const LoyaltyTab = ({ businessId }: LoyaltyTabProps) => {
         <TabsList>
           <TabsTrigger value="members">Members</TabsTrigger>
           <TabsTrigger value="rewards">Rewards</TabsTrigger>
+          <TabsTrigger value="levels">
+            <Settings className="w-3.5 h-3.5 mr-1" /> Level Settings
+          </TabsTrigger>
         </TabsList>
 
         {/* Members Tab */}
