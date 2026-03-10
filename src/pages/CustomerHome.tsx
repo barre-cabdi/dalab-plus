@@ -6,7 +6,7 @@ import {
   Clock, Info, ArrowRight, Sparkles, Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getBusinesses, Business, getDefaultServices, BusinessService } from "@/lib/store";
+import { getBusinessById, Business, getDefaultServices, BusinessService } from "@/lib/store";
 
 const typeConfig: Record<string, { icon: any; emoji: string; aboutText: string }> = {
   restaurant: {
