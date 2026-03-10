@@ -20,6 +20,8 @@ const CustomerRegister = () => {
   const [searchParams] = useSearchParams();
   const tableId = searchParams.get("table") || "1";
   const businessId = searchParams.get("business") || "1001";
+  const qrBusinessName = searchParams.get("name") || "";
+  const qrBusinessLogo = searchParams.get("logo") || "";
   const [formData, setFormData] = useState({ name: "", phone: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -42,7 +44,8 @@ const CustomerRegister = () => {
     }
   }, [navigate, tableId, businessId]);
 
-  const businessName = business?.name || "DALABplus+";
+  const businessName = business?.name || qrBusinessName || "DALABplus+";
+  const businessLogo = business?.logo || qrBusinessLogo || "";
   const businessType = business?.type || "restaurant";
   const config = typeConfig[businessType] || typeConfig.restaurant;
   const TypeIcon = config.icon;
@@ -148,9 +151,9 @@ const CustomerRegister = () => {
             className="text-center mb-8"
           >
             <div className="relative inline-block">
-              {business?.logo ? (
+              {businessLogo ? (
                 <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-accent/30 shadow-gold mx-auto">
-                  <img src={business.logo} alt={businessName} className="w-full h-full object-cover" />
+                  <img src={businessLogo} alt={businessName} className="w-full h-full object-cover" />
                 </div>
               ) : (
                 <motion.div
