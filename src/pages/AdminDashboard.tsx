@@ -507,7 +507,7 @@ const AdminDashboard = () => {
 
   // Print QR
   const handlePrintQR = (tableNum: number) => {
-    const url = `${window.location.origin}/register?table=${tableNum}&business=${business.id}&name=${encodeURIComponent(business.name)}${business.logo ? `&logo=${encodeURIComponent(business.logo)}` : ''}`;
+    const url = `${window.location.origin}/register?table=${tableNum}&business=${business.id}`;
     const printWindow = window.open("", "_blank", "width=400,height=500");
     if (!printWindow) return;
     printWindow.document.write(`
