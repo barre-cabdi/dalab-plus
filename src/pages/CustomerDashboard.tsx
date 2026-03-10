@@ -7,6 +7,8 @@ import { getBusinessById } from "@/lib/store";
 
 const CustomerDashboard = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const urlBusinessId = searchParams.get("business") || "";
   const [customer, setCustomer] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [animatePoints, setAnimatePoints] = useState(false);
