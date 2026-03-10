@@ -54,7 +54,7 @@ const StaffTab = ({ businessId }: StaffTabProps) => {
     setDialog(true);
   };
 
-  const isLoginRole = form.jobTitle === "Waiter" || form.jobTitle === "Hotel Manager" || (form.jobTitle === "Other" && (form.customJobTitle.toLowerCase().includes("waiter") || form.customJobTitle.toLowerCase().includes("hotel manager")));
+  const isLoginRole = form.jobTitle === "Waiter" || form.jobTitle === "Hotel Manager" || form.jobTitle === "Cashier" || (form.jobTitle === "Other" && (form.customJobTitle.toLowerCase().includes("waiter") || form.customJobTitle.toLowerCase().includes("hotel manager") || form.customJobTitle.toLowerCase().includes("cashier")));
 
   const handleSave = () => {
     if (!form.name.trim() || !form.phone.trim()) { toast.error("Name and phone required"); return; }
