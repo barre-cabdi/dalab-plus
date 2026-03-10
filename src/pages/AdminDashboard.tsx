@@ -294,7 +294,8 @@ const AdminDashboard = () => {
       const interval = setInterval(refreshData, 5000);
       return () => clearInterval(interval);
     }
-  }, [business]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [business?.id]);
 
   const [hasNewNotification, setHasNewNotification] = useState(false);
   const [flashOrder, setFlashOrder] = useState(false);
