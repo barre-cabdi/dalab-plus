@@ -172,6 +172,15 @@ export const updateOrder = (id: string, updates: Partial<Order>) => {
   const all: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]");
   localStorage.setItem(ORDERS_KEY, JSON.stringify(all.map(o => o.id === id ? { ...o, ...updates } : o)));
 };
+export const saveOrder = (order: Order) => {
+  const all: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]");
+  all.push(order);
+  localStorage.setItem(ORDERS_KEY, JSON.stringify(all));
+};
+export const deleteOrder = (id: string) => {
+  const all: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]");
+  localStorage.setItem(ORDERS_KEY, JSON.stringify(all.filter(o => o.id !== id)));
+};
 
 export interface StaffMember {
   id: string;
