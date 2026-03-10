@@ -20,6 +20,8 @@ const CustomerRegister = () => {
   const [searchParams] = useSearchParams();
   const tableId = searchParams.get("table") || "1";
   const businessId = searchParams.get("business") || "1001";
+  const qrBusinessName = searchParams.get("name") || "";
+  const qrBusinessLogo = searchParams.get("logo") || "";
   const [formData, setFormData] = useState({ name: "", phone: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
