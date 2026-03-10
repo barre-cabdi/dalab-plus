@@ -511,10 +511,10 @@ const LoyaltyTab = ({ businessId }: LoyaltyTabProps) => {
             <DialogDescription>{viewMember?.name}'s loyalty details</DialogDescription>
           </DialogHeader>
           {viewMember && (() => {
-            const level = getLevel(viewMember.points);
+            const level = getLevel(viewMember.points, levels);
             const memberOrders = getMemberOrders(viewMember.name, viewMember.phone);
             const totalSpent = memberOrders.reduce((s, o) => s + o.total, 0);
-            const nextLevel = LOYALTY_LEVELS.find(l => l.min > viewMember.points);
+            const nextLevel = levels.find(l => l.min > viewMember.points);
             const progress = nextLevel ? ((viewMember.points - level.min) / (nextLevel.min - level.min)) * 100 : 100;
 
             return (
