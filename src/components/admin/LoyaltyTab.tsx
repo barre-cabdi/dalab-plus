@@ -211,8 +211,8 @@ const LoyaltyTab = ({ businessId }: LoyaltyTabProps) => {
   };
 
   const totalPoints = members.reduce((s, m) => s + m.points, 0);
-  const levelCounts = LOYALTY_LEVELS.map(l => ({
-    ...l, count: members.filter(m => getLevel(m.points).name === l.name).length,
+  const levelCounts = levels.map((l, i) => ({
+    ...l, color: l.color || LEVEL_COLORS[i] || LEVEL_COLORS[0], count: members.filter(m => getLevel(m.points, levels).name === l.name).length,
   }));
 
   const stats = [
