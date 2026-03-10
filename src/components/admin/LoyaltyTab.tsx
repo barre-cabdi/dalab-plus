@@ -411,6 +411,36 @@ const LoyaltyTab = ({ businessId }: LoyaltyTabProps) => {
             </div>
           )}
         </TabsContent>
+
+        {/* Level Settings Tab */}
+        <TabsContent value="levels">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">Configure loyalty level thresholds and rewards for each tier</p>
+              <Button variant="hero" size="sm" onClick={() => { setEditLevels([...levels]); setLevelDialog(true); }}>
+                <Pencil className="w-4 h-4 mr-1" /> Edit Levels
+              </Button>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {levels.map((l, i) => (
+                <motion.div key={l.name} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                  className={`rounded-xl border p-5 ${l.color || LEVEL_COLORS[i]}`}>
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-3xl">{l.icon}</span>
+                    <div>
+                      <p className="font-display font-bold text-lg">{l.name}</p>
+                      <p className="text-xs opacity-70">{l.min} – {l.max >= 99999 ? "∞" : l.max} points</p>
+                    </div>
+                  </div>
+                  <div className="bg-background/30 rounded-lg p-3">
+                    <p className="text-xs font-semibold mb-1">🎁 Reward:</p>
+                    <p className="text-sm">{l.reward}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </TabsContent>
       </Tabs>
 
       {/* Add/Edit Member Dialog */}
