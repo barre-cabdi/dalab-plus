@@ -36,11 +36,15 @@ const CustomerRegister = () => {
   }, [businessId]);
 
   useEffect(() => {
+    // Save branding from QR params if available
+    if (qrBusinessName || qrBusinessLogo) {
+      localStorage.setItem("dp_customer_branding", JSON.stringify({ businessId, businessName: qrBusinessName || businessName, businessLogo: qrBusinessLogo || businessLogo }));
+    }
     const stored = localStorage.getItem("dp_customer");
     if (stored) {
       const customer = JSON.parse(stored);
       if (customer && customer.name) {
-        navigate(`/menu?table=${tableId}&business=${businessId}&name=${encodeURIComponent(qrBusinessName)}&logo=${encodeURIComponent(qrBusinessLogo)}`);
+        navigate(`/menu?table=${tableId}&business=${businessId}`);
       }
     }
   }, [navigate, tableId, businessId]);
