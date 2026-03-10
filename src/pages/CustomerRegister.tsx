@@ -31,7 +31,7 @@ const CustomerRegister = () => {
 
   useEffect(() => {
     const b = getBusinessById(businessId);
-    console.log("CustomerRegister: businessId =", businessId, "found =", b?.name);
+    if (b) setBusiness(b);
     if (b) setBusiness(b);
   }, [businessId]);
 
