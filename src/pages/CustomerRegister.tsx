@@ -31,7 +31,7 @@ const CustomerRegister = () => {
 
   useEffect(() => {
     const b = getBusinessById(businessId);
-    console.log("CustomerRegister: businessId =", businessId, "found =", b?.name);
+    if (b) setBusiness(b);
     if (b) setBusiness(b);
   }, [businessId]);
 
@@ -40,7 +40,7 @@ const CustomerRegister = () => {
     if (stored) {
       const customer = JSON.parse(stored);
       if (customer && customer.name) {
-        navigate(`/menu?table=${tableId}&business=${businessId}`);
+        navigate(`/menu?table=${tableId}&business=${businessId}&name=${encodeURIComponent(qrBusinessName)}&logo=${encodeURIComponent(qrBusinessLogo)}`);
       }
     }
   }, [navigate, tableId, businessId]);
@@ -66,7 +66,7 @@ const CustomerRegister = () => {
         totalOrders: 0, totalSpent: 0, loyaltyPoints: 0, registeredAt: new Date().toISOString(),
       });
     }
-    setTimeout(() => { navigate(`/menu?table=${tableId}&business=${businessId}`); }, 2200);
+    setTimeout(() => { navigate(`/menu?table=${tableId}&business=${businessId}&name=${encodeURIComponent(qrBusinessName)}&logo=${encodeURIComponent(qrBusinessLogo)}`); }, 2200);
   };
 
   return (

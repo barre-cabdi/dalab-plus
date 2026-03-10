@@ -14,6 +14,8 @@ const CustomerMenu = () => {
   const [searchParams] = useSearchParams();
   const tableId = searchParams.get("table") || "1";
   const businessId = searchParams.get("business") || "";
+  const qrBusinessName = searchParams.get("name") || "";
+  const qrBusinessLogo = searchParams.get("logo") || "";
   const [categories, setCategories] = useState<Category[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -49,9 +51,8 @@ const CustomerMenu = () => {
   }, [businessId]);
 
   const business = getBusinessById(businessId);
-  console.log("CustomerMenu: businessId =", businessId, "found =", business?.name);
-  const businessName = business?.name || "DALABplus+";
-  const businessLogo = business?.logo || "";
+  const businessName = business?.name || qrBusinessName || "DALABplus+";
+  const businessLogo = business?.logo || qrBusinessLogo || "";
   const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");
 
   const filteredItems = menuItems.filter(item => {
