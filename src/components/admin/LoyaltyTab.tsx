@@ -6,9 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Heart, Gift, Users, TrendingUp, Star, Trash2, Pencil, Award, ShoppingBag, Trophy, Minus } from "lucide-react";
+import { Plus, Heart, Gift, Users, TrendingUp, Star, Trash2, Pencil, Award, ShoppingBag, Trophy, Minus, Settings } from "lucide-react";
 import { toast } from "sonner";
-import { generateId, getOrders, Order } from "@/lib/store";
+import { generateId, getOrders, Order, getLoyaltyLevels, saveLoyaltyLevels, LoyaltyLevelConfig } from "@/lib/store";
 import { Textarea } from "@/components/ui/textarea";
 
 interface LoyaltyMember {
@@ -31,14 +31,14 @@ interface LoyaltyReward {
   active: boolean;
 }
 
-const LOYALTY_LEVELS = [
-  { name: "Bronze", min: 0, max: 99, color: "bg-amber-700/15 text-amber-700 border-amber-700/30", icon: "🥉" },
-  { name: "Silver", min: 100, max: 299, color: "bg-slate-400/15 text-slate-500 border-slate-400/30", icon: "🥈" },
-  { name: "Gold", min: 300, max: 599, color: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30", icon: "🥇" },
-  { name: "Platinum", min: 600, max: Infinity, color: "bg-purple-500/15 text-purple-600 border-purple-500/30", icon: "💎" },
+const LEVEL_COLORS = [
+  "bg-amber-700/15 text-amber-700 border-amber-700/30",
+  "bg-slate-400/15 text-slate-500 border-slate-400/30",
+  "bg-yellow-500/15 text-yellow-600 border-yellow-500/30",
+  "bg-purple-500/15 text-purple-600 border-purple-500/30",
 ];
 
-const getLevel = (points: number) => LOYALTY_LEVELS.find(l => points >= l.min && points <= l.max) || LOYALTY_LEVELS[0];
+const getLevel = (points: number, levels: LoyaltyLevelConfig[]) => levels.find(l => points >= l.min && points <= l.max) || levels[0];
 
 // Members storage
 const getLoyaltyMembers = (businessId: string): LoyaltyMember[] => {
@@ -88,6 +88,7 @@ const LoyaltyTab = ({ businessId }: LoyaltyTabProps) => {
   const [members, setMembers] = useState<LoyaltyMember[]>([]);
   const [rewards, setRewards] = useState<LoyaltyReward[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [levels, setLevels] = useState<LoyaltyLevelConfig[]>([]);
   const [showDialog, setShowDialog] = useState(false);
   const [editing, setEditing] = useState<LoyaltyMember | null>(null);
   const [form, setForm] = useState({ name: "", phone: "", points: "0" });
@@ -101,11 +102,16 @@ const LoyaltyTab = ({ businessId }: LoyaltyTabProps) => {
   const [editingReward, setEditingReward] = useState<LoyaltyReward | null>(null);
   const [rewardForm, setRewardForm] = useState({ name: "", description: "", pointsCost: "", icon: "🎁" });
 
+  // Level editing
+  const [levelDialog, setLevelDialog] = useState(false);
+  const [editLevels, setEditLevels] = useState<LoyaltyLevelConfig[]>([]);
+
   useEffect(() => { refresh(); }, [businessId]);
   const refresh = () => {
     setMembers(getLoyaltyMembers(businessId));
     setRewards(getLoyaltyRewards(businessId));
     setOrders(getOrders(businessId));
+    setLevels(getLoyaltyLevels(businessId));
   };
 
   const getMemberOrders = (memberName: string, memberPhone: string) => {
@@ -205,8 +211,8 @@ const LoyaltyTab = ({ businessId }: LoyaltyTabProps) => {
   };
 
   const totalPoints = members.reduce((s, m) => s + m.points, 0);
-  const levelCounts = LOYALTY_LEVELS.map(l => ({
-    ...l, count: members.filter(m => getLevel(m.points).name === l.name).length,
+  const levelCounts = levels.map((l, i) => ({
+    ...l, color: l.color || LEVEL_COLORS[i] || LEVEL_COLORS[0], count: members.filter(m => getLevel(m.points, levels).name === l.name).length,
   }));
 
   const stats = [
@@ -258,6 +264,9 @@ const LoyaltyTab = ({ businessId }: LoyaltyTabProps) => {
         <TabsList>
           <TabsTrigger value="members">Members</TabsTrigger>
           <TabsTrigger value="rewards">Rewards</TabsTrigger>
+          <TabsTrigger value="levels">
+            <Settings className="w-3.5 h-3.5 mr-1" /> Level Settings
+          </TabsTrigger>
         </TabsList>
 
         {/* Members Tab */}
@@ -290,10 +299,10 @@ const LoyaltyTab = ({ businessId }: LoyaltyTabProps) => {
                     </TableCell>
                   </TableRow>
                 ) : members.map(m => {
-                  const level = getLevel(m.points);
+                  const level = getLevel(m.points, levels);
                   const memberOrders = getMemberOrders(m.name, m.phone);
                   const totalSpent = memberOrders.reduce((s, o) => s + o.total, 0);
-                  const nextLevel = LOYALTY_LEVELS.find(l => l.min > m.points);
+                  const nextLevel = levels.find(l => l.min > m.points);
                   const progress = nextLevel ? ((m.points - level.min) / (nextLevel.min - level.min)) * 100 : 100;
 
                   return (
@@ -402,6 +411,36 @@ const LoyaltyTab = ({ businessId }: LoyaltyTabProps) => {
             </div>
           )}
         </TabsContent>
+
+        {/* Level Settings Tab */}
+        <TabsContent value="levels">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">Configure loyalty level thresholds and rewards for each tier</p>
+              <Button variant="hero" size="sm" onClick={() => { setEditLevels([...levels]); setLevelDialog(true); }}>
+                <Pencil className="w-4 h-4 mr-1" /> Edit Levels
+              </Button>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {levels.map((l, i) => (
+                <motion.div key={l.name} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                  className={`rounded-xl border p-5 ${l.color || LEVEL_COLORS[i]}`}>
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-3xl">{l.icon}</span>
+                    <div>
+                      <p className="font-display font-bold text-lg">{l.name}</p>
+                      <p className="text-xs opacity-70">{l.min} – {l.max >= 99999 ? "∞" : l.max} points</p>
+                    </div>
+                  </div>
+                  <div className="bg-background/30 rounded-lg p-3">
+                    <p className="text-xs font-semibold mb-1">🎁 Reward:</p>
+                    <p className="text-sm">{l.reward}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </TabsContent>
       </Tabs>
 
       {/* Add/Edit Member Dialog */}
@@ -505,10 +544,10 @@ const LoyaltyTab = ({ businessId }: LoyaltyTabProps) => {
             <DialogDescription>{viewMember?.name}'s loyalty details</DialogDescription>
           </DialogHeader>
           {viewMember && (() => {
-            const level = getLevel(viewMember.points);
+            const level = getLevel(viewMember.points, levels);
             const memberOrders = getMemberOrders(viewMember.name, viewMember.phone);
             const totalSpent = memberOrders.reduce((s, o) => s + o.total, 0);
-            const nextLevel = LOYALTY_LEVELS.find(l => l.min > viewMember.points);
+            const nextLevel = levels.find(l => l.min > viewMember.points);
             const progress = nextLevel ? ((viewMember.points - level.min) / (nextLevel.min - level.min)) * 100 : 100;
 
             return (
@@ -598,6 +637,79 @@ const LoyaltyTab = ({ businessId }: LoyaltyTabProps) => {
               </div>
             );
           })()}
+        </DialogContent>
+      </Dialog>
+
+      {/* Level Edit Dialog */}
+      <Dialog open={levelDialog} onOpenChange={setLevelDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>⚙️ Edit Loyalty Levels</DialogTitle>
+            <DialogDescription>Set thresholds and rewards for each tier</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+            {editLevels.map((l, i) => (
+              <div key={i} className="border border-border rounded-xl p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">{l.icon}</span>
+                  <Input value={l.name} onChange={e => {
+                    const upd = [...editLevels];
+                    upd[i] = { ...upd[i], name: e.target.value };
+                    setEditLevels(upd);
+                  }} className="h-9 font-bold" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium mb-1 block">Min Points</label>
+                    <Input type="number" value={l.min} onChange={e => {
+                      const upd = [...editLevels];
+                      upd[i] = { ...upd[i], min: Number(e.target.value) };
+                      setEditLevels(upd);
+                    }} className="h-9" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium mb-1 block">Max Points</label>
+                    <Input type="number" value={l.max >= 99999 ? "" : l.max} placeholder="∞" onChange={e => {
+                      const upd = [...editLevels];
+                      upd[i] = { ...upd[i], max: e.target.value ? Number(e.target.value) : 99999 };
+                      setEditLevels(upd);
+                    }} className="h-9" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium mb-1 block">Icon</label>
+                  <div className="flex gap-2">
+                    {["🥉", "🥈", "🥇", "💎", "👑", "🏆", "⭐", "🎖️"].map(ic => (
+                      <button key={ic} onClick={() => {
+                        const upd = [...editLevels];
+                        upd[i] = { ...upd[i], icon: ic };
+                        setEditLevels(upd);
+                      }} className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center border transition-all ${l.icon === ic ? "border-accent bg-accent/10" : "border-border"}`}>
+                        {ic}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium mb-1 block">🎁 Reward (what customer gets at this level)</label>
+                  <Input value={l.reward} onChange={e => {
+                    const upd = [...editLevels];
+                    upd[i] = { ...upd[i], reward: e.target.value };
+                    setEditLevels(upd);
+                  }} placeholder="e.g. 10% discount + free drink" className="h-9" />
+                </div>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setLevelDialog(false)}>Cancel</Button>
+            <Button variant="hero" onClick={() => {
+              saveLoyaltyLevels(businessId, editLevels);
+              toast.success("Loyalty levels updated!");
+              setLevelDialog(false);
+              refresh();
+            }}>Save Levels</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

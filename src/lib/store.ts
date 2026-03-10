@@ -92,9 +92,41 @@ export interface Order {
   customerId?: string;
   items: { id: string; name: string; price: number; quantity: number; image: string }[];
   total: number;
-  status: "pending" | "preparing" | "ready" | "delivered" | "cancelled";
+  status: "pending" | "preparing" | "ready" | "delivered" | "cancelled" | "paid";
   createdAt: string;
+  orderedBy?: string; // "admin", "cashier:name", "waiter:name", "customer"
+  paymentMethod?: "cash" | "card" | "mobile";
+  paidAt?: string;
+  cashierId?: string;
 }
+
+export interface LoyaltyLevelConfig {
+  name: string;
+  min: number;
+  max: number;
+  icon: string;
+  reward: string;
+  color: string;
+}
+
+const LOYALTY_LEVELS_CONFIG_KEY = "dp_loyalty_levels_config";
+
+export const getLoyaltyLevels = (businessId: string): LoyaltyLevelConfig[] => {
+  try {
+    const stored = localStorage.getItem(`${LOYALTY_LEVELS_CONFIG_KEY}_${businessId}`);
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return [
+    { name: "Bronze", min: 0, max: 99, icon: "🥉", reward: "5% discount on next order", color: "bg-amber-700/15 text-amber-700 border-amber-700/30" },
+    { name: "Silver", min: 100, max: 299, icon: "🥈", reward: "10% discount + free drink", color: "bg-slate-400/15 text-slate-500 border-slate-400/30" },
+    { name: "Gold", min: 300, max: 599, icon: "🥇", reward: "15% discount + free dessert", color: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30" },
+    { name: "Platinum", min: 600, max: 99999, icon: "💎", reward: "20% discount + free meal", color: "bg-purple-500/15 text-purple-600 border-purple-500/30" },
+  ];
+};
+
+export const saveLoyaltyLevels = (businessId: string, levels: LoyaltyLevelConfig[]) => {
+  localStorage.setItem(`${LOYALTY_LEVELS_CONFIG_KEY}_${businessId}`, JSON.stringify(levels));
+};
 
 const BUSINESSES_KEY = "dp_businesses";
 const CATEGORIES_KEY = "dp_categories";
@@ -139,6 +171,15 @@ export const getOrders = (businessId: string): Order[] => {
 export const updateOrder = (id: string, updates: Partial<Order>) => {
   const all: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]");
   localStorage.setItem(ORDERS_KEY, JSON.stringify(all.map(o => o.id === id ? { ...o, ...updates } : o)));
+};
+export const saveOrder = (order: Order) => {
+  const all: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]");
+  all.push(order);
+  localStorage.setItem(ORDERS_KEY, JSON.stringify(all));
+};
+export const deleteOrder = (id: string) => {
+  const all: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]");
+  localStorage.setItem(ORDERS_KEY, JSON.stringify(all.filter(o => o.id !== id)));
 };
 
 export interface StaffMember {

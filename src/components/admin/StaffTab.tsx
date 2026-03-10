@@ -54,7 +54,7 @@ const StaffTab = ({ businessId }: StaffTabProps) => {
     setDialog(true);
   };
 
-  const isLoginRole = form.jobTitle === "Waiter" || form.jobTitle === "Hotel Manager" || (form.jobTitle === "Other" && (form.customJobTitle.toLowerCase().includes("waiter") || form.customJobTitle.toLowerCase().includes("hotel manager")));
+  const isLoginRole = form.jobTitle === "Waiter" || form.jobTitle === "Hotel Manager" || form.jobTitle === "Cashier" || (form.jobTitle === "Other" && (form.customJobTitle.toLowerCase().includes("waiter") || form.customJobTitle.toLowerCase().includes("hotel manager") || form.customJobTitle.toLowerCase().includes("cashier")));
 
   const handleSave = () => {
     if (!form.name.trim() || !form.phone.trim()) { toast.error("Name and phone required"); return; }
@@ -244,11 +244,13 @@ const StaffTab = ({ businessId }: StaffTabProps) => {
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                 className="p-4 rounded-xl bg-accent/5 border border-accent/20 space-y-3">
                 <p className="text-sm font-semibold text-accent flex items-center gap-2">
-                  <Shield className="w-4 h-4" /> {form.jobTitle === "Hotel Manager" ? "Hotel Manager Login" : "Waiter Login"} Credentials
+                  <Shield className="w-4 h-4" /> {form.jobTitle === "Hotel Manager" ? "Hotel Manager Login" : form.jobTitle === "Cashier" ? "Cashier Login" : "Waiter Login"} Credentials
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {form.jobTitle === "Hotel Manager" 
                     ? "This hotel manager will be able to log in and manage hotel operations only (sub-admin)."
+                    : form.jobTitle === "Cashier"
+                    ? "This cashier will be able to log in and manage orders, payments, receipts & POS."
                     : "This waiter will be able to log in and place orders for customers."}
                 </p>
                 <div className="grid grid-cols-2 gap-3">

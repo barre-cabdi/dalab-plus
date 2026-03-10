@@ -13,6 +13,7 @@ import { useState } from "react";
 const baseNavItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "menu", label: "Menu", icon: UtensilsCrossed },
+  { id: "admin-order", label: "Place Order", icon: Package },
   { id: "tables", label: "Tables", icon: Grid3X3 },
   { id: "qr", label: "QR Codes", icon: QrCode },
   { id: "orders", label: "Orders", icon: ClipboardList },
@@ -27,6 +28,7 @@ const baseNavItems = [
       { id: "reports-items", label: "Item Report", icon: Package },
       { id: "reports-categories", label: "Category Report", icon: Layers },
       { id: "reports-waiters", label: "Waiter Report", icon: UserCheck },
+      { id: "reports-cashiers", label: "Cashier Report", icon: Receipt },
     ],
   },
 ];

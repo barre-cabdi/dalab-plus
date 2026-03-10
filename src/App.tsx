@@ -14,6 +14,7 @@ import CustomerMenu from "./pages/CustomerMenu";
 import OrderTracking from "./pages/OrderTracking";
 import WaiterDashboard from "./pages/WaiterDashboard";
 import HotelManagerDashboard from "./pages/HotelManagerDashboard";
+import CashierDashboard from "./pages/CashierDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/order-tracking/:orderId" element={<OrderTracking />} />
             <Route path="/waiter" element={<WaiterDashboard />} />
             <Route path="/hotel-manager" element={<HotelManagerDashboard />} />
+            <Route path="/cashier" element={<CashierDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

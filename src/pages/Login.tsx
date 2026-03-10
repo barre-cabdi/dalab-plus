@@ -68,6 +68,15 @@ const Login = () => {
             setLoading(false);
             return;
           }
+          // Cashier → cashier dashboard
+          if (waiter.jobTitle.toLowerCase() === "cashier") {
+            localStorage.setItem("dp_active_cashier", JSON.stringify(waiter));
+            localStorage.setItem("dp_active_business", JSON.stringify(waiterBiz));
+            toast.success(`${t.welcome}, ${waiter.name}! (Cashier)`);
+            navigate("/cashier");
+            setLoading(false);
+            return;
+          }
           // Regular waiter
           localStorage.setItem("dp_active_waiter", JSON.stringify(waiter));
           localStorage.setItem("dp_active_business", JSON.stringify(waiterBiz));
