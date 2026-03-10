@@ -356,6 +356,7 @@ const CashierDashboard = () => {
                 {activeTab === "dashboard" ? "Cashier Dashboard" : 
                  activeTab === "orders" ? "Order Management" : 
                  activeTab === "pos" ? "POS / Walk-in Order" : 
+                 activeTab === "payment-methods" ? "Payment Methods" :
                  activeTab === "customers" ? "Customers" :
                  activeTab === "notifications" ? "Notifications" :
                  "Shift Report"}
