@@ -347,7 +347,7 @@ const CustomerDashboard = () => {
             variant="hero"
             size="xl"
             className="w-full rounded-2xl gap-2"
-            onClick={() => navigate(`/menu?table=1&business=${businessId}`)}
+            onClick={() => navigate(`/menu?table=${customer.tableId || "1"}&business=${businessId}`)}
           >
             <ShoppingBag className="mr-1" /> Browse Menu & Order
           </Button>

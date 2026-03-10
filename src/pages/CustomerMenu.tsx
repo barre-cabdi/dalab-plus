@@ -166,7 +166,7 @@ const CustomerMenu = () => {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => {
                   setActiveNav(nav.key);
-                  if (nav.key === "orders") navigate(`/customer`);
+                  if (nav.key === "orders") navigate(`/customer?business=${businessId}`);
                 }}
                 className={`px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all duration-300 flex items-center gap-1.5 ${
                   activeNav === nav.key
