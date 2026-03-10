@@ -58,6 +58,8 @@ const CustomerRegister = () => {
     setShowSuccess(true);
     const customer = { id: customerId, ...formData, tableId, businessId, businessName, businessLogo, points: 0, level: "Bronze", totalOrders: 0, totalSpent: 0, registeredAt: new Date().toISOString() };
     localStorage.setItem("dp_customer", JSON.stringify(customer));
+    // Save branding separately for persistence across all pages
+    localStorage.setItem("dp_customer_branding", JSON.stringify({ businessId, businessName, businessLogo }));
     const existing = getCustomers(businessId);
     const alreadyExists = existing.find(c => c.phone === formData.phone);
     if (!alreadyExists) {
@@ -66,7 +68,7 @@ const CustomerRegister = () => {
         totalOrders: 0, totalSpent: 0, loyaltyPoints: 0, registeredAt: new Date().toISOString(),
       });
     }
-    setTimeout(() => { navigate(`/menu?table=${tableId}&business=${businessId}&name=${encodeURIComponent(qrBusinessName)}&logo=${encodeURIComponent(qrBusinessLogo)}`); }, 2200);
+    setTimeout(() => { navigate(`/menu?table=${tableId}&business=${businessId}`); }, 2200);
   };
 
   return (
