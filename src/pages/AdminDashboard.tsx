@@ -956,6 +956,7 @@ const AdminDashboard = () => {
   const tabTitles: Record<string, string> = {
     dashboard: "Dashboard",
     menu: "Menu Management",
+    "admin-order": "Place Order (Admin)",
     categories: "Categories",
     tables: "Table Management",
     orders: "Order Management",
@@ -969,6 +970,7 @@ const AdminDashboard = () => {
     "reports-items": "Item Report",
     "reports-categories": "Category Report",
     "reports-waiters": "Waiter Report",
+    "reports-cashiers": "Cashier Report",
     "hotel-overview": "Hotel Overview",
     "hotel-rooms": "Room Management",
     "hotel-bookings": "Bookings",
