@@ -1,35 +1,37 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Phone, MapPin, CheckCircle, UtensilsCrossed, Hotel, Coffee, Sparkles, Star } from "lucide-react";
+import { User, Phone, CheckCircle, UtensilsCrossed, Hotel, Coffee, Sparkles, Star, Shield, ArrowRight } from "lucide-react";
 import { getBusinesses, Business, saveCustomer, getCustomers, generateId, getDefaultServices, BusinessService } from "@/lib/store";
 
-const typeConfig: Record<string, { icon: any; emoji: string; welcome: string; gradient: string }> = {
-  restaurant: { icon: UtensilsCrossed, emoji: "🍽️", welcome: "Cuntada ugu fiican!", gradient: "from-[hsl(222,60%,12%)] via-[hsl(222,50%,18%)] to-[hsl(222,40%,14%)]" },
-  hotel: { icon: Hotel, emoji: "🏨", welcome: "Soo dhawoow Hotel-keena!", gradient: "from-[hsl(222,60%,12%)] via-[hsl(200,50%,18%)] to-[hsl(222,40%,14%)]" },
-  cafe: { icon: Coffee, emoji: "☕", welcome: "Cabitaanka ugu macaansan!", gradient: "from-[hsl(30,40%,15%)] via-[hsl(35,45%,20%)] to-[hsl(25,35%,12%)]" },
+const typeConfig: Record<string, { icon: any; emoji: string; welcome: string }> = {
+  restaurant: { icon: UtensilsCrossed, emoji: "🍽️", welcome: "Cuntada ugu fiican!" },
+  hotel: { icon: Hotel, emoji: "🏨", welcome: "Soo dhawoow Hotel-keena!" },
+  cafe: { icon: Coffee, emoji: "☕", welcome: "Cabitaanka ugu macaansan!" },
 };
+
+const floatingEmojis = ["🍛", "☕", "🥘", "🍗", "🥤", "🍰", "🫓", "🍝"];
 
 const CustomerRegister = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const tableId = searchParams.get("table") || "1";
   const businessId = searchParams.get("business") || "1001";
-  const [formData, setFormData] = useState({ name: "", phone: "", residency: "" });
+  const [formData, setFormData] = useState({ name: "", phone: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [customerId] = useState(`CUS-${String(Math.floor(Math.random() * 999999)).padStart(6, "0")}`);
   const [business, setBusiness] = useState<Business | null>(null);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   useEffect(() => {
     const b = getBusinesses().find(b => b.id === businessId);
     if (b) setBusiness(b);
   }, [businessId]);
 
-  // Check if customer already exists → redirect to menu
   useEffect(() => {
     const stored = localStorage.getItem("dp_customer");
     if (stored) {
@@ -49,164 +51,312 @@ const CustomerRegister = () => {
     e.preventDefault();
     if (!formData.name || !formData.phone) return;
     setIsSubmitting(true);
+    setShowSuccess(true);
     const customer = { id: customerId, ...formData, tableId, businessId, points: 0, level: "Bronze", totalOrders: 0, totalSpent: 0, registeredAt: new Date().toISOString() };
     localStorage.setItem("dp_customer", JSON.stringify(customer));
-    // Also save to dp_customers store so admin can see this customer
     const existing = getCustomers(businessId);
     const alreadyExists = existing.find(c => c.phone === formData.phone);
     if (!alreadyExists) {
       saveCustomer({
-        id: customerId,
-        businessId,
-        name: formData.name,
-        phone: formData.phone,
-        email: "",
-        totalOrders: 0,
-        totalSpent: 0,
-        loyaltyPoints: 0,
-        registeredAt: new Date().toISOString(),
+        id: customerId, businessId, name: formData.name, phone: formData.phone, email: "",
+        totalOrders: 0, totalSpent: 0, loyaltyPoints: 0, registeredAt: new Date().toISOString(),
       });
     }
-    setTimeout(() => { navigate(`/menu?table=${tableId}&business=${businessId}`); }, 1500);
+    setTimeout(() => { navigate(`/menu?table=${tableId}&business=${businessId}`); }, 2200);
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Hero Header with Business Branding */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.7 }}
-        className={`relative bg-gradient-to-br ${config.gradient} text-white overflow-hidden`}
-      >
-        <div className="absolute inset-0">
-          <div className="absolute top-10 left-10 w-40 h-40 rounded-full bg-secondary/15 blur-3xl animate-float-slow" />
-          <div className="absolute bottom-10 right-10 w-60 h-60 rounded-full bg-secondary/10 blur-3xl animate-float-slow" style={{ animationDelay: "3s" }} />
-        </div>
-        <div className="relative z-10 px-4 py-10 text-center">
-          {/* Business Logo */}
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5, type: "spring" }}
-            className="mx-auto mb-4"
-          >
-            {business?.logo ? (
-              <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-secondary/30 shadow-gold mx-auto">
-                <img src={business.logo} alt={businessName} className="w-full h-full object-cover" />
-              </div>
-            ) : (
-              <div className="w-20 h-20 rounded-2xl bg-secondary/20 border-2 border-secondary/30 flex items-center justify-center mx-auto">
-                <TypeIcon className="w-10 h-10 text-secondary" />
-              </div>
-            )}
-          </motion.div>
+    <div className="min-h-screen bg-hero relative overflow-hidden">
+      {/* Animated floating food emojis */}
+      {floatingEmojis.map((emoji, i) => (
+        <motion.div
+          key={i}
+          className="absolute text-2xl opacity-10 pointer-events-none select-none"
+          initial={{ x: `${10 + (i * 12) % 80}%`, y: "110%" }}
+          animate={{ y: "-10%", rotate: [0, 360], opacity: [0.05, 0.15, 0.05] }}
+          transition={{ duration: 12 + i * 2, repeat: Infinity, delay: i * 1.5, ease: "linear" }}
+        >
+          {emoji}
+        </motion.div>
+      ))}
 
-          {/* Business Name & Type */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35, duration: 0.5 }}
-          >
-            <div className="inline-flex items-center gap-2 bg-secondary/20 backdrop-blur-sm px-3 py-1 rounded-full mb-3 border border-secondary/20">
-              <Sparkles className="w-3.5 h-3.5 text-secondary" />
-              <span className="text-xs text-secondary font-medium capitalize">{config.emoji} {businessType}</span>
-            </div>
-            <h1 className="font-display font-bold text-2xl mb-1">{businessName}</h1>
-            <p className="text-white/60 text-sm">{config.welcome}</p>
-          </motion.div>
+      {/* Glow orbs */}
+      <div className="absolute top-20 -left-20 w-60 h-60 rounded-full bg-accent/10 blur-[100px] animate-float-slow" />
+      <div className="absolute bottom-20 -right-20 w-80 h-80 rounded-full bg-accent/5 blur-[120px] animate-float-slow" style={{ animationDelay: "3s" }} />
 
-          {/* Services Preview */}
-          {business && (
+      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-8">
+        {/* Success Overlay */}
+        <AnimatePresence>
+          {showSuccess && (
             <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-              className="flex items-center justify-center gap-3 mt-4 flex-wrap"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="fixed inset-0 z-50 bg-hero flex items-center justify-center"
             >
-              {(business.services?.length ? business.services : getDefaultServices(business.type)).slice(0, 4).map((s, i) => (
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                className="text-center"
+              >
                 <motion.div
-                  key={s.id}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.6 + i * 0.1 }}
-                  className="bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10"
+                  className="w-24 h-24 rounded-full bg-gold-gradient mx-auto mb-6 flex items-center justify-center shadow-gold"
+                  animate={{ boxShadow: ["0 0 30px hsl(45 100% 50% / 0.3)", "0 0 60px hsl(45 100% 50% / 0.5)", "0 0 30px hsl(45 100% 50% / 0.3)"] }}
+                  transition={{ duration: 2, repeat: Infinity }}
                 >
-                  <span className="text-[11px] text-white/80">{s.icon} {s.title}</span>
+                  <CheckCircle className="w-12 h-12 text-accent-foreground" />
                 </motion.div>
-              ))}
+                <motion.h2
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="font-display font-bold text-2xl text-primary-foreground mb-2"
+                >
+                  Ku soo dhawoow! 🎉
+                </motion.h2>
+                <motion.p
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="text-primary-foreground/60 text-sm"
+                >
+                  {formData.name}, menu-ga ayaa kuu furmi doonaa...
+                </motion.p>
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: "100%" }}
+                  transition={{ delay: 0.7, duration: 1.5 }}
+                  className="h-1 bg-gold-gradient rounded-full mt-6 max-w-[200px] mx-auto"
+                />
+              </motion.div>
             </motion.div>
           )}
+        </AnimatePresence>
 
-          {/* Table Badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.7, type: "spring" }}
-            className="inline-flex items-center gap-1.5 mt-5 px-3 py-1.5 rounded-full bg-secondary/20 border border-secondary/30"
-          >
-            <MapPin className="w-3 h-3 text-secondary" />
-            <span className="text-xs font-medium text-secondary">Table #{tableId}</span>
-          </motion.div>
-        </div>
-      </motion.div>
-
-      {/* Registration Form */}
-      <div className="flex-1 bg-background px-4 py-8 flex items-start justify-center">
+        {/* Main Card */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.6 }}
+          initial={{ opacity: 0, y: 40, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="w-full max-w-md"
         >
-          <div className="text-center mb-6">
-            <h2 className="font-display font-bold text-lg text-foreground mb-1">Iska Diiwaan Geli 📝</h2>
-            <p className="text-sm text-muted-foreground">Fadlan buuxi foomka hoose si aad u dalacdo</p>
-          </div>
-
-          <motion.form
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            onSubmit={handleSubmit}
-            className="bg-card border border-border rounded-2xl p-6 space-y-5 shadow-sm"
+          {/* Logo & Business Name */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
+            className="text-center mb-8"
           >
-            {/* Auto-generated Customer ID */}
-            <div className="text-center mb-2 bg-muted/30 border border-border rounded-xl py-3 px-4">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Customer ID</p>
-              <p className="text-lg font-mono font-bold text-secondary">{customerId}</p>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-foreground/80 text-sm flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> Magacaaga</Label>
-              <Input placeholder="e.g. Ahmed Mohamed" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/50 focus:border-secondary" required />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-foreground/80 text-sm flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" /> Telefoon Number</Label>
-              <Input type="tel" placeholder="e.g. +252 61 xxx xxxx" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/50 focus:border-secondary" required />
-            </div>
-            <Button type="submit" className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 rounded-xl py-3 font-bold gap-2 shadow-gold" disabled={isSubmitting || !formData.name || !formData.phone}>
-              {isSubmitting ? (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5" /> Waad ku mahadsantahay!
-                </motion.div>
+            <div className="relative inline-block">
+              {business?.logo ? (
+                <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-accent/30 shadow-gold mx-auto">
+                  <img src={business.logo} alt={businessName} className="w-full h-full object-cover" />
+                </div>
               ) : (
-                <>
-                  <Star className="w-4 h-4" /> Iska Diiwaan Geli
-                </>
+                <motion.div
+                  className="w-20 h-20 rounded-2xl bg-accent/15 border-2 border-accent/30 flex items-center justify-center mx-auto"
+                  animate={{ boxShadow: ["0 0 20px hsl(45 100% 50% / 0.15)", "0 0 40px hsl(45 100% 50% / 0.25)", "0 0 20px hsl(45 100% 50% / 0.15)"] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                >
+                  <TypeIcon className="w-10 h-10 text-accent" />
+                </motion.div>
               )}
-            </Button>
-          </motion.form>
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.4, type: "spring" }}
+                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-gold-gradient flex items-center justify-center shadow-gold"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-accent-foreground" />
+              </motion.div>
+            </div>
+            <motion.h1
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="font-display font-bold text-2xl text-primary-foreground mt-4"
+            >
+              {businessName}
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.35 }}
+              className="text-primary-foreground/50 text-sm mt-1"
+            >
+              {config.emoji} {config.welcome}
+            </motion.p>
+          </motion.div>
 
-          {/* Contact Info */}
+          {/* Services Tags */}
           {business && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.7 }}
-              className="mt-4 text-center text-xs text-muted-foreground space-y-1"
+              transition={{ delay: 0.4 }}
+              className="flex flex-wrap items-center justify-center gap-2 mb-8"
             >
-              <p>{business.address}, {business.city}</p>
-              <p>{business.countryCode} {business.phonePrefix} {business.phone}</p>
+              {(business.services?.length ? business.services : getDefaultServices(business.type)).slice(0, 4).map((s, i) => (
+                <motion.span
+                  key={s.id}
+                  initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ delay: 0.5 + i * 0.08, type: "spring" }}
+                  className="glass px-3 py-1.5 rounded-full text-[11px] text-primary-foreground/70 font-medium"
+                >
+                  {s.icon} {s.title}
+                </motion.span>
+              ))}
+            </motion.div>
+          )}
+
+          {/* Registration Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+            className="glass rounded-3xl p-7 border border-accent/10"
+          >
+            {/* Table Badge */}
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.6 }}
+              className="flex items-center justify-between mb-6"
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg bg-accent/15 flex items-center justify-center">
+                  <span className="text-xs">📍</span>
+                </div>
+                <span className="text-xs font-medium text-primary-foreground/60">Table #{tableId}</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent/10 border border-accent/20">
+                <Shield className="w-3 h-3 text-accent" />
+                <span className="text-[10px] text-accent font-semibold">Secure</span>
+              </div>
+            </motion.div>
+
+            {/* Customer ID Display */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.65 }}
+              className="text-center mb-6 py-4 rounded-2xl bg-accent/5 border border-accent/15"
+            >
+              <p className="text-[10px] text-primary-foreground/40 uppercase tracking-[0.2em] mb-1.5">Your Customer ID</p>
+              <motion.p
+                className="text-xl font-mono font-bold text-accent tracking-wider"
+                animate={{ textShadow: ["0 0 10px hsl(45 100% 50% / 0)", "0 0 10px hsl(45 100% 50% / 0.3)", "0 0 10px hsl(45 100% 50% / 0)"] }}
+                transition={{ duration: 3, repeat: Infinity }}
+              >
+                {customerId}
+              </motion.p>
+            </motion.div>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Name Field */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.7 }}
+                className="space-y-2"
+              >
+                <Label className="text-primary-foreground/70 text-xs font-medium flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-accent" /> Magacaaga
+                </Label>
+                <div className={`relative transition-all duration-300 ${focusedField === "name" ? "scale-[1.02]" : ""}`}>
+                  <Input
+                    placeholder="e.g. Ahmed Mohamed"
+                    value={formData.name}
+                    onChange={e => setFormData({ ...formData, name: e.target.value })}
+                    onFocus={() => setFocusedField("name")}
+                    onBlur={() => setFocusedField(null)}
+                    className="bg-primary/30 border-primary/40 text-primary-foreground placeholder:text-primary-foreground/30 focus:border-accent focus:ring-accent/20 rounded-xl h-12 text-sm transition-all duration-300"
+                    required
+                  />
+                  {focusedField === "name" && (
+                    <motion.div
+                      layoutId="field-glow"
+                      className="absolute inset-0 rounded-xl border-2 border-accent/30 pointer-events-none"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    />
+                  )}
+                </div>
+              </motion.div>
+
+              {/* Phone Field */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.8 }}
+                className="space-y-2"
+              >
+                <Label className="text-primary-foreground/70 text-xs font-medium flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5 text-accent" /> Telefoon Number
+                </Label>
+                <div className={`relative transition-all duration-300 ${focusedField === "phone" ? "scale-[1.02]" : ""}`}>
+                  <Input
+                    type="tel"
+                    placeholder="e.g. +252 61 xxx xxxx"
+                    value={formData.phone}
+                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                    onFocus={() => setFocusedField("phone")}
+                    onBlur={() => setFocusedField(null)}
+                    className="bg-primary/30 border-primary/40 text-primary-foreground placeholder:text-primary-foreground/30 focus:border-accent focus:ring-accent/20 rounded-xl h-12 text-sm transition-all duration-300"
+                    required
+                  />
+                  {focusedField === "phone" && (
+                    <motion.div
+                      layoutId="field-glow"
+                      className="absolute inset-0 rounded-xl border-2 border-accent/30 pointer-events-none"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    />
+                  )}
+                </div>
+              </motion.div>
+
+              {/* Submit Button */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.9 }}
+              >
+                <Button
+                  type="submit"
+                  variant="hero"
+                  size="xl"
+                  className="w-full rounded-xl gap-2 text-sm"
+                  disabled={isSubmitting || !formData.name || !formData.phone}
+                >
+                  {isSubmitting ? (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
+                      <CheckCircle className="w-5 h-5" /> Waad ku mahadsantahay!
+                    </motion.div>
+                  ) : (
+                    <>
+                      Iska Diiwaan Geli <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </Button>
+              </motion.div>
+            </form>
+          </motion.div>
+
+          {/* Footer info */}
+          {business && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1 }}
+              className="mt-6 text-center space-y-1"
+            >
+              <p className="text-[11px] text-primary-foreground/30">{business.address}, {business.city}</p>
+              <p className="text-[11px] text-primary-foreground/30">{business.countryCode} {business.phonePrefix} {business.phone}</p>
+              <p className="text-[10px] text-primary-foreground/20 mt-3">Powered by <span className="text-accent/40 font-semibold">DALABplus+</span></p>
             </motion.div>
           )}
         </motion.div>
