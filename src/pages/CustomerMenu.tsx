@@ -14,6 +14,8 @@ const CustomerMenu = () => {
   const [searchParams] = useSearchParams();
   const tableId = searchParams.get("table") || "1";
   const businessId = searchParams.get("business") || "";
+  const qrBusinessName = searchParams.get("name") || "";
+  const qrBusinessLogo = searchParams.get("logo") || "";
   const [categories, setCategories] = useState<Category[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [activeCategory, setActiveCategory] = useState("all");
