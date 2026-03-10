@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Plus, Minus, Search, Star, Trash2, Send, UtensilsCrossed, Trophy, ChevronRight, User, Clock, ChefHat, Package, CheckCircle, MessageSquare, XCircle, Sparkles, ArrowRight, Zap, Store } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { getCategories, getMenuItems, Category, MenuItem, seedDemoData, getBusinesses } from "@/lib/store";
+import { getCategories, getMenuItems, Category, MenuItem, seedDemoData, getBusinessById } from "@/lib/store";
 
 type CartItem = { id: string; name: string; price: number; quantity: number; image: string };
 
