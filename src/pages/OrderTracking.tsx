@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Clock, ChefHat, Truck, CheckCircle, Home, Star, Trophy, Gift, ArrowRight, Package, MessageSquare } from "lucide-react";
+import { Clock, ChefHat, Truck, CheckCircle, Home, Star, Trophy, Gift, ArrowRight, Package, MessageSquare, ShoppingBag, Sparkles } from "lucide-react";
 
 const statusSteps = [
-  { key: "pending", label: "La sugayo", icon: Clock, color: "text-muted-foreground" },
-  { key: "accepted", label: "La aqbalay", icon: CheckCircle, color: "text-accent" },
-  { key: "preparing", label: "La kariyaa", icon: ChefHat, color: "text-accent" },
-  { key: "ready", label: "Diyaar", icon: Package, color: "text-accent" },
-  { key: "on_the_way", label: "Socda", icon: Truck, color: "text-accent" },
-  { key: "delivered", label: "La keenay", icon: CheckCircle, color: "text-accent" },
+  { key: "pending", label: "La sugayo", sublabel: "Order-kaaga la helay", icon: Clock, emoji: "⏳" },
+  { key: "accepted", label: "La aqbalay", sublabel: "Chef-ku wuu aqbalay", icon: CheckCircle, emoji: "✅" },
+  { key: "preparing", label: "La kariyaa", sublabel: "Kitchen-ka ku jira", icon: ChefHat, emoji: "👨‍🍳" },
+  { key: "ready", label: "Diyaar", sublabel: "Cuntadaadu way diyaar tahay", icon: Package, emoji: "📦" },
+  { key: "on_the_way", label: "Socda", sublabel: "Waiter-ku wuu keenayaa", icon: Truck, emoji: "🚀" },
+  { key: "delivered", label: "La keenay", sublabel: "Cunto wanaagsan!", icon: CheckCircle, emoji: "🎉" },
 ];
 
 const OrderTracking = () => {
@@ -33,7 +33,6 @@ const OrderTracking = () => {
         setCustomer(c);
         if (c.points >= 100 && c.level === "Silver") setShowReward(true);
       }
-      // Load messages
       const allMessages = JSON.parse(localStorage.getItem("dp_order_messages") || "[]");
       setMessages(allMessages.filter((m: any) => m.orderId === orderId));
     };
@@ -55,117 +54,318 @@ const OrderTracking = () => {
 
   const getLevelInfo = (level: string) => {
     switch (level) {
-      case "Silver": return { color: "text-muted-foreground", next: "Gold", needed: 300, reward: "Cabbitaan bilaash ah! 🥤" };
-      case "Gold": return { color: "text-accent", next: "Platinum", needed: 600, reward: "Cunto bilaash ah! 🍽️" };
-      case "Platinum": return { color: "text-accent", next: null, needed: 0, reward: "10% Discount! 💎" };
-      default: return { color: "text-accent", next: "Silver", needed: 100, reward: "" };
+      case "Silver": return { next: "Gold", needed: 300, reward: "Cabbitaan bilaash ah! 🥤" };
+      case "Gold": return { next: "Platinum", needed: 600, reward: "Cunto bilaash ah! 🍽️" };
+      case "Platinum": return { next: null, needed: 0, reward: "10% Discount! 💎" };
+      default: return { next: "Silver", needed: 100, reward: "" };
     }
   };
 
-  if (!order) return (<div className="min-h-screen bg-hero flex items-center justify-center"><p className="text-primary-foreground/60">Order not found</p></div>);
+  if (!order) return (
+    <div className="min-h-screen bg-hero flex items-center justify-center">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="text-center"
+      >
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          className="w-12 h-12 border-2 border-accent/30 border-t-accent rounded-full mx-auto mb-4"
+        />
+        <p className="text-primary-foreground/50 text-sm">Loading order...</p>
+      </motion.div>
+    </div>
+  );
 
   const levelInfo = customer ? getLevelInfo(customer.level) : null;
   const earnedPoints = Math.floor(order.total);
 
   return (
-    <div className="min-h-screen bg-hero">
-      <header className="glass border-b border-border/20 px-4 py-3 flex items-center justify-between">
-        <div><p className="font-display font-bold text-primary-foreground text-sm">Order Tracking</p><p className="text-[10px] text-primary-foreground/40 font-mono">{orderId}</p></div>
-        <Button variant="ghost" size="sm" onClick={() => navigate("/customer")} className="text-primary-foreground/60"><Home className="w-4 h-4" /></Button>
+    <div className="min-h-screen bg-hero relative overflow-hidden">
+      {/* Background effects */}
+      <div className="absolute top-1/4 left-0 w-[400px] h-[400px] rounded-full bg-accent/5 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[300px] h-[300px] rounded-full bg-accent/3 blur-[100px] pointer-events-none" />
+
+      {/* Header */}
+      <header className="glass border-b border-border/10 px-4 py-3 flex items-center justify-between sticky top-0 z-50">
+        <div>
+          <p className="font-display font-bold text-primary-foreground text-sm">Order Tracking</p>
+          <p className="text-[10px] text-primary-foreground/35 font-mono">{orderId}</p>
+        </div>
+        <Button variant="ghost" size="sm" onClick={() => navigate("/customer")} className="text-primary-foreground/40 hover:text-primary-foreground/70">
+          <Home className="w-4 h-4" />
+        </Button>
       </header>
 
-      <div className="container mx-auto px-4 py-6 max-w-md space-y-5">
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="glass rounded-xl p-4 text-center">
-          <motion.div initial={{ rotate: -10 }} animate={{ rotate: [0, 10, -10, 0] }} transition={{ delay: 0.5, duration: 0.5 }}><Star className="w-8 h-8 text-accent mx-auto mb-2" /></motion.div>
-          <p className="font-display font-bold text-accent text-lg">+{earnedPoints} Points!</p>
-          <p className="text-xs text-primary-foreground/50">Order-kaaga waad ku heshay {earnedPoints} points</p>
+      <div className="container mx-auto px-4 py-6 max-w-md space-y-5 relative z-10">
+        {/* Points Earned Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: "spring", stiffness: 200 }}
+          className="glass rounded-2xl p-5 text-center relative overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-accent/5 rounded-2xl" />
+          <div className="relative">
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+            >
+              <div className="w-14 h-14 rounded-2xl bg-gold-gradient mx-auto mb-3 flex items-center justify-center shadow-gold">
+                <Star className="w-7 h-7 text-accent-foreground" />
+              </div>
+            </motion.div>
+            <motion.p
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5, type: "spring" }}
+              className="font-display font-bold text-accent text-2xl"
+            >
+              +{earnedPoints}
+            </motion.p>
+            <p className="text-[11px] text-primary-foreground/45 mt-1">Points earned from this order</p>
+          </div>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="glass rounded-xl p-5">
-          <h3 className="font-display font-semibold text-primary-foreground text-sm mb-4">Xaalada Order-ka</h3>
+        {/* Order Status Timeline */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="glass rounded-2xl p-6"
+        >
+          <h3 className="font-display font-bold text-primary-foreground text-sm mb-5 flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-accent" /> Xaalada Order-ka
+          </h3>
           <div className="space-y-0">
             {statusSteps.map((step, i) => {
               const isActive = i <= currentStep;
               const isCurrent = i === currentStep;
+              const isPast = i < currentStep;
               return (
-                <div key={step.key} className="flex gap-3">
+                <motion.div
+                  key={step.key}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + i * 0.1 }}
+                  className="flex gap-4"
+                >
                   <div className="flex flex-col items-center">
-                    <motion.div initial={{ scale: 0.5, opacity: 0.3 }} animate={{ scale: isCurrent ? 1.2 : isActive ? 1 : 0.8, opacity: isActive ? 1 : 0.3 }} transition={{ duration: 0.4 }} className={`w-8 h-8 rounded-full flex items-center justify-center ${isCurrent ? "bg-gold-gradient shadow-gold animate-pulse-gold" : isActive ? "bg-accent/20" : "bg-primary/20"}`}>
-                      <step.icon className={`w-4 h-4 ${isCurrent ? "text-accent-foreground" : isActive ? "text-accent" : "text-primary-foreground/30"}`} />
+                    <motion.div
+                      animate={isCurrent ? {
+                        scale: [1, 1.15, 1],
+                        boxShadow: ["0 0 0 0 hsl(45 100% 50% / 0.2)", "0 0 0 8px hsl(45 100% 50% / 0)", "0 0 0 0 hsl(45 100% 50% / 0.2)"],
+                      } : {}}
+                      transition={isCurrent ? { duration: 2, repeat: Infinity } : {}}
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-500 ${
+                        isCurrent
+                          ? "bg-gold-gradient shadow-gold"
+                          : isPast
+                          ? "bg-accent/20 border border-accent/30"
+                          : "bg-primary/15 border border-primary/20"
+                      }`}
+                    >
+                      {isPast ? (
+                        <CheckCircle className="w-5 h-5 text-accent" />
+                      ) : (
+                        <span className={`text-lg ${!isActive ? "opacity-30" : ""}`}>{step.emoji}</span>
+                      )}
                     </motion.div>
-                    {i < statusSteps.length - 1 && <div className={`w-0.5 h-8 ${isActive ? "bg-accent/40" : "bg-primary/20"}`} />}
+                    {i < statusSteps.length - 1 && (
+                      <motion.div
+                        className={`w-0.5 h-10 transition-all duration-700 ${isActive ? "bg-accent/30" : "bg-primary/15"}`}
+                        initial={{ scaleY: 0 }}
+                        animate={{ scaleY: 1 }}
+                        transition={{ delay: 0.4 + i * 0.1 }}
+                      />
+                    )}
                   </div>
-                  <div className="pb-6">
-                    <p className={`text-sm font-medium ${isCurrent ? "text-accent" : isActive ? "text-primary-foreground" : "text-primary-foreground/30"}`}>{step.label}</p>
-                    {isCurrent && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[10px] text-primary-foreground/40 mt-0.5">Hadda socota...</motion.p>}
+                  <div className="pb-8 pt-1">
+                    <p className={`text-sm font-semibold transition-colors duration-300 ${
+                      isCurrent ? "text-accent" : isPast ? "text-primary-foreground/80" : "text-primary-foreground/25"
+                    }`}>
+                      {step.label}
+                    </p>
+                    <p className={`text-[11px] mt-0.5 transition-colors duration-300 ${
+                      isCurrent ? "text-primary-foreground/50" : "text-primary-foreground/20"
+                    }`}>
+                      {step.sublabel}
+                    </p>
+                    {isCurrent && (
+                      <motion.div
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: 40 }}
+                        className="h-0.5 bg-accent/40 rounded-full mt-2"
+                      />
+                    )}
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="glass rounded-xl p-5">
-          <h3 className="font-display font-semibold text-primary-foreground text-sm mb-3">Waxaad dalbatay</h3>
-          <div className="space-y-2">
-            {order.items.map((item: any) => (
-              <div key={item.id} className="flex items-center justify-between">
-                <div className="flex items-center gap-2"><span>{item.image}</span><span className="text-xs text-primary-foreground">{item.name} × {item.quantity}</span></div>
+        {/* Order Items */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="glass rounded-2xl p-5"
+        >
+          <h3 className="font-display font-bold text-primary-foreground text-sm mb-4 flex items-center gap-2">
+            <ShoppingBag className="w-4 h-4 text-accent" /> Waxaad dalbatay
+          </h3>
+          <div className="space-y-3">
+            {order.items.map((item: any, i: number) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 + i * 0.06 }}
+                className="flex items-center justify-between py-2 group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                    {item.image}
+                  </div>
+                  <div>
+                    <span className="text-xs font-medium text-primary-foreground">{item.name}</span>
+                    <span className="text-[10px] text-primary-foreground/30 ml-1.5">× {item.quantity}</span>
+                  </div>
+                </div>
                 <span className="text-xs font-bold text-accent">${(item.price * item.quantity).toFixed(2)}</span>
-              </div>
+              </motion.div>
             ))}
-            <div className="border-t border-border/20 pt-2 mt-2 flex items-center justify-between">
-              <span className="text-sm font-bold text-primary-foreground">Wadarta</span>
-              <span className="text-sm font-bold text-accent">${order.total.toFixed(2)}</span>
+            <div className="border-t border-border/15 pt-3 mt-3 flex items-center justify-between">
+              <span className="text-sm font-display font-bold text-primary-foreground">Wadarta</span>
+              <motion.span
+                className="text-base font-display font-bold text-accent"
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.8, type: "spring" }}
+              >
+                ${order.total.toFixed(2)}
+              </motion.span>
             </div>
           </div>
         </motion.div>
 
         {/* Admin Messages */}
-        {messages.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="glass rounded-xl p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <MessageSquare className="w-4 h-4 text-accent" />
-              <h3 className="font-display font-semibold text-primary-foreground text-sm">Fariimo</h3>
-            </div>
-            <div className="space-y-2">
-              {messages.map((msg: any) => (
-                <motion.div key={msg.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="bg-accent/10 rounded-lg p-3 border border-accent/20">
-                  <p className="text-xs text-primary-foreground">{msg.message}</p>
-                  <p className="text-[9px] text-primary-foreground/40 mt-1">{new Date(msg.createdAt).toLocaleTimeString()}</p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        )}
+        <AnimatePresence>
+          {messages.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="glass rounded-2xl p-5"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <MessageSquare className="w-4 h-4 text-accent" />
+                <h3 className="font-display font-bold text-primary-foreground text-sm">Fariimo</h3>
+              </div>
+              <div className="space-y-2">
+                {messages.map((msg: any, i: number) => (
+                  <motion.div
+                    key={msg.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.08 }}
+                    className="bg-accent/8 rounded-xl p-3.5 border border-accent/15"
+                  >
+                    <p className="text-xs text-primary-foreground/80">{msg.message}</p>
+                    <p className="text-[9px] text-primary-foreground/30 mt-1.5">{new Date(msg.createdAt).toLocaleTimeString()}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
+        {/* Loyalty Progress */}
         {customer && levelInfo && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="glass rounded-xl p-5">
-            <div className="flex items-center gap-2 mb-3"><Trophy className={`w-5 h-5 ${levelInfo.color}`} /><span className="font-display font-semibold text-primary-foreground text-sm">{customer.level} Level</span></div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="glass rounded-2xl p-5"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <Trophy className="w-4 h-4 text-accent" />
+              <span className="font-display font-bold text-primary-foreground text-sm">{customer.level} Level</span>
+            </div>
             {levelInfo.next && (
               <>
-                <div className="flex items-center justify-between mb-2"><span className="text-xs text-primary-foreground/50">{customer.level} <ArrowRight className="w-3 h-3 inline" /> {levelInfo.next}</span><span className="text-xs text-accent font-medium">{customer.points} / {levelInfo.needed}</span></div>
-                <div className="w-full h-2 rounded-full bg-primary/30"><motion.div initial={{ width: 0 }} animate={{ width: `${Math.min((customer.points / levelInfo.needed) * 100, 100)}%` }} transition={{ delay: 0.8, duration: 1 }} className="h-full rounded-full bg-gold-gradient" /></div>
-                <p className="text-[10px] text-primary-foreground/40 mt-2">{levelInfo.needed - customer.points > 0 ? `${levelInfo.needed - customer.points} points kale ayaad u baahan tahay ${levelInfo.next}!` : levelInfo.reward}</p>
+                <div className="flex items-center justify-between mb-2.5">
+                  <span className="text-xs text-primary-foreground/40">{customer.level} <ArrowRight className="w-3 h-3 inline text-accent/40" /> {levelInfo.next}</span>
+                  <span className="text-xs text-accent font-bold">{customer.points} / {levelInfo.needed}</span>
+                </div>
+                <div className="w-full h-2.5 rounded-full bg-primary/15 overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min((customer.points / levelInfo.needed) * 100, 100)}%` }}
+                    transition={{ delay: 0.8, duration: 1 }}
+                    className="h-full rounded-full bg-gold-gradient"
+                  />
+                </div>
+                <p className="text-[10px] text-primary-foreground/30 mt-2">
+                  {levelInfo.needed - customer.points > 0 ? `${levelInfo.needed - customer.points} points kale ayaad u baahan tahay ${levelInfo.next}!` : levelInfo.reward}
+                </p>
               </>
             )}
             {!levelInfo.next && <p className="text-xs text-accent">{levelInfo.reward}</p>}
           </motion.div>
         )}
 
-        {showReward && (
-          <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="glass rounded-xl p-5 border border-accent/30 text-center">
-            <Gift className="w-10 h-10 text-accent mx-auto mb-2 animate-pulse-gold" />
-            <h3 className="font-display font-bold text-accent text-lg">Hambalyo! 🎉</h3>
-            <p className="text-xs text-primary-foreground/60 mt-1">Waxaad gaadhay level cusub! Reward-kaaga soo qaado.</p>
-            <Button variant="hero" size="sm" className="mt-3">Claim Reward</Button>
-          </motion.div>
-        )}
+        {/* Reward Celebration */}
+        <AnimatePresence>
+          {showReward && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="glass rounded-2xl p-6 border border-accent/25 text-center relative overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-accent/5" />
+              <div className="relative">
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                >
+                  <Gift className="w-12 h-12 text-accent mx-auto mb-3" />
+                </motion.div>
+                <h3 className="font-display font-bold text-accent text-lg">Hambalyo! 🎉</h3>
+                <p className="text-xs text-primary-foreground/50 mt-2">Waxaad gaadhay level cusub! Reward-kaaga soo qaado.</p>
+                <Button variant="hero" size="sm" className="mt-4 rounded-xl">Claim Reward</Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        <div className="flex gap-3">
-          <Button variant="hero-outline" className="flex-1" onClick={() => navigate("/customer")}>Dashboard</Button>
-          <Button variant="hero" className="flex-1" onClick={() => navigate(`/menu?table=${order.tableId}&business=${order.businessId}`)}>Dib u dalbo</Button>
-        </div>
+        {/* Action Buttons */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          className="flex gap-3"
+        >
+          <Button variant="hero-outline" className="flex-1 rounded-xl" onClick={() => navigate("/customer")}>
+            Dashboard
+          </Button>
+          <Button variant="hero" className="flex-1 rounded-xl" onClick={() => navigate(`/menu?table=${order.tableId}&business=${order.businessId}`)}>
+            Dib u dalbo
+          </Button>
+        </motion.div>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+          className="text-center text-[10px] text-primary-foreground/20 pb-4"
+        >
+          Powered by <span className="text-accent/30 font-semibold">DALABplus+</span>
+        </motion.p>
       </div>
     </div>
   );
