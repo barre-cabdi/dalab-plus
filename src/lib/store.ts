@@ -140,6 +140,21 @@ export const updateBusiness = (id: string, updates: Partial<Business>) => { loca
 export const deleteBusiness = (id: string) => { localStorage.setItem(BUSINESSES_KEY, JSON.stringify(getBusinesses().filter(b => b.id !== id))); };
 export const getBusinessByAdmin = (username: string): Business | undefined => getBusinesses().find(b => b.adminUsername === username);
 
+// Robust business lookup: checks dp_businesses first, then falls back to dp_active_business
+export const getBusinessById = (id: string): Business | undefined => {
+  const fromList = getBusinesses().find(b => b.id === id);
+  if (fromList) return fromList;
+  // Fallback: check active business (same browser session as admin)
+  try {
+    const active = localStorage.getItem("dp_active_business");
+    if (active) {
+      const biz = JSON.parse(active) as Business;
+      if (biz.id === id) return biz;
+    }
+  } catch {}
+  return undefined;
+};
+
 export const getCategories = (businessId: string): Category[] => {
   const all: Category[] = JSON.parse(localStorage.getItem(CATEGORIES_KEY) || "[]");
   return all.filter(c => c.businessId === businessId).sort((a, b) => a.order - b.order);
