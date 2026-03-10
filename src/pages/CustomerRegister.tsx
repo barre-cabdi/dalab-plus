@@ -151,9 +151,9 @@ const CustomerRegister = () => {
             className="text-center mb-8"
           >
             <div className="relative inline-block">
-              {business?.logo ? (
+              {businessLogo ? (
                 <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-accent/30 shadow-gold mx-auto">
-                  <img src={business.logo} alt={businessName} className="w-full h-full object-cover" />
+                  <img src={businessLogo} alt={businessName} className="w-full h-full object-cover" />
                 </div>
               ) : (
                 <motion.div
