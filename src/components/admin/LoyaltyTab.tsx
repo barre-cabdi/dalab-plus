@@ -6,9 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Heart, Gift, Users, TrendingUp, Star, Trash2, Pencil, Award, ShoppingBag, Trophy, Minus } from "lucide-react";
+import { Plus, Heart, Gift, Users, TrendingUp, Star, Trash2, Pencil, Award, ShoppingBag, Trophy, Minus, Settings } from "lucide-react";
 import { toast } from "sonner";
-import { generateId, getOrders, Order } from "@/lib/store";
+import { generateId, getOrders, Order, getLoyaltyLevels, saveLoyaltyLevels, LoyaltyLevelConfig } from "@/lib/store";
 import { Textarea } from "@/components/ui/textarea";
 
 interface LoyaltyMember {
@@ -31,14 +31,14 @@ interface LoyaltyReward {
   active: boolean;
 }
 
-const LOYALTY_LEVELS = [
-  { name: "Bronze", min: 0, max: 99, color: "bg-amber-700/15 text-amber-700 border-amber-700/30", icon: "🥉" },
-  { name: "Silver", min: 100, max: 299, color: "bg-slate-400/15 text-slate-500 border-slate-400/30", icon: "🥈" },
-  { name: "Gold", min: 300, max: 599, color: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30", icon: "🥇" },
-  { name: "Platinum", min: 600, max: Infinity, color: "bg-purple-500/15 text-purple-600 border-purple-500/30", icon: "💎" },
+const LEVEL_COLORS = [
+  "bg-amber-700/15 text-amber-700 border-amber-700/30",
+  "bg-slate-400/15 text-slate-500 border-slate-400/30",
+  "bg-yellow-500/15 text-yellow-600 border-yellow-500/30",
+  "bg-purple-500/15 text-purple-600 border-purple-500/30",
 ];
 
-const getLevel = (points: number) => LOYALTY_LEVELS.find(l => points >= l.min && points <= l.max) || LOYALTY_LEVELS[0];
+const getLevel = (points: number, levels: LoyaltyLevelConfig[]) => levels.find(l => points >= l.min && points <= l.max) || levels[0];
 
 // Members storage
 const getLoyaltyMembers = (businessId: string): LoyaltyMember[] => {
