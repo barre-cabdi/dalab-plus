@@ -30,11 +30,9 @@ const CustomerRegister = () => {
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   useEffect(() => {
-    const allBiz = getBusinesses();
-    console.log("CustomerRegister: businessId =", businessId, "all businesses =", allBiz.map(b => ({ id: b.id, name: b.name })));
-    const b = allBiz.find(b => b.id === businessId);
+    const b = getBusinessById(businessId);
+    console.log("CustomerRegister: businessId =", businessId, "found =", b?.name);
     if (b) setBusiness(b);
-    else console.log("CustomerRegister: Business not found for id:", businessId);
   }, [businessId]);
 
   useEffect(() => {

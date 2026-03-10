@@ -32,7 +32,7 @@ const CustomerHome = () => {
   const [activeSection, setActiveSection] = useState("about");
 
   useEffect(() => {
-    const b = getBusinesses().find(b => b.id === businessId);
+    const b = getBusinessById(businessId);
     if (b) setBusiness(b);
   }, [businessId]);
 

@@ -48,8 +48,8 @@ const CustomerMenu = () => {
     return () => clearInterval(interval);
   }, [businessId]);
 
-  const business = getBusinesses().find(b => b.id === businessId);
-  console.log("CustomerMenu: businessId =", businessId, "found =", business?.name, "all =", getBusinesses().map(b => ({ id: b.id, name: b.name })));
+  const business = getBusinessById(businessId);
+  console.log("CustomerMenu: businessId =", businessId, "found =", business?.name);
   const businessName = business?.name || "DALABplus+";
   const businessLogo = business?.logo || "";
   const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");

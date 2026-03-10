@@ -26,7 +26,7 @@ const CustomerDashboard = () => {
   // Get business info for branding
   const lastOrder = orders[orders.length - 1];
   const businessId = customer.businessId || lastOrder?.businessId || "1001";
-  const business = getBusinesses().find(b => b.id === businessId);
+  const business = getBusinessById(businessId);
   const businessName = business?.name || "DALABplus+";
   const businessLogo = business?.logo || "";
   const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");
