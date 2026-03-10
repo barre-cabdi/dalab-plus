@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Gift, ShoppingBag, Star, Trophy, LogOut, Clock, ChevronRight, Sparkles, Crown, Zap, TrendingUp, Eye, EyeOff, Store, Flame, Award, Gem } from "lucide-react";
 import { getBusinessById } from "@/lib/store";
 
 const CustomerDashboard = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const urlBusinessId = searchParams.get("business") || "";
   const [customer, setCustomer] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [animatePoints, setAnimatePoints] = useState(false);
@@ -25,10 +27,10 @@ const CustomerDashboard = () => {
 
   // Get business info for branding
   const lastOrder = orders[orders.length - 1];
-  const businessId = customer.businessId || lastOrder?.businessId || "1001";
+  const businessId = urlBusinessId || customer.businessId || lastOrder?.businessId || "1001";
   const business = getBusinessById(businessId);
-  const businessName = business?.name || "DALABplus+";
-  const businessLogo = business?.logo || "";
+  const businessName = business?.name || customer?.businessName || "DALABplus+";
+  const businessLogo = business?.logo || customer?.businessLogo || "";
   const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");
 
   const getLevelInfo = (level: string) => {
@@ -345,7 +347,7 @@ const CustomerDashboard = () => {
             variant="hero"
             size="xl"
             className="w-full rounded-2xl gap-2"
-            onClick={() => navigate(`/menu?table=1&business=${businessId}`)}
+            onClick={() => navigate(`/menu?table=${customer.tableId || "1"}&business=${businessId}`)}
           >
             <ShoppingBag className="mr-1" /> Browse Menu & Order
           </Button>

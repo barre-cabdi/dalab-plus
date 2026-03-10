@@ -56,7 +56,7 @@ const CustomerRegister = () => {
     if (!formData.name || !formData.phone) return;
     setIsSubmitting(true);
     setShowSuccess(true);
-    const customer = { id: customerId, ...formData, tableId, businessId, points: 0, level: "Bronze", totalOrders: 0, totalSpent: 0, registeredAt: new Date().toISOString() };
+    const customer = { id: customerId, ...formData, tableId, businessId, businessName, businessLogo, points: 0, level: "Bronze", totalOrders: 0, totalSpent: 0, registeredAt: new Date().toISOString() };
     localStorage.setItem("dp_customer", JSON.stringify(customer));
     const existing = getCustomers(businessId);
     const alreadyExists = existing.find(c => c.phone === formData.phone);
