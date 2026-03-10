@@ -639,6 +639,79 @@ const LoyaltyTab = ({ businessId }: LoyaltyTabProps) => {
           })()}
         </DialogContent>
       </Dialog>
+
+      {/* Level Edit Dialog */}
+      <Dialog open={levelDialog} onOpenChange={setLevelDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>⚙️ Edit Loyalty Levels</DialogTitle>
+            <DialogDescription>Set thresholds and rewards for each tier</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+            {editLevels.map((l, i) => (
+              <div key={i} className="border border-border rounded-xl p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">{l.icon}</span>
+                  <Input value={l.name} onChange={e => {
+                    const upd = [...editLevels];
+                    upd[i] = { ...upd[i], name: e.target.value };
+                    setEditLevels(upd);
+                  }} className="h-9 font-bold" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium mb-1 block">Min Points</label>
+                    <Input type="number" value={l.min} onChange={e => {
+                      const upd = [...editLevels];
+                      upd[i] = { ...upd[i], min: Number(e.target.value) };
+                      setEditLevels(upd);
+                    }} className="h-9" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium mb-1 block">Max Points</label>
+                    <Input type="number" value={l.max >= 99999 ? "" : l.max} placeholder="∞" onChange={e => {
+                      const upd = [...editLevels];
+                      upd[i] = { ...upd[i], max: e.target.value ? Number(e.target.value) : 99999 };
+                      setEditLevels(upd);
+                    }} className="h-9" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium mb-1 block">Icon</label>
+                  <div className="flex gap-2">
+                    {["🥉", "🥈", "🥇", "💎", "👑", "🏆", "⭐", "🎖️"].map(ic => (
+                      <button key={ic} onClick={() => {
+                        const upd = [...editLevels];
+                        upd[i] = { ...upd[i], icon: ic };
+                        setEditLevels(upd);
+                      }} className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center border transition-all ${l.icon === ic ? "border-accent bg-accent/10" : "border-border"}`}>
+                        {ic}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium mb-1 block">🎁 Reward (what customer gets at this level)</label>
+                  <Input value={l.reward} onChange={e => {
+                    const upd = [...editLevels];
+                    upd[i] = { ...upd[i], reward: e.target.value };
+                    setEditLevels(upd);
+                  }} placeholder="e.g. 10% discount + free drink" className="h-9" />
+                </div>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setLevelDialog(false)}>Cancel</Button>
+            <Button variant="hero" onClick={() => {
+              saveLoyaltyLevels(businessId, editLevels);
+              toast.success("Loyalty levels updated!");
+              setLevelDialog(false);
+              refresh();
+            }}>Save Levels</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
