@@ -22,6 +22,7 @@ const baseNavItems = [
   { id: "staff", label: "Staff", icon: UserCog },
   { id: "customers", label: "Customers", icon: Users },
   { id: "loyalty", label: "Loyalty", icon: Heart },
+  { id: "payment-methods", label: "Payment Methods", icon: Wallet },
   {
     id: "reports", label: "Reports", icon: BarChart3,
     children: [
