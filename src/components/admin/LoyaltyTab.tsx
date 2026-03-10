@@ -88,6 +88,7 @@ const LoyaltyTab = ({ businessId }: LoyaltyTabProps) => {
   const [members, setMembers] = useState<LoyaltyMember[]>([]);
   const [rewards, setRewards] = useState<LoyaltyReward[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [levels, setLevels] = useState<LoyaltyLevelConfig[]>([]);
   const [showDialog, setShowDialog] = useState(false);
   const [editing, setEditing] = useState<LoyaltyMember | null>(null);
   const [form, setForm] = useState({ name: "", phone: "", points: "0" });
@@ -101,11 +102,16 @@ const LoyaltyTab = ({ businessId }: LoyaltyTabProps) => {
   const [editingReward, setEditingReward] = useState<LoyaltyReward | null>(null);
   const [rewardForm, setRewardForm] = useState({ name: "", description: "", pointsCost: "", icon: "🎁" });
 
+  // Level editing
+  const [levelDialog, setLevelDialog] = useState(false);
+  const [editLevels, setEditLevels] = useState<LoyaltyLevelConfig[]>([]);
+
   useEffect(() => { refresh(); }, [businessId]);
   const refresh = () => {
     setMembers(getLoyaltyMembers(businessId));
     setRewards(getLoyaltyRewards(businessId));
     setOrders(getOrders(businessId));
+    setLevels(getLoyaltyLevels(businessId));
   };
 
   const getMemberOrders = (memberName: string, memberPhone: string) => {
