@@ -23,7 +23,8 @@ import {
   getCategories, saveCategory, updateCategory, deleteCategory,
   getMenuItems, saveMenuItem, updateMenuItem, deleteMenuItem,
   getTables, saveTable, updateTable, deleteTable,
-  getOrders, updateOrder, generateId,
+  getOrders, updateOrder, saveOrder, generateId,
+  getStaff, StaffMember,
 } from "@/lib/store";
 import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
