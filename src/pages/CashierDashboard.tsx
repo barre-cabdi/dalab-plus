@@ -725,6 +725,96 @@ const CashierDashboard = () => {
             </div>
           )}
 
+          {/* ===== PAYMENT METHODS ===== */}
+          {activeTab === "payment-methods" && (
+            <div className="space-y-6">
+              {/* Stats */}
+              <div className="grid sm:grid-cols-4 gap-4">
+                {[
+                  { label: "Total Paid", value: `$${myRevenue.toFixed(2)}`, icon: DollarSign, desc: `${myOrders.filter(o => o.status === "paid").length} orders` },
+                  { label: "Cash", value: `$${cashPayments.reduce((s, o) => s + o.total, 0).toFixed(2)}`, icon: Banknote, desc: `${cashPayments.length} payments` },
+                  { label: "Card", value: `$${cardPayments.reduce((s, o) => s + o.total, 0).toFixed(2)}`, icon: CreditCard, desc: `${cardPayments.length} payments` },
+                  { label: "Mobile", value: `$${mobilePayments.reduce((s, o) => s + o.total, 0).toFixed(2)}`, icon: Smartphone, desc: `${mobilePayments.length} payments` },
+                ].map((s, i) => (
+                  <motion.div key={s.label} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                    className="bg-card border border-border rounded-xl p-4 shadow-card-custom">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{s.label}</p>
+                      <s.icon className="w-4 h-4 text-accent" />
+                    </div>
+                    <p className="text-2xl font-display font-bold">{s.value}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">{s.desc}</p>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Breakdown bar */}
+              <div className="bg-card border border-border rounded-xl p-6 shadow-card-custom">
+                <h3 className="font-display font-bold mb-4">Revenue Breakdown</h3>
+                <div className="space-y-4">
+                  {[
+                    { label: "💵 Cash", total: cashPayments.reduce((s, o) => s + o.total, 0), pct: myRevenue ? (cashPayments.reduce((s, o) => s + o.total, 0) / myRevenue * 100) : 0 },
+                    { label: "💳 Card", total: cardPayments.reduce((s, o) => s + o.total, 0), pct: myRevenue ? (cardPayments.reduce((s, o) => s + o.total, 0) / myRevenue * 100) : 0 },
+                    { label: "📱 Mobile Money", total: mobilePayments.reduce((s, o) => s + o.total, 0), pct: myRevenue ? (mobilePayments.reduce((s, o) => s + o.total, 0) / myRevenue * 100) : 0 },
+                  ].map((p, i) => (
+                    <div key={p.label}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="font-medium">{p.label}</span>
+                        <span className="text-muted-foreground">${p.total.toFixed(2)} ({p.pct.toFixed(1)}%)</span>
+                      </div>
+                      <div className="w-full h-3 rounded-full bg-muted overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${p.pct}%` }}
+                          transition={{ duration: 0.8, delay: 0.2 + i * 0.1 }}
+                          className="h-full rounded-full bg-accent"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Recent paid list */}
+              <div className="bg-card border border-border rounded-xl shadow-card-custom overflow-hidden">
+                <div className="px-5 py-4 border-b border-border">
+                  <h3 className="font-display font-bold">Recent Payments (My Shift)</h3>
+                </div>
+                {myOrders.filter(o => o.status === "paid").length === 0 ? (
+                  <div className="py-12 text-center text-muted-foreground">
+                    <CreditCard className="w-10 h-10 mx-auto mb-3 opacity-20" />
+                    <p className="text-sm">Wali lacag lama qaatin</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Method</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Time</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {myOrders.filter(o => o.status === "paid").reverse().map(o => (
+                        <TableRow key={o.id}>
+                          <TableCell className="font-medium">{(o as any).customerName || "Guest"}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="text-[10px]">
+                              {o.paymentMethod === "cash" ? "💵 Cash" : o.paymentMethod === "card" ? "💳 Card" : "📱 Mobile"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-bold text-accent">${o.total.toFixed(2)}</TableCell>
+                          <TableCell className="text-xs text-muted-foreground">{new Date(o.paidAt || o.createdAt).toLocaleTimeString()}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* ===== CUSTOMERS ===== */}
           {activeTab === "customers" && (
             <div className="space-y-6">
