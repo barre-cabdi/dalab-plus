@@ -296,10 +296,10 @@ const LoyaltyTab = ({ businessId }: LoyaltyTabProps) => {
                     </TableCell>
                   </TableRow>
                 ) : members.map(m => {
-                  const level = getLevel(m.points);
+                  const level = getLevel(m.points, levels);
                   const memberOrders = getMemberOrders(m.name, m.phone);
                   const totalSpent = memberOrders.reduce((s, o) => s + o.total, 0);
-                  const nextLevel = LOYALTY_LEVELS.find(l => l.min > m.points);
+                  const nextLevel = levels.find(l => l.min > m.points);
                   const progress = nextLevel ? ((m.points - level.min) / (nextLevel.min - level.min)) * 100 : 100;
 
                   return (
