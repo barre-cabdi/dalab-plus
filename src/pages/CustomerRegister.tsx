@@ -32,7 +32,6 @@ const CustomerRegister = () => {
   useEffect(() => {
     const b = getBusinessById(businessId);
     if (b) setBusiness(b);
-    if (b) setBusiness(b);
   }, [businessId]);
 
   useEffect(() => {
