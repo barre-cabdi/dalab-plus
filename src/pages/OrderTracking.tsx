@@ -73,7 +73,7 @@ const OrderTracking = () => {
     </div>
   );
 
-  const business = getBusinesses().find(b => b.id === order.businessId);
+  const business = getBusinessById(order.businessId);
   const businessName = business?.name || "DALABplus+";
   const businessLogo = business?.logo || "";
   const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");
