@@ -66,7 +66,7 @@ const CustomerRegister = () => {
         totalOrders: 0, totalSpent: 0, loyaltyPoints: 0, registeredAt: new Date().toISOString(),
       });
     }
-    setTimeout(() => { navigate(`/menu?table=${tableId}&business=${businessId}`); }, 2200);
+    setTimeout(() => { navigate(`/menu?table=${tableId}&business=${businessId}&name=${encodeURIComponent(qrBusinessName)}&logo=${encodeURIComponent(qrBusinessLogo)}`); }, 2200);
   };
 
   return (

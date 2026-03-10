@@ -51,9 +51,8 @@ const CustomerMenu = () => {
   }, [businessId]);
 
   const business = getBusinessById(businessId);
-  console.log("CustomerMenu: businessId =", businessId, "found =", business?.name);
-  const businessName = business?.name || "DALABplus+";
-  const businessLogo = business?.logo || "";
+  const businessName = business?.name || qrBusinessName || "DALABplus+";
+  const businessLogo = business?.logo || qrBusinessLogo || "";
   const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");
 
   const filteredItems = menuItems.filter(item => {

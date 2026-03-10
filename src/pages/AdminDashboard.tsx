@@ -865,7 +865,7 @@ const AdminDashboard = () => {
             ) : (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {tables.map(t => {
-                  const url = `${window.location.origin}/register?table=${t.number}&business=${business.id}`;
+                  const url = `${window.location.origin}/register?table=${t.number}&business=${business.id}&name=${encodeURIComponent(business.name)}&logo=${encodeURIComponent(business.logo || "")}`;
                   return (
                     <div key={t.id} className="bg-card border border-border rounded-xl p-6 shadow-card-custom text-center hover:shadow-gold transition-shadow">
                       <div className="mb-3 flex justify-center">
