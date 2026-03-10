@@ -6,6 +6,7 @@ import {
   ChevronLeft, ChevronRight, Users, UserCheck,
   DollarSign, Package, Layers, UserCog, Hotel,
   BedDouble, CalendarCheck, BookOpen, Contact, History, Receipt,
+  Wallet,
 } from "lucide-react";
 import { Business } from "@/lib/store";
 import { useState } from "react";
