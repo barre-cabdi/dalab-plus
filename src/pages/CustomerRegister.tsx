@@ -40,7 +40,7 @@ const CustomerRegister = () => {
     if (stored) {
       const customer = JSON.parse(stored);
       if (customer && customer.name) {
-        navigate(`/menu?table=${tableId}&business=${businessId}`);
+        navigate(`/menu?table=${tableId}&business=${businessId}&name=${encodeURIComponent(qrBusinessName)}&logo=${encodeURIComponent(qrBusinessLogo)}`);
       }
     }
   }, [navigate, tableId, businessId]);
