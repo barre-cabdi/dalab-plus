@@ -409,7 +409,7 @@ const CashierDashboard = () => {
                           <Check className="w-3 h-3" /> Served
                         </Button>
                       )}
-                      {(o.status === "ready" || o.status === "delivered") && o.status !== "paid" && (
+                      {(o.status === "ready" || o.status === "delivered") && (
                         <Button size="sm" variant="hero" className="text-xs gap-1"
                           onClick={() => { setPaymentDialog(o); setPaidAmount(String(o.total)); }}>
                           <CreditCard className="w-3 h-3" /> Confirm Payment
