@@ -6,9 +6,9 @@ import {
   ChevronLeft, ChevronRight, Users, UserCheck,
   DollarSign, Package, Layers, UserCog, Hotel,
   BedDouble, CalendarCheck, BookOpen, Contact, History, Receipt,
-  Wallet,
+  Wallet, Lock,
 } from "lucide-react";
-import { Business } from "@/lib/store";
+import { Business, getDefaultPermissions } from "@/lib/store";
 import { useState } from "react";
 
 const baseNavItems = [
