@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import {
   Plus, Pencil, Trash2, Search, QrCode, Download, Bell, HelpCircle,
-  Upload, ImageIcon, Printer, ExternalLink, Copy, X, MessageSquare, Check, XCircle, Volume2, Receipt, Minus,
+  Upload, ImageIcon, Printer, ExternalLink, Copy, X, MessageSquare, Check, XCircle, Volume2, Receipt, Minus, Lock,
 } from "lucide-react";
 import {
   Business, Category, MenuItem, TableItem, Order,
