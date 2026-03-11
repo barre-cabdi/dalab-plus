@@ -1270,8 +1270,8 @@ const AdminDashboard = () => {
 
       {/* Menu Item Dialog */}
       <Dialog open={menuDialog} onOpenChange={setMenuDialog}>
-        <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>{editingMenu ? "Edit Menu Item" : "New Menu Item"}</DialogTitle><DialogDescription>Enter item details</DialogDescription></DialogHeader>
-          <div className="space-y-4">
+        <DialogContent className="max-w-lg max-h-[90vh] flex flex-col"><DialogHeader className="shrink-0"><DialogTitle>{editingMenu ? "Edit Menu Item" : "New Menu Item"}</DialogTitle><DialogDescription>Enter item details</DialogDescription></DialogHeader>
+          <div className="space-y-4 overflow-y-auto flex-1 pr-1">
             <div><label className="text-sm font-medium mb-1 block">Name</label><Input value={menuForm.name} onChange={e => setMenuForm({ ...menuForm, name: e.target.value })} placeholder="e.g. Chicken Burger" /></div>
             <div><label className="text-sm font-medium mb-1 block">Description</label><Input value={menuForm.description} onChange={e => setMenuForm({ ...menuForm, description: e.target.value })} placeholder="Short description" /></div>
             <div className="grid grid-cols-2 gap-3">
