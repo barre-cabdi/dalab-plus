@@ -1078,8 +1078,19 @@ const AdminDashboard = () => {
       case "settings":
         return <AdminSettings business={business} onUpdate={refreshData} />;
 
-      case "receipt-settings":
+      case "receipt-settings": {
+        const perms = business.permissions || { canManageReceipts: true };
+        if (!perms.canManageReceipts) {
+          return (
+            <div className="bg-card border border-border rounded-xl p-12 text-center shadow-card-custom">
+              <Lock className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+              <p className="font-display font-bold text-lg">Receipt Settings Disabled</p>
+              <p className="text-sm text-muted-foreground mt-1">SuperAdmin has disabled this feature for your business</p>
+            </div>
+          );
+        }
         return <ReceiptSettings business={business} />;
+      }
 
       default:
         return null;
