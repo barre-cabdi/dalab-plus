@@ -362,7 +362,7 @@ const MenuManagementTab = ({ businessId, onDataChange }: MenuManagementTabProps)
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto flex-1 pr-1">
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2">
                 <label className="text-sm font-medium mb-1.5 block">Magaca</label>
