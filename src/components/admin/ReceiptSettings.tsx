@@ -150,6 +150,17 @@ const ReceiptSettings = ({ business }: ReceiptSettingsProps) => {
               placeholder="e.g. 525782"
             />
           </div>
+          <div>
+            <label className="text-sm font-medium mb-1.5 block">QR USSD Prefix</label>
+            <Input
+              value={config.qrUssdPrefix}
+              onChange={e => setConfig({ ...config, qrUssdPrefix: e.target.value })}
+              placeholder="e.g. *884 or *712"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Format: {config.qrUssdPrefix || "*712"}*{config.sahalNumber || "MERCHANT"}*amount*decimal#
+            </p>
+          </div>
         </div>
       </motion.div>
 
