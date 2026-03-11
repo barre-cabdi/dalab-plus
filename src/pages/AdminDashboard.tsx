@@ -44,6 +44,7 @@ import HotelReportTab from "@/components/admin/HotelReportTab";
 import OrderHistoryTab from "@/components/admin/OrderHistoryTab";
 import MenuManagementTab from "@/components/admin/MenuManagementTab";
 import ReceiptSettings from "@/components/admin/ReceiptSettings";
+import BusinessHomeTab from "@/components/admin/BusinessHomeTab";
 import { printReceipt } from "@/lib/printReceipt";
 
 const emojiOptions = ["🍛","🍔","🐟","🥗","🍵","🥤","🫓","🍝","🍰","🍦","🦞","🥭","☕","🍕","🥩","🍗","🌮","🍣","🧁","🥚","🍳","🥐","🧀","🍱"];
