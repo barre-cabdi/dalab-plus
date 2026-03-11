@@ -74,8 +74,11 @@ const OrderTracking = () => {
   );
 
   const business = getBusinessById(order.businessId);
-  const businessName = business?.name || "DALABplus+";
-  const businessLogo = business?.logo || "";
+  const branding = (() => {
+    try { return JSON.parse(localStorage.getItem("dp_customer_branding") || "{}"); } catch { return {}; }
+  })();
+  const businessName = business?.name || branding.businessName || customer?.businessName || "DALABplus+";
+  const businessLogo = business?.logo || branding.businessLogo || customer?.businessLogo || "";
   const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");
   const currentStep = getCurrentStep(order.status);
   const isAccepted = currentStep >= 1; // Only show processing after accepted
