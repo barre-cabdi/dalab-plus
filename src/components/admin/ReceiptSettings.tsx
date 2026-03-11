@@ -13,21 +13,17 @@ interface ReceiptSettingsProps {
 }
 
 export interface ReceiptConfig {
-  // Merchant payment accounts (admin editable)
   edahabNumber: string;
   mycashNumber: string;
   yeelNumber: string;
   tplusNumber: string;
   sahalNumber: string;
-  // Contact info (admin editable)
   contactPhone: string;
   contactAddress: string;
-  // VAT settings
   vatRate: number;
-  // Footer message (admin editable)
   thankYouMessage: string;
-  // Powered by (SuperAdmin only)
   poweredBy: string;
+  qrUssdPrefix: string;
 }
 
 const defaultConfig: ReceiptConfig = {
