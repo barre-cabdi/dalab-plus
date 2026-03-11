@@ -329,6 +329,101 @@ const AdminSettings = ({ business, onUpdate }: AdminSettingsProps) => {
           </div>
         </div>
       </motion.div>
+
+      {/* Payment Methods (SuperAdmin Controlled) */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="bg-card border border-border rounded-xl p-6 shadow-card-custom"
+      >
+        <div className="flex items-center gap-2 mb-5">
+          <h3 className="font-display font-bold text-base text-foreground">Payment Methods</h3>
+          {!isSuperAdmin && (
+            <span className="text-[10px] text-destructive/70 bg-destructive/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+              <Lock className="w-3 h-3" /> SuperAdmin Only
+            </span>
+          )}
+        </div>
+        {(() => {
+          const pm = business.paymentMethods || getDefaultPaymentMethods();
+          return (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                <span className="text-sm font-medium text-foreground">💵 Cash</span>
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${pm.cashEnabled ? "bg-accent/15 text-accent" : "bg-destructive/15 text-destructive"}`}>
+                  {pm.cashEnabled ? "Enabled" : "Disabled"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                <span className="text-sm font-medium text-foreground">💳 Card</span>
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${pm.cardEnabled ? "bg-accent/15 text-accent" : "bg-destructive/15 text-destructive"}`}>
+                  {pm.cardEnabled ? "Enabled" : "Disabled"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                <span className="text-sm font-medium text-foreground">📱 Mobile Payments</span>
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${pm.mobileEnabled ? "bg-accent/15 text-accent" : "bg-destructive/15 text-destructive"}`}>
+                  {pm.mobileEnabled ? "Enabled" : "Disabled"}
+                </span>
+              </div>
+              {pm.mobileEnabled && pm.mobileProviders.length > 0 && (
+                <div className="ml-4 space-y-2">
+                  <p className="text-xs text-muted-foreground">Mobile Payment Providers:</p>
+                  {pm.mobileProviders.map(p => (
+                    <div key={p.id} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 border border-border">
+                      <span className="text-sm font-medium text-foreground">{p.name || "Unnamed"}</span>
+                      <span className="text-xs text-muted-foreground font-mono">{p.accountNumber || "N/A"}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+      </motion.div>
+
+      {/* Access Permissions (SuperAdmin Controlled) */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="bg-card border border-border rounded-xl p-6 shadow-card-custom"
+      >
+        <div className="flex items-center gap-2 mb-5">
+          <h3 className="font-display font-bold text-base text-foreground">Access Permissions</h3>
+          {!isSuperAdmin && (
+            <span className="text-[10px] text-destructive/70 bg-destructive/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+              <Lock className="w-3 h-3" /> SuperAdmin Only
+            </span>
+          )}
+        </div>
+        {(() => {
+          const perms = business.permissions || getDefaultPermissions();
+          const permList = [
+            { key: "canEditMenu", label: "Edit Menu", icon: "🍽️" },
+            { key: "canManageStaff", label: "Manage Staff", icon: "👥" },
+            { key: "canViewReports", label: "View Reports", icon: "📊" },
+            { key: "canManageTables", label: "Manage Tables", icon: "🪑" },
+            { key: "canManageHotel", label: "Manage Hotel", icon: "🏨" },
+            { key: "canManageLoyalty", label: "Loyalty Program", icon: "⭐" },
+            { key: "canManageReceipts", label: "Receipt Settings", icon: "🧾" },
+            { key: "canViewPayments", label: "View Payments", icon: "💰" },
+          ] as const;
+          return (
+            <div className="grid sm:grid-cols-2 gap-2">
+              {permList.map(perm => (
+                <div key={perm.key} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                  <span className="text-sm font-medium text-foreground">{perm.icon} {perm.label}</span>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${perms[perm.key] ? "bg-accent/15 text-accent" : "bg-destructive/15 text-destructive"}`}>
+                    {perms[perm.key] ? "✅ Allowed" : "🚫 Blocked"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+      </motion.div>
     </div>
   );
 };
