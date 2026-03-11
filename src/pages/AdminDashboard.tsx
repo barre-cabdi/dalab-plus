@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import {
   Plus, Pencil, Trash2, Search, QrCode, Download, Bell, HelpCircle,
-  Upload, ImageIcon, Printer, ExternalLink, Copy, X, MessageSquare, Check, XCircle, Volume2, Receipt, Minus,
+  Upload, ImageIcon, Printer, ExternalLink, Copy, X, MessageSquare, Check, XCircle, Volume2, Receipt, Minus, Lock,
 } from "lucide-react";
 import {
   Business, Category, MenuItem, TableItem, Order,
@@ -1078,8 +1078,19 @@ const AdminDashboard = () => {
       case "settings":
         return <AdminSettings business={business} onUpdate={refreshData} />;
 
-      case "receipt-settings":
+      case "receipt-settings": {
+        const perms = business.permissions || { canManageReceipts: true };
+        if (!perms.canManageReceipts) {
+          return (
+            <div className="bg-card border border-border rounded-xl p-12 text-center shadow-card-custom">
+              <Lock className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+              <p className="font-display font-bold text-lg">Receipt Settings Disabled</p>
+              <p className="text-sm text-muted-foreground mt-1">SuperAdmin has disabled this feature for your business</p>
+            </div>
+          );
+        }
         return <ReceiptSettings business={business} />;
+      }
 
       default:
         return null;
@@ -1259,8 +1270,8 @@ const AdminDashboard = () => {
 
       {/* Menu Item Dialog */}
       <Dialog open={menuDialog} onOpenChange={setMenuDialog}>
-        <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>{editingMenu ? "Edit Menu Item" : "New Menu Item"}</DialogTitle><DialogDescription>Enter item details</DialogDescription></DialogHeader>
-          <div className="space-y-4">
+        <DialogContent className="max-w-lg max-h-[90vh] flex flex-col"><DialogHeader className="shrink-0"><DialogTitle>{editingMenu ? "Edit Menu Item" : "New Menu Item"}</DialogTitle><DialogDescription>Enter item details</DialogDescription></DialogHeader>
+          <div className="space-y-4 overflow-y-auto flex-1 pr-1">
             <div><label className="text-sm font-medium mb-1 block">Name</label><Input value={menuForm.name} onChange={e => setMenuForm({ ...menuForm, name: e.target.value })} placeholder="e.g. Chicken Burger" /></div>
             <div><label className="text-sm font-medium mb-1 block">Description</label><Input value={menuForm.description} onChange={e => setMenuForm({ ...menuForm, description: e.target.value })} placeholder="Short description" /></div>
             <div className="grid grid-cols-2 gap-3">
@@ -1304,7 +1315,7 @@ const AdminDashboard = () => {
               )}
             </div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setMenuDialog(false)}>Cancel</Button><Button onClick={saveMenuForm} variant="hero">Save</Button></DialogFooter>
+          <DialogFooter className="shrink-0 border-t border-border pt-4 mt-2"><Button variant="outline" onClick={() => setMenuDialog(false)}>Cancel</Button><Button onClick={saveMenuForm} variant="hero">Save</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 

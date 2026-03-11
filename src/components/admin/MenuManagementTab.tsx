@@ -333,8 +333,8 @@ const MenuManagementTab = ({ businessId, onDataChange }: MenuManagementTabProps)
 
       {/* Menu Item Dialog */}
       <Dialog open={menuDialog} onOpenChange={setMenuDialog}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
+        <DialogContent className="max-w-lg max-h-[90vh] flex flex-col">
+          <DialogHeader className="shrink-0">
             <DialogTitle>{editingMenu ? "Edit Item" : "Ku Dar Item Cusub"}</DialogTitle>
             <DialogDescription>Buuxi xogta item-ka menu-ga</DialogDescription>
           </DialogHeader>
@@ -362,7 +362,7 @@ const MenuManagementTab = ({ businessId, onDataChange }: MenuManagementTabProps)
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto flex-1 pr-1">
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2">
                 <label className="text-sm font-medium mb-1.5 block">Magaca</label>
@@ -427,7 +427,7 @@ const MenuManagementTab = ({ businessId, onDataChange }: MenuManagementTabProps)
               </div>
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="shrink-0 border-t border-border pt-4 mt-2">
             <Button variant="outline" onClick={() => setMenuDialog(false)}>Jooji</Button>
             <Button variant="hero" onClick={saveMenuForm} disabled={!menuForm.name.trim() || !menuForm.price}>
               {editingMenu ? "Keydi" : "Ku Dar"}
