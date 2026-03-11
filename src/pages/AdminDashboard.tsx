@@ -1315,7 +1315,7 @@ const AdminDashboard = () => {
               )}
             </div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setMenuDialog(false)}>Cancel</Button><Button onClick={saveMenuForm} variant="hero">Save</Button></DialogFooter>
+          <DialogFooter className="shrink-0 border-t border-border pt-4 mt-2"><Button variant="outline" onClick={() => setMenuDialog(false)}>Cancel</Button><Button onClick={saveMenuForm} variant="hero">Save</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
