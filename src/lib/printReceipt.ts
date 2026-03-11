@@ -25,6 +25,7 @@ const defaultReceiptConfig: ReceiptConfig = {
   vatRate: 2,
   thankYouMessage: "Thank you for visiting us",
   poweredBy: "www.DALABplus.com",
+  qrUssdPrefix: "*712",
 };
 
 export const getReceiptConfig = (businessId: string): ReceiptConfig => {
