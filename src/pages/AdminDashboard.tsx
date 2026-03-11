@@ -1088,6 +1088,7 @@ const AdminDashboard = () => {
 
   const tabTitles: Record<string, string> = {
     dashboard: "Dashboard",
+    home: "Business Home Page",
     menu: "Menu Management",
     "admin-order": "Place Order (Admin)",
     categories: "Categories",

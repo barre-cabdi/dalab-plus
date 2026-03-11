@@ -13,6 +13,7 @@ import { useState } from "react";
 
 const baseNavItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "home", label: "Business Home", icon: Hotel },
   { id: "menu", label: "Menu", icon: UtensilsCrossed },
   { id: "admin-order", label: "Place Order", icon: Package },
   { id: "tables", label: "Tables", icon: Grid3X3 },

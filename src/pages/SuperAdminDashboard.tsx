@@ -168,6 +168,7 @@ const SuperAdminDashboard = () => {
         open={!!viewBiz}
         onClose={() => setViewBiz(null)}
         business={viewBiz}
+        onUpdated={refresh}
       />
     </div>
   );
