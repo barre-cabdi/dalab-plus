@@ -174,6 +174,16 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
 
     if (editBusiness) {
       updateBusiness(editBusiness.id, newBiz);
+      // Sync dp_active_business if admin is logged in with this business
+      try {
+        const active = localStorage.getItem("dp_active_business");
+        if (active) {
+          const activeBiz = JSON.parse(active);
+          if (activeBiz.id === editBusiness.id) {
+            localStorage.setItem("dp_active_business", JSON.stringify({ ...activeBiz, ...newBiz }));
+          }
+        }
+      } catch {}
     } else {
       saveBusiness(newBiz);
     }
