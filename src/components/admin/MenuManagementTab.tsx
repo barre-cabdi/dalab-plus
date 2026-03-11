@@ -333,8 +333,8 @@ const MenuManagementTab = ({ businessId, onDataChange }: MenuManagementTabProps)
 
       {/* Menu Item Dialog */}
       <Dialog open={menuDialog} onOpenChange={setMenuDialog}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
+        <DialogContent className="max-w-lg max-h-[90vh] flex flex-col">
+          <DialogHeader className="shrink-0">
             <DialogTitle>{editingMenu ? "Edit Item" : "Ku Dar Item Cusub"}</DialogTitle>
             <DialogDescription>Buuxi xogta item-ka menu-ga</DialogDescription>
           </DialogHeader>
