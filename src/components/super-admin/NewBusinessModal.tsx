@@ -12,8 +12,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  X, Eye, EyeOff, PlusCircle, Shield, Upload, Trash2, Plus,
+  X, Eye, EyeOff, PlusCircle, Shield, Upload, Trash2, Plus, Wallet, CreditCard, Smartphone, Lock,
 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Business, BusinessService, MobilePaymentProvider, PaymentMethodsConfig, BusinessPermissions, getBusinesses, saveBusiness, updateBusiness, generateId, getDefaultServices, getDefaultPaymentMethods, getDefaultPermissions } from "@/lib/store";
 
