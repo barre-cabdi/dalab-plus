@@ -44,6 +44,7 @@ import HotelReportTab from "@/components/admin/HotelReportTab";
 import OrderHistoryTab from "@/components/admin/OrderHistoryTab";
 import MenuManagementTab from "@/components/admin/MenuManagementTab";
 import ReceiptSettings from "@/components/admin/ReceiptSettings";
+import BusinessHomeTab from "@/components/admin/BusinessHomeTab";
 import { printReceipt } from "@/lib/printReceipt";
 
 const emojiOptions = ["🍛","🍔","🐟","🥗","🍵","🥤","🫓","🍝","🍰","🍦","🦞","🥭","☕","🍕","🥩","🍗","🌮","🍣","🧁","🥚","🍳","🥐","🧀","🍱"];
@@ -558,6 +559,9 @@ const AdminDashboard = () => {
             </div>
           </div>
         );
+
+      case "home":
+        return <BusinessHomeTab business={business} />;
 
       case "admin-order":
         return <AdminOrderTab business={business} categories={categories} menuItems={menuItems} tables={tables} onOrderPlaced={refreshData} />;
@@ -1084,6 +1088,7 @@ const AdminDashboard = () => {
 
   const tabTitles: Record<string, string> = {
     dashboard: "Dashboard",
+    home: "Business Home Page",
     menu: "Menu Management",
     "admin-order": "Place Order (Admin)",
     categories: "Categories",
