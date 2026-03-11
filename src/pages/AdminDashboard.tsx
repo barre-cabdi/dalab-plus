@@ -560,6 +560,9 @@ const AdminDashboard = () => {
           </div>
         );
 
+      case "home":
+        return <BusinessHomeTab business={business} />;
+
       case "admin-order":
         return <AdminOrderTab business={business} categories={categories} menuItems={menuItems} tables={tables} onOrderPlaced={refreshData} />;
 
