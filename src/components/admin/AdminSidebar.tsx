@@ -67,7 +67,20 @@ interface AdminSidebarProps {
 
 const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollapsed }: AdminSidebarProps) => {
   const isHotel = business.type === "hotel";
-  const navItems = isHotel ? [...baseNavItems.slice(0, 1), ...hotelNavItems, ...baseNavItems.slice(1)] : baseNavItems;
+  const perms = business.permissions || getDefaultPermissions();
+  
+  // Filter nav items based on permissions
+  const filteredBaseItems = baseNavItems.filter(item => {
+    if (item.id === "menu") return perms.canEditMenu;
+    if (item.id === "staff") return perms.canManageStaff;
+    if (item.id === "tables" || item.id === "qr") return perms.canManageTables;
+    if (item.id === "loyalty") return perms.canManageLoyalty;
+    if (item.id === "payment-methods") return perms.canViewPayments;
+    if (item.id === "reports") return perms.canViewReports;
+    return true;
+  });
+  
+  const navItems = isHotel ? [...filteredBaseItems.slice(0, 1), ...(perms.canManageHotel ? hotelNavItems : []), ...filteredBaseItems.slice(1)] : filteredBaseItems;
   const [reportsOpen, setReportsOpen] = useState(activeTab.startsWith("reports"));
   const [hotelOpen, setHotelOpen] = useState(activeTab.startsWith("hotel-") && !activeTab.startsWith("hotel-report"));
   const [hotelReportOpen, setHotelReportOpen] = useState(activeTab.startsWith("hotel-report"));
