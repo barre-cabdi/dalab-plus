@@ -13,21 +13,17 @@ interface ReceiptSettingsProps {
 }
 
 export interface ReceiptConfig {
-  // Merchant payment accounts (admin editable)
   edahabNumber: string;
   mycashNumber: string;
   yeelNumber: string;
   tplusNumber: string;
   sahalNumber: string;
-  // Contact info (admin editable)
   contactPhone: string;
   contactAddress: string;
-  // VAT settings
   vatRate: number;
-  // Footer message (admin editable)
   thankYouMessage: string;
-  // Powered by (SuperAdmin only)
   poweredBy: string;
+  qrUssdPrefix: string;
 }
 
 const defaultConfig: ReceiptConfig = {
@@ -41,6 +37,7 @@ const defaultConfig: ReceiptConfig = {
   vatRate: 2,
   thankYouMessage: "Thank you for visiting us",
   poweredBy: "www.DALABplus.com",
+  qrUssdPrefix: "*712",
 };
 
 export const getReceiptConfig = (businessId: string): ReceiptConfig => {
@@ -152,6 +149,17 @@ const ReceiptSettings = ({ business }: ReceiptSettingsProps) => {
               onChange={e => setConfig({ ...config, sahalNumber: e.target.value })}
               placeholder="e.g. 525782"
             />
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-1.5 block">QR USSD Prefix</label>
+            <Input
+              value={config.qrUssdPrefix}
+              onChange={e => setConfig({ ...config, qrUssdPrefix: e.target.value })}
+              placeholder="e.g. *884 or *712"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Format: {config.qrUssdPrefix || "*712"}*{config.sahalNumber || "MERCHANT"}*amount*decimal#
+            </p>
           </div>
         </div>
       </motion.div>
