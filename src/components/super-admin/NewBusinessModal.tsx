@@ -136,6 +136,23 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
     setServices(services.map(s => s.id === id ? { ...s, [field]: value } : s));
   };
 
+  // Mobile payment provider helpers
+  const addMobileProvider = () => {
+    setPaymentMethods(pm => ({
+      ...pm,
+      mobileProviders: [...pm.mobileProviders, { id: generateId("mp"), name: "", accountNumber: "" }],
+    }));
+  };
+  const removeMobileProvider = (id: string) => {
+    setPaymentMethods(pm => ({ ...pm, mobileProviders: pm.mobileProviders.filter(p => p.id !== id) }));
+  };
+  const updateMobileProvider = (id: string, field: keyof MobilePaymentProvider, value: string) => {
+    setPaymentMethods(pm => ({
+      ...pm,
+      mobileProviders: pm.mobileProviders.map(p => p.id === id ? { ...p, [field]: value } : p),
+    }));
+  };
+
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editBusiness && getBusinesses().some(b => b.adminUsername === form.adminUsername)) {
@@ -147,6 +164,8 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
       id: editBusiness?.id || generateId("biz"),
       ...form,
       services: validServices,
+      paymentMethods,
+      permissions,
       status: editBusiness?.status || "active",
       createdAt: editBusiness?.createdAt || new Date().toISOString(),
       totalOrders: editBusiness?.totalOrders || 0,
