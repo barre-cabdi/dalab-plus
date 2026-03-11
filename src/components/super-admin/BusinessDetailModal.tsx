@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Building2, Phone, Mail, MapPin, Calendar, CreditCard, Shield } from "lucide-react";
-import { Business } from "@/lib/store";
+import { X, Building2, Phone, Mail, MapPin, Calendar, CreditCard, Shield, Wallet, Smartphone } from "lucide-react";
+import { Business, getDefaultPaymentMethods, getDefaultPermissions } from "@/lib/store";
 
 const typeLabels: Record<string, string> = { hotel: "Hotel", cafe: "Cafe", restaurant: "Restaurant" };
 const subLabels: Record<string, string> = { free: "Free", basic: "Basic", premium: "Premium", enterprise: "Enterprise" };
