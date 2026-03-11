@@ -65,6 +65,8 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
     subscription: "free" as Business["subscription"],
   });
   const [services, setServices] = useState<BusinessService[]>(getDefaultServices("restaurant"));
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethodsConfig>(getDefaultPaymentMethods());
+  const [permissions, setPermissions] = useState<BusinessPermissions>(getDefaultPermissions());
 
   // Reset form when editBusiness changes or modal opens
   useEffect(() => {
@@ -87,6 +89,8 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
           subscription: editBusiness.subscription,
         });
         setServices(editBusiness.services || getDefaultServices(editBusiness.type));
+        setPaymentMethods(editBusiness.paymentMethods || getDefaultPaymentMethods());
+        setPermissions(editBusiness.permissions || getDefaultPermissions());
       } else {
         setForm({
           name: "", type: "restaurant", address: "", city: "", country: "Somalia",
@@ -94,6 +98,8 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
           description: "", adminUsername: "", adminPassword: "", subscription: "free",
         });
         setServices(getDefaultServices("restaurant"));
+        setPaymentMethods(getDefaultPaymentMethods());
+        setPermissions(getDefaultPermissions());
       }
     }
   }, [open, editBusiness]);
