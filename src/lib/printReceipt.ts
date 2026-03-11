@@ -11,6 +11,7 @@ export interface ReceiptConfig {
   vatRate: number;
   thankYouMessage: string;
   poweredBy: string;
+  qrUssdPrefix: string;
 }
 
 const defaultReceiptConfig: ReceiptConfig = {
