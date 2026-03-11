@@ -28,7 +28,51 @@ export interface Business {
   totalRevenue: number;
   subscription: "free" | "basic" | "premium" | "enterprise";
   services?: BusinessService[];
+  paymentMethods?: PaymentMethodsConfig;
+  permissions?: BusinessPermissions;
 }
+
+export interface MobilePaymentProvider {
+  id: string;
+  name: string; // e.g. Sahal, Zaad, EVC, T-plus, MyCash
+  accountNumber: string;
+}
+
+export interface PaymentMethodsConfig {
+  cashEnabled: boolean;
+  cardEnabled: boolean;
+  mobileEnabled: boolean;
+  mobileProviders: MobilePaymentProvider[];
+}
+
+export interface BusinessPermissions {
+  canEditMenu: boolean;
+  canManageStaff: boolean;
+  canViewReports: boolean;
+  canManageTables: boolean;
+  canManageHotel: boolean;
+  canManageLoyalty: boolean;
+  canManageReceipts: boolean;
+  canViewPayments: boolean;
+}
+
+export const getDefaultPaymentMethods = (): PaymentMethodsConfig => ({
+  cashEnabled: true,
+  cardEnabled: false,
+  mobileEnabled: false,
+  mobileProviders: [],
+});
+
+export const getDefaultPermissions = (): BusinessPermissions => ({
+  canEditMenu: true,
+  canManageStaff: true,
+  canViewReports: true,
+  canManageTables: true,
+  canManageHotel: true,
+  canManageLoyalty: true,
+  canManageReceipts: true,
+  canViewPayments: true,
+});
 
 export const getDefaultServices = (type: string): BusinessService[] => {
   if (type === "hotel") return [

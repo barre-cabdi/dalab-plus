@@ -12,10 +12,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  X, Eye, EyeOff, PlusCircle, Shield, Upload, Trash2, Plus,
+  X, Eye, EyeOff, PlusCircle, Shield, Upload, Trash2, Plus, Wallet, CreditCard, Smartphone, Lock,
 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Business, BusinessService, getBusinesses, saveBusiness, updateBusiness, generateId, getDefaultServices } from "@/lib/store";
+import { Business, BusinessService, MobilePaymentProvider, PaymentMethodsConfig, BusinessPermissions, getBusinesses, saveBusiness, updateBusiness, generateId, getDefaultServices, getDefaultPaymentMethods, getDefaultPermissions } from "@/lib/store";
 
 const businessTypes = [
   { value: "restaurant", label: "Restaurant", emoji: "🍽️" },
@@ -64,6 +65,8 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
     subscription: "free" as Business["subscription"],
   });
   const [services, setServices] = useState<BusinessService[]>(getDefaultServices("restaurant"));
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethodsConfig>(getDefaultPaymentMethods());
+  const [permissions, setPermissions] = useState<BusinessPermissions>(getDefaultPermissions());
 
   // Reset form when editBusiness changes or modal opens
   useEffect(() => {
@@ -86,6 +89,8 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
           subscription: editBusiness.subscription,
         });
         setServices(editBusiness.services || getDefaultServices(editBusiness.type));
+        setPaymentMethods(editBusiness.paymentMethods || getDefaultPaymentMethods());
+        setPermissions(editBusiness.permissions || getDefaultPermissions());
       } else {
         setForm({
           name: "", type: "restaurant", address: "", city: "", country: "Somalia",
@@ -93,6 +98,8 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
           description: "", adminUsername: "", adminPassword: "", subscription: "free",
         });
         setServices(getDefaultServices("restaurant"));
+        setPaymentMethods(getDefaultPaymentMethods());
+        setPermissions(getDefaultPermissions());
       }
     }
   }, [open, editBusiness]);
@@ -129,6 +136,23 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
     setServices(services.map(s => s.id === id ? { ...s, [field]: value } : s));
   };
 
+  // Mobile payment provider helpers
+  const addMobileProvider = () => {
+    setPaymentMethods(pm => ({
+      ...pm,
+      mobileProviders: [...pm.mobileProviders, { id: generateId("mp"), name: "", accountNumber: "" }],
+    }));
+  };
+  const removeMobileProvider = (id: string) => {
+    setPaymentMethods(pm => ({ ...pm, mobileProviders: pm.mobileProviders.filter(p => p.id !== id) }));
+  };
+  const updateMobileProvider = (id: string, field: keyof MobilePaymentProvider, value: string) => {
+    setPaymentMethods(pm => ({
+      ...pm,
+      mobileProviders: pm.mobileProviders.map(p => p.id === id ? { ...p, [field]: value } : p),
+    }));
+  };
+
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editBusiness && getBusinesses().some(b => b.adminUsername === form.adminUsername)) {
@@ -140,6 +164,8 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
       id: editBusiness?.id || generateId("biz"),
       ...form,
       services: validServices,
+      paymentMethods,
+      permissions,
       status: editBusiness?.status || "active",
       createdAt: editBusiness?.createdAt || new Date().toISOString(),
       totalOrders: editBusiness?.totalOrders || 0,
@@ -356,6 +382,101 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
                       </button>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Payment Methods */}
+              <div className="border-t border-border pt-4">
+                <p className="text-xs font-semibold text-foreground mb-3 flex items-center gap-1.5">
+                  <Wallet className="w-3.5 h-3.5 text-accent" /> Payment Methods
+                </p>
+                <p className="text-[10px] text-muted-foreground mb-3">
+                  Enable/disable payment methods this business can accept
+                </p>
+                <div className="space-y-3">
+                  {/* Cash */}
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
+                    <div className="flex items-center gap-2">
+                      <Wallet className="w-4 h-4 text-accent" />
+                      <span className="text-sm font-medium text-foreground">Cash</span>
+                    </div>
+                    <Switch checked={paymentMethods.cashEnabled} onCheckedChange={v => setPaymentMethods(pm => ({ ...pm, cashEnabled: v }))} />
+                  </div>
+                  {/* Card */}
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="w-4 h-4 text-accent" />
+                      <span className="text-sm font-medium text-foreground">Card</span>
+                    </div>
+                    <Switch checked={paymentMethods.cardEnabled} onCheckedChange={v => setPaymentMethods(pm => ({ ...pm, cardEnabled: v }))} />
+                  </div>
+                  {/* Mobile Payments */}
+                  <div className="rounded-lg bg-muted/30 border border-border p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Smartphone className="w-4 h-4 text-accent" />
+                        <span className="text-sm font-medium text-foreground">Mobile Payments</span>
+                      </div>
+                      <Switch checked={paymentMethods.mobileEnabled} onCheckedChange={v => setPaymentMethods(pm => ({ ...pm, mobileEnabled: v }))} />
+                    </div>
+                    {paymentMethods.mobileEnabled && (
+                      <div className="mt-3 space-y-2">
+                        <p className="text-[10px] text-muted-foreground">Add mobile payment providers (e.g. Sahal, Zaad, EVC, T-plus, MyCash)</p>
+                        {paymentMethods.mobileProviders.map(provider => (
+                          <div key={provider.id} className="flex items-center gap-2">
+                            <Input
+                              value={provider.name}
+                              onChange={e => updateMobileProvider(provider.id, "name", e.target.value)}
+                              placeholder="Provider name (e.g. Zaad)"
+                              className="h-8 text-xs flex-1"
+                            />
+                            <Input
+                              value={provider.accountNumber}
+                              onChange={e => updateMobileProvider(provider.id, "accountNumber", e.target.value)}
+                              placeholder="Account / Number"
+                              className="h-8 text-xs flex-1"
+                            />
+                            <button type="button" onClick={() => removeMobileProvider(provider.id)} className="text-muted-foreground hover:text-destructive shrink-0">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                        <Button type="button" variant="outline" size="sm" onClick={addMobileProvider} className="h-7 text-xs gap-1">
+                          <Plus className="w-3 h-3" /> Add Provider
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Business Access Controls */}
+              <div className="border-t border-border pt-4">
+                <p className="text-xs font-semibold text-foreground mb-3 flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-accent" /> Access Controls
+                </p>
+                <p className="text-[10px] text-muted-foreground mb-3">
+                  Control which features this business admin can access. Locked features cannot be changed by the admin.
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    { key: "canEditMenu", label: "Edit Menu" },
+                    { key: "canManageStaff", label: "Manage Staff" },
+                    { key: "canViewReports", label: "View Reports" },
+                    { key: "canManageTables", label: "Manage Tables" },
+                    { key: "canManageHotel", label: "Manage Hotel" },
+                    { key: "canManageLoyalty", label: "Loyalty Program" },
+                    { key: "canManageReceipts", label: "Receipt Settings" },
+                    { key: "canViewPayments", label: "View Payments" },
+                  ] as { key: keyof BusinessPermissions; label: string }[]).map(perm => (
+                    <div key={perm.key} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 border border-border">
+                      <span className="text-xs font-medium text-foreground">{perm.label}</span>
+                      <Switch
+                        checked={permissions[perm.key]}
+                        onCheckedChange={v => setPermissions(p => ({ ...p, [perm.key]: v }))}
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
 

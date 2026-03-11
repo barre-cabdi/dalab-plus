@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Building2, Phone, Mail, MapPin, Calendar, CreditCard, Shield } from "lucide-react";
-import { Business } from "@/lib/store";
+import { X, Building2, Phone, Mail, MapPin, Calendar, CreditCard, Shield, Wallet, Smartphone } from "lucide-react";
+import { Business, getDefaultPaymentMethods, getDefaultPermissions } from "@/lib/store";
 
 const typeLabels: Record<string, string> = { hotel: "Hotel", cafe: "Cafe", restaurant: "Restaurant" };
 const subLabels: Record<string, string> = { free: "Free", basic: "Basic", premium: "Premium", enterprise: "Enterprise" };
@@ -59,6 +59,32 @@ const BusinessDetailModal = ({ open, onClose, business }: Props) => {
                 <InfoItem icon={Shield} label="Admin" value={business.adminUsername} />
                 <InfoItem icon={Building2} label="Revenue" value={`$${business.totalRevenue.toLocaleString()}`} />
               </div>
+
+              {/* Payment Methods */}
+              {(() => {
+                const pm = business.paymentMethods || getDefaultPaymentMethods();
+                return (
+                  <div className="mt-4">
+                    <p className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                      <Wallet className="w-3.5 h-3.5 text-accent" /> Payment Methods
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <span className={`text-xs px-2 py-1 rounded-full ${pm.cashEnabled ? "bg-accent/15 text-accent" : "bg-muted text-muted-foreground line-through"}`}>💵 Cash</span>
+                      <span className={`text-xs px-2 py-1 rounded-full ${pm.cardEnabled ? "bg-accent/15 text-accent" : "bg-muted text-muted-foreground line-through"}`}>💳 Card</span>
+                      <span className={`text-xs px-2 py-1 rounded-full ${pm.mobileEnabled ? "bg-accent/15 text-accent" : "bg-muted text-muted-foreground line-through"}`}>📱 Mobile</span>
+                    </div>
+                    {pm.mobileEnabled && pm.mobileProviders.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {pm.mobileProviders.map(p => (
+                          <span key={p.id} className="text-[10px] bg-muted/50 border border-border px-2 py-0.5 rounded-full">
+                            {p.name}: {p.accountNumber}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           </motion.div>
         </motion.div>
