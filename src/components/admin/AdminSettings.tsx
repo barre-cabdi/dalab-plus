@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Lock, Save, Upload, ImageIcon, X, Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Business, updateBusiness } from "@/lib/store";
+import { Business, updateBusiness, getDefaultPaymentMethods, getDefaultPermissions } from "@/lib/store";
 import { toast } from "sonner";
 
 interface AdminSettingsProps {
