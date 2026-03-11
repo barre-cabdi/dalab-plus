@@ -50,10 +50,11 @@ export const printReceipt = ({ order, business, servedBy, paidAmount = 0 }: Prin
   const vatAmount = (subtotal * config.vatRate) / 100;
   const totalWithVat = subtotal + vatAmount;
   
-  // Generate SAHAL QR payment URL - when scanned, redirects to phone call
-  const sahalTotal = totalWithVat.toFixed(2);
+  // Generate USSD QR payment - format: *PREFIX*MERCHANT*AMOUNT_WHOLE*DECIMAL#
   const sahalPhone = config.sahalNumber || "525782";
-  const qrData = `tel:*712*${sahalPhone}*${sahalTotal.replace(".", "")}#`;
+  const ussdPrefix = config.qrUssdPrefix || "*712";
+  const [wholePart, decimalPart] = totalWithVat.toFixed(2).split(".");
+  const qrData = `tel:${ussdPrefix}*${sahalPhone}*${wholePart}*${decimalPart}#`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
 
   // Build merchant numbers display
