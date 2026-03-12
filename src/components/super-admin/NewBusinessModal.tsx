@@ -381,7 +381,24 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label className="text-xs text-muted-foreground">Username *</Label>
-                    <Input value={form.adminUsername} onChange={(e) => setForm({ ...form, adminUsername: e.target.value })} placeholder="admin_albaraka" required />
+                    <div className="flex">
+                      <Input
+                        value={form.adminUsername.replace(/@DALABplus\+\.com$/i, "")}
+                        onChange={(e) => {
+                          const name = e.target.value.replace(/[^a-zA-Z0-9._-]/g, "").toLowerCase();
+                          setForm({ ...form, adminUsername: name ? `${name}@DALABplus+.com` : "" });
+                        }}
+                        placeholder="salol.cafe"
+                        required
+                        className="rounded-r-none border-r-0"
+                      />
+                      <span className="inline-flex items-center px-2.5 bg-muted border border-input rounded-r-md text-[10px] text-muted-foreground font-mono whitespace-nowrap">
+                        @DALABplus+.com
+                      </span>
+                    </div>
+                    {form.adminUsername && (
+                      <p className="text-[10px] text-muted-foreground mt-0.5 font-mono">{form.adminUsername}</p>
+                    )}
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs text-muted-foreground">Password *</Label>

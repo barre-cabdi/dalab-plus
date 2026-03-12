@@ -221,6 +221,50 @@ const BusinessDetailModal = ({ open, onClose, business, onUpdated }: Props) => {
   );
 };
 
+const PasswordSection = ({ business }: { business: Business }) => {
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showLog, setShowLog] = useState(false);
+  const logs: { changedAt: string; newPassword: string }[] = JSON.parse(localStorage.getItem(`dp_password_log_${business.id}`) || "[]");
+
+  return (
+    <div className="border-t border-border pt-4">
+      <p className="text-xs font-semibold text-foreground mb-3 flex items-center gap-1.5">
+        <KeyRound className="w-3.5 h-3.5 text-accent" /> Password Info
+      </p>
+      <div className="bg-muted/30 rounded-lg p-3 space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">Current Password</span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-mono font-medium text-foreground">
+              {showCurrent ? business.adminPassword : "••••••••"}
+            </span>
+            <button onClick={() => setShowCurrent(!showCurrent)} className="text-muted-foreground hover:text-foreground">
+              {showCurrent ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+        </div>
+        {logs.length > 0 && (
+          <>
+            <button onClick={() => setShowLog(!showLog)} className="text-[10px] text-accent hover:underline">
+              {showLog ? "Hide" : "Show"} change history ({logs.length})
+            </button>
+            {showLog && (
+              <div className="space-y-1.5 mt-1">
+                {logs.slice().reverse().map((log, i) => (
+                  <div key={i} className="flex items-center justify-between text-[10px] bg-muted/50 rounded px-2 py-1">
+                    <span className="text-muted-foreground">{new Date(log.changedAt).toLocaleString()}</span>
+                    <span className="font-mono text-foreground">{log.newPassword}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const InfoItem = ({ icon: Icon, label, value }: { icon: any; label: string; value: string }) => (
   <div className="bg-muted/20 rounded-lg p-3">
     <div className="flex items-center gap-1.5 mb-1">
