@@ -61,6 +61,46 @@ const AdminSettings = ({ business, onUpdate }: AdminSettingsProps) => {
     reader.readAsDataURL(file);
   };
 
+  // Password change state
+  const [passwordForm, setPasswordForm] = useState({ current: "", newPass: "", confirm: "" });
+  const [showPassFields, setShowPassFields] = useState({ current: false, newPass: false, confirm: false });
+
+  const handlePasswordChange = () => {
+    if (passwordForm.current !== business.adminPassword) {
+      toast.error("Current password is incorrect!");
+      return;
+    }
+    if (passwordForm.newPass.length < 4) {
+      toast.error("New password must be at least 4 characters!");
+      return;
+    }
+    if (passwordForm.newPass !== passwordForm.confirm) {
+      toast.error("Passwords do not match!");
+      return;
+    }
+    // Update password in business record
+    updateBusiness(business.id, { adminPassword: passwordForm.newPass });
+    // Sync dp_active_business
+    try {
+      const active = localStorage.getItem("dp_active_business");
+      if (active) {
+        const activeBiz = JSON.parse(active);
+        if (activeBiz.id === business.id) {
+          localStorage.setItem("dp_active_business", JSON.stringify({ ...activeBiz, adminPassword: passwordForm.newPass }));
+        }
+      }
+    } catch {}
+    // Store password change log for SuperAdmin
+    const logKey = `dp_password_log_${business.id}`;
+    const logs = JSON.parse(localStorage.getItem(logKey) || "[]");
+    logs.push({ changedAt: new Date().toISOString(), newPassword: passwordForm.newPass });
+    localStorage.setItem(logKey, JSON.stringify(logs));
+
+    setPasswordForm({ current: "", newPass: "", confirm: "" });
+    onUpdate();
+    toast.success("Password changed successfully! 🔐");
+  };
+
   const handleSave = () => {
     // Save admin-editable fields to business
     updateBusiness(business.id, {
