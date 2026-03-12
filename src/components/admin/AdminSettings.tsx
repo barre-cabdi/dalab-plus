@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Lock, Save, Upload, ImageIcon, X, Info } from "lucide-react";
+import { Lock, Save, Upload, ImageIcon, X, Info, Eye, EyeOff, KeyRound } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Business, updateBusiness, getDefaultPaymentMethods, getDefaultPermissions } from "@/lib/store";
+import { Business, updateBusiness, getBusinesses, getDefaultPaymentMethods, getDefaultPermissions } from "@/lib/store";
 import { toast } from "sonner";
 
 interface AdminSettingsProps {
@@ -59,6 +59,46 @@ const AdminSettings = ({ business, onUpdate }: AdminSettingsProps) => {
     const reader = new FileReader();
     reader.onload = () => setForm(f => ({ ...f, logo: reader.result as string }));
     reader.readAsDataURL(file);
+  };
+
+  // Password change state
+  const [passwordForm, setPasswordForm] = useState({ current: "", newPass: "", confirm: "" });
+  const [showPassFields, setShowPassFields] = useState({ current: false, newPass: false, confirm: false });
+
+  const handlePasswordChange = () => {
+    if (passwordForm.current !== business.adminPassword) {
+      toast.error("Current password is incorrect!");
+      return;
+    }
+    if (passwordForm.newPass.length < 4) {
+      toast.error("New password must be at least 4 characters!");
+      return;
+    }
+    if (passwordForm.newPass !== passwordForm.confirm) {
+      toast.error("Passwords do not match!");
+      return;
+    }
+    // Update password in business record
+    updateBusiness(business.id, { adminPassword: passwordForm.newPass });
+    // Sync dp_active_business
+    try {
+      const active = localStorage.getItem("dp_active_business");
+      if (active) {
+        const activeBiz = JSON.parse(active);
+        if (activeBiz.id === business.id) {
+          localStorage.setItem("dp_active_business", JSON.stringify({ ...activeBiz, adminPassword: passwordForm.newPass }));
+        }
+      }
+    } catch {}
+    // Store password change log for SuperAdmin
+    const logKey = `dp_password_log_${business.id}`;
+    const logs = JSON.parse(localStorage.getItem(logKey) || "[]");
+    logs.push({ changedAt: new Date().toISOString(), newPassword: passwordForm.newPass });
+    localStorage.setItem(logKey, JSON.stringify(logs));
+
+    setPasswordForm({ current: "", newPass: "", confirm: "" });
+    onUpdate();
+    toast.success("Password changed successfully! 🔐");
   };
 
   const handleSave = () => {
@@ -258,6 +298,77 @@ const AdminSettings = ({ business, onUpdate }: AdminSettingsProps) => {
               onCheckedChange={v => setForm(f => ({ ...f, autoAcceptOrders: v }))}
             />
           </div>
+        </div>
+      </motion.div>
+
+      {/* Password Change */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="bg-card border border-border rounded-xl p-6 shadow-card-custom"
+      >
+        <h3 className="font-display font-bold text-base mb-5 text-foreground flex items-center gap-2">
+          <KeyRound className="w-4 h-4 text-accent" /> Change Password
+        </h3>
+        <div className="space-y-4">
+          {/* Current Password */}
+          <div>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">Current Password</label>
+            <div className="relative">
+              <Input
+                type={showPassFields.current ? "text" : "password"}
+                value={passwordForm.current}
+                onChange={e => setPasswordForm(f => ({ ...f, current: e.target.value }))}
+                placeholder="Enter current password"
+                className="pr-10"
+              />
+              <button type="button" onClick={() => setShowPassFields(f => ({ ...f, current: !f.current }))} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                {showPassFields.current ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+          {/* New Password */}
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">New Password</label>
+              <div className="relative">
+                <Input
+                  type={showPassFields.newPass ? "text" : "password"}
+                  value={passwordForm.newPass}
+                  onChange={e => setPasswordForm(f => ({ ...f, newPass: e.target.value }))}
+                  placeholder="Enter new password"
+                  className="pr-10"
+                />
+                <button type="button" onClick={() => setShowPassFields(f => ({ ...f, newPass: !f.newPass }))} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showPassFields.newPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">Confirm Password</label>
+              <div className="relative">
+                <Input
+                  type={showPassFields.confirm ? "text" : "password"}
+                  value={passwordForm.confirm}
+                  onChange={e => setPasswordForm(f => ({ ...f, confirm: e.target.value }))}
+                  placeholder="Confirm new password"
+                  className="pr-10"
+                />
+                <button type="button" onClick={() => setShowPassFields(f => ({ ...f, confirm: !f.confirm }))} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showPassFields.confirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+          </div>
+          <Button
+            onClick={handlePasswordChange}
+            variant="outline"
+            disabled={!passwordForm.current || !passwordForm.newPass || !passwordForm.confirm}
+            className="gap-2"
+          >
+            <KeyRound className="w-4 h-4" /> Change Password
+          </Button>
         </div>
       </motion.div>
 
