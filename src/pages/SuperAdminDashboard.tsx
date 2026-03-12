@@ -148,7 +148,7 @@ const SuperAdminDashboard = () => {
           </div>
           {activeTab === "dashboard" && (
             <Button onClick={() => { setEditBiz(null); setShowForm(true); }} variant="hero">
-              <PlusCircle className="w-4 h-4 mr-2" /> New Business
+              <PlusCircle className="w-4 h-4 mr-2" /> {t.saNewBusiness}
             </Button>
           )}
         </header>
