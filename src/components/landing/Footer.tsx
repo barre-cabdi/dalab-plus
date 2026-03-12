@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
+import dalabLogo from "@/assets/dalabplus-logo.png";
 
 const Footer = () => {
   const { t } = useI18n();
