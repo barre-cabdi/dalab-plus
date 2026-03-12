@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import {
   Business, getBusinesses, updateBusiness, deleteBusiness,
 } from "@/lib/store";
+import { useI18n } from "@/lib/i18n";
 import SuperAdminSidebar from "@/components/super-admin/Sidebar";
 import SuperAdminStats from "@/components/super-admin/StatsCards";
 import BusinessTable from "@/components/super-admin/BusinessTable";
@@ -17,14 +18,6 @@ import BusinessDetailModal from "@/components/super-admin/BusinessDetailModal";
 import SubscriptionsTab from "@/components/super-admin/SubscriptionsTab";
 import RevenueTab from "@/components/super-admin/RevenueTab";
 import SettingsTab from "@/components/super-admin/SettingsTab";
-
-const tabTitles: Record<string, { title: string; subtitle: string }> = {
-  dashboard: { title: "Super Admin Dashboard", subtitle: "Global Control Overview for all SaaS entities" },
-  businesses: { title: "Business Management", subtitle: "Manage all registered businesses" },
-  subscriptions: { title: "Subscriptions", subtitle: "Manage plans and billing" },
-  revenue: { title: "Revenue Analytics", subtitle: "Track income and performance" },
-  settings: { title: "Platform Settings", subtitle: "Configure system preferences" },
-};
 
 const SuperAdminDashboard = () => {
   const [businesses, setBusinesses] = useState<Business[]>([]);
