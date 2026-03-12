@@ -135,7 +135,6 @@ const BusinessDetailModal = ({ open, onClose, business, onUpdated }: Props) => {
 
               {/* Password Info for SuperAdmin */}
               <PasswordSection business={business} />
-              </div>
 
               {/* Payment Methods */}
               <div className="mt-4 border-t border-border pt-4">
