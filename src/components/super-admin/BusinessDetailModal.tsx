@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Building2, Phone, Mail, MapPin, Calendar, CreditCard, Shield, Wallet, Smartphone, Lock, Save, Plus, Trash2 } from "lucide-react";
+import { X, Building2, Phone, Mail, MapPin, Calendar, CreditCard, Shield, Wallet, Smartphone, Lock, Save, Plus, Trash2, KeyRound, Eye, EyeOff } from "lucide-react";
 import { Business, getDefaultPaymentMethods, getDefaultPermissions, PaymentMethodsConfig, BusinessPermissions, MobilePaymentProvider, updateBusiness, generateId } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
