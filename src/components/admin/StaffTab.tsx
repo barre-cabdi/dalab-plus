@@ -240,9 +240,52 @@ const StaffTab = ({ businessId }: StaffTabProps) => {
                 <Input type="time" value={form.endTime} onChange={e => setForm({ ...form, endTime: e.target.value })} /></div>
             </div>
 
-            {isLoginRole && (
-              <StaffLoginCredentials form={form} setForm={setForm} businessId={businessId} />
-            )}
+            {isLoginRole && (() => {
+              // Get business domain from adminUsername (e.g. salol.cafe@DALABplus+.com → salol.cafe.com)
+              const businesses = JSON.parse(localStorage.getItem("dp_businesses") || "[]");
+              const biz = businesses.find((b: any) => b.id === businessId);
+              const adminUsername = biz?.adminUsername || "";
+              const prefix = adminUsername.split("@")[0] || "business";
+              const domain = `@${prefix}.com`;
+
+              const usernamePrefix = form.username ? form.username.split("@")[0] : "";
+
+              return (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                  className="p-4 rounded-xl bg-accent/5 border border-accent/20 space-y-3">
+                  <p className="text-sm font-semibold text-accent flex items-center gap-2">
+                    <Shield className="w-4 h-4" /> {form.jobTitle === "Hotel Manager" ? "Hotel Manager Login" : form.jobTitle === "Cashier" ? "Cashier Login" : "Waiter Login"} Credentials
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {form.jobTitle === "Hotel Manager" 
+                      ? "This hotel manager will be able to log in and manage hotel operations only (sub-admin)."
+                      : form.jobTitle === "Cashier"
+                      ? "This cashier will be able to log in and manage orders, payments, receipts & POS."
+                      : "This waiter will be able to log in and place orders for customers."}
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Username</label>
+                      <div className="relative">
+                        <Input
+                          value={usernamePrefix}
+                          onChange={e => {
+                            const val = e.target.value.replace(/[^a-zA-Z0-9._-]/g, "").toLowerCase();
+                            setForm({ ...form, username: val ? `${val}${domain}` : "" });
+                          }}
+                          placeholder={form.jobTitle === "Hotel Manager" ? "e.g. hotel.manager1" : form.jobTitle === "Cashier" ? "e.g. cashier.ali" : "e.g. waiter.ahmed"}
+                        />
+                        {usernamePrefix && (
+                          <p className="text-[10px] text-muted-foreground mt-1 font-mono">{usernamePrefix}{domain}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div><label className="text-sm font-medium mb-1 block">Password</label>
+                      <Input type="text" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} placeholder="e.g. pass1234" /></div>
+                  </div>
+                </motion.div>
+              );
+            })()}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialog(false)}>Cancel</Button>
