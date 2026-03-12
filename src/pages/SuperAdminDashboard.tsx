@@ -46,7 +46,7 @@ const SuperAdminDashboard = () => {
     const newStatus = status === "active" ? "inactive" : "active";
     updateBusiness(id, { status: newStatus as Business["status"] });
     refresh();
-    toast.success(newStatus === "active" ? "Business activated ✅" : "Business deactivated ❌");
+    toast.success(newStatus === "active" ? t.saActivated : t.saDeactivated);
   };
 
   const handleDelete = (id: string, name: string) => {
