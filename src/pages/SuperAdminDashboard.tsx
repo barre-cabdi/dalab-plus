@@ -61,6 +61,13 @@ const SuperAdminDashboard = () => {
     setShowForm(true);
   };
 
+  const tabTitles: Record<string, { title: string; subtitle: string }> = {
+    dashboard: { title: t.saDashboard, subtitle: t.saGlobalControl },
+    businesses: { title: t.saBusinessMgmt, subtitle: t.saManageAll },
+    subscriptions: { title: t.saSubscriptions, subtitle: t.saManagePlans },
+    revenue: { title: t.saRevenue, subtitle: t.saTrackIncome },
+    settings: { title: t.saPlatformSettings, subtitle: t.saConfigSystem },
+  };
   const currentTab = tabTitles[activeTab] || tabTitles.dashboard;
 
   const renderContent = () => {
