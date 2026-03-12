@@ -1144,19 +1144,19 @@ const AdminDashboard = () => {
       <main className={`flex-1 transition-all duration-300 ${collapsed ? "ml-[72px]" : "ml-[240px]"}`}>
         <header className="border-b border-border bg-card px-8 py-5 flex items-center justify-between">
           <div>
-            <h1 className="font-display font-bold text-2xl text-foreground">{tabTitles[activeTab] || "Dashboard"}</h1>
+            <h1 className="font-display font-bold text-2xl text-foreground">{tabTitles[activeTab] || t.adDashboard}</h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              {activeTab === "dashboard" ? "Welcome back! Here's what's happening today." : `Manage your ${activeTab}`}
+              {activeTab === "dashboard" ? t.adWelcomeBack : `${t.adManageYour} ${activeTab}`}
             </p>
           </div>
           <div className="flex items-center gap-3">
             {activeTab === "dashboard" && (
               <>
                 <Button variant="outline" size="sm" onClick={handleExport}>
-                  <Download className="w-4 h-4 mr-1.5" /> Export
+                  <Download className="w-4 h-4 mr-1.5" /> {t.adExport}
                 </Button>
                 <Button variant="hero" size="sm" onClick={() => setActiveTab("orders")}>
-                  <Plus className="w-4 h-4 mr-1.5" /> New Order
+                  <Plus className="w-4 h-4 mr-1.5" /> {t.adNewOrder}
                 </Button>
               </>
             )}
