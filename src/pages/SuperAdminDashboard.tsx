@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import {
   Business, getBusinesses, updateBusiness, deleteBusiness,
 } from "@/lib/store";
+import { useI18n } from "@/lib/i18n";
 import SuperAdminSidebar from "@/components/super-admin/Sidebar";
 import SuperAdminStats from "@/components/super-admin/StatsCards";
 import BusinessTable from "@/components/super-admin/BusinessTable";
@@ -18,15 +19,8 @@ import SubscriptionsTab from "@/components/super-admin/SubscriptionsTab";
 import RevenueTab from "@/components/super-admin/RevenueTab";
 import SettingsTab from "@/components/super-admin/SettingsTab";
 
-const tabTitles: Record<string, { title: string; subtitle: string }> = {
-  dashboard: { title: "Super Admin Dashboard", subtitle: "Global Control Overview for all SaaS entities" },
-  businesses: { title: "Business Management", subtitle: "Manage all registered businesses" },
-  subscriptions: { title: "Subscriptions", subtitle: "Manage plans and billing" },
-  revenue: { title: "Revenue Analytics", subtitle: "Track income and performance" },
-  settings: { title: "Platform Settings", subtitle: "Configure system preferences" },
-};
-
 const SuperAdminDashboard = () => {
+  const { t } = useI18n();
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editBiz, setEditBiz] = useState<Business | null>(null);
@@ -52,14 +46,14 @@ const SuperAdminDashboard = () => {
     const newStatus = status === "active" ? "inactive" : "active";
     updateBusiness(id, { status: newStatus as Business["status"] });
     refresh();
-    toast.success(newStatus === "active" ? "Business activated ✅" : "Business deactivated ❌");
+    toast.success(newStatus === "active" ? t.saActivated : t.saDeactivated);
   };
 
   const handleDelete = (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete "${name}"?`)) return;
+    if (!confirm(`${t.saConfirmDelete} "${name}"?`)) return;
     deleteBusiness(id);
     refresh();
-    toast.success("Business deleted!");
+    toast.success(t.saDeleted);
   };
 
   const handleEdit = (biz: Business) => {
@@ -67,6 +61,13 @@ const SuperAdminDashboard = () => {
     setShowForm(true);
   };
 
+  const tabTitles: Record<string, { title: string; subtitle: string }> = {
+    dashboard: { title: t.saDashboard, subtitle: t.saGlobalControl },
+    businesses: { title: t.saBusinessMgmt, subtitle: t.saManageAll },
+    subscriptions: { title: t.saSubscriptions, subtitle: t.saManagePlans },
+    revenue: { title: t.saRevenue, subtitle: t.saTrackIncome },
+    settings: { title: t.saPlatformSettings, subtitle: t.saConfigSystem },
+  };
   const currentTab = tabTitles[activeTab] || tabTitles.dashboard;
 
   const renderContent = () => {
@@ -78,9 +79,9 @@ const SuperAdminDashboard = () => {
             {/* Quick business list */}
             <div>
               <div className="flex items-center justify-between mb-5">
-                <h2 className="font-display font-bold text-xl text-foreground">Recent Businesses</h2>
+                <h2 className="font-display font-bold text-xl text-foreground">{t.saRecentBiz}</h2>
                 <Button variant="outline" size="sm" onClick={() => setActiveTab("businesses")}>
-                  View All <Building2 className="w-3.5 h-3.5 ml-1.5" />
+                  {t.saViewAll} <Building2 className="w-3.5 h-3.5 ml-1.5" />
                 </Button>
               </div>
               <BusinessTable
@@ -100,10 +101,10 @@ const SuperAdminDashboard = () => {
             <div className="flex items-center justify-between mb-5">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input placeholder="Search businesses..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 w-72" />
+                <Input placeholder={t.saSearchBiz} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 w-72" />
               </div>
               <Button onClick={() => { setEditBiz(null); setShowForm(true); }} variant="hero">
-                <PlusCircle className="w-4 h-4 mr-2" /> New Business
+                <PlusCircle className="w-4 h-4 mr-2" /> {t.saNewBusiness}
               </Button>
             </div>
             <BusinessTable
@@ -147,7 +148,7 @@ const SuperAdminDashboard = () => {
           </div>
           {activeTab === "dashboard" && (
             <Button onClick={() => { setEditBiz(null); setShowForm(true); }} variant="hero">
-              <PlusCircle className="w-4 h-4 mr-2" /> New Business
+              <PlusCircle className="w-4 h-4 mr-2" /> {t.saNewBusiness}
             </Button>
           )}
         </header>

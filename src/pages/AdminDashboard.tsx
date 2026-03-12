@@ -46,6 +46,7 @@ import MenuManagementTab from "@/components/admin/MenuManagementTab";
 import ReceiptSettings from "@/components/admin/ReceiptSettings";
 import BusinessHomeTab from "@/components/admin/BusinessHomeTab";
 import { printReceipt } from "@/lib/printReceipt";
+import { useI18n } from "@/lib/i18n";
 
 const emojiOptions = ["🍛","🍔","🐟","🥗","🍵","🥤","🫓","🍝","🍰","🍦","🦞","🥭","☕","🍕","🥩","🍗","🌮","🍣","🧁","🥚","🍳","🥐","🧀","🍱"];
 
@@ -252,6 +253,7 @@ const CashierReportTab = ({ businessId }: { businessId: string }) => {
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [business, setBusiness] = useState<Business | null>(null);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [collapsed, setCollapsed] = useState(false);
@@ -1098,35 +1100,35 @@ const AdminDashboard = () => {
   };
 
   const tabTitles: Record<string, string> = {
-    dashboard: "Dashboard",
-    home: "Business Home Page",
-    menu: "Menu Management",
-    "admin-order": "Place Order (Admin)",
-    categories: "Categories",
-    tables: "Table Management",
-    orders: "Order Management",
-    "order-history": "Order History",
-    qr: "QR Codes",
-    "payment-methods": "Payment Methods",
-    staff: "Staff Management",
-    customers: "Customers",
-    loyalty: "Loyalty Program",
-    reports: "Reports",
-    "reports-sales": "Sales Report",
-    "reports-items": "Item Report",
-    "reports-categories": "Category Report",
-    "reports-waiters": "Waiter Report",
-    "reports-cashiers": "Cashier Report",
-    "hotel-overview": "Hotel Overview",
-    "hotel-rooms": "Room Management",
-    "hotel-bookings": "Bookings",
-    "hotel-guests": "Guest Directory",
-    "hotel-report-overview": "Hotel Report Overview",
-    "hotel-report-sales": "Hotel Sales Report",
-    "hotel-report-occupancy": "Occupancy Report",
-    "hotel-report-guests": "Guest Analytics",
-    settings: "Settings",
-    "receipt-settings": "Receipt Settings",
+    dashboard: t.adDashboard,
+    home: t.adBusinessHome,
+    menu: t.adMenu,
+    "admin-order": t.adPlaceOrder,
+    categories: t.adCategoryReport,
+    tables: t.adTables,
+    orders: t.adOrders,
+    "order-history": t.adOrderHistory,
+    qr: t.adQrCodes,
+    "payment-methods": t.adPaymentMethods,
+    staff: t.adStaff,
+    customers: t.adCustomers,
+    loyalty: t.adLoyalty,
+    reports: t.adReports,
+    "reports-sales": t.adSalesReport,
+    "reports-items": t.adItemReport,
+    "reports-categories": t.adCategoryReport,
+    "reports-waiters": t.adWaiterReport,
+    "reports-cashiers": t.adCashierReport,
+    "hotel-overview": t.adOverview,
+    "hotel-rooms": t.adRooms,
+    "hotel-bookings": t.adBookings,
+    "hotel-guests": t.adGuests,
+    "hotel-report-overview": t.adHotelReports,
+    "hotel-report-sales": t.adHotelSales,
+    "hotel-report-occupancy": t.adOccupancy,
+    "hotel-report-guests": t.adGuestAnalytics,
+    settings: t.adSettings,
+    "receipt-settings": t.adReceiptSettings,
   };
 
   return (
@@ -1142,19 +1144,19 @@ const AdminDashboard = () => {
       <main className={`flex-1 transition-all duration-300 ${collapsed ? "ml-[72px]" : "ml-[240px]"}`}>
         <header className="border-b border-border bg-card px-8 py-5 flex items-center justify-between">
           <div>
-            <h1 className="font-display font-bold text-2xl text-foreground">{tabTitles[activeTab] || "Dashboard"}</h1>
+            <h1 className="font-display font-bold text-2xl text-foreground">{tabTitles[activeTab] || t.adDashboard}</h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              {activeTab === "dashboard" ? "Welcome back! Here's what's happening today." : `Manage your ${activeTab}`}
+              {activeTab === "dashboard" ? t.adWelcomeBack : `${t.adManageYour} ${activeTab}`}
             </p>
           </div>
           <div className="flex items-center gap-3">
             {activeTab === "dashboard" && (
               <>
                 <Button variant="outline" size="sm" onClick={handleExport}>
-                  <Download className="w-4 h-4 mr-1.5" /> Export
+                  <Download className="w-4 h-4 mr-1.5" /> {t.adExport}
                 </Button>
                 <Button variant="hero" size="sm" onClick={() => setActiveTab("orders")}>
-                  <Plus className="w-4 h-4 mr-1.5" /> New Order
+                  <Plus className="w-4 h-4 mr-1.5" /> {t.adNewOrder}
                 </Button>
               </>
             )}
@@ -1173,12 +1175,12 @@ const AdminDashboard = () => {
               {showNotifications && (
                 <div className="absolute right-0 top-11 w-72 bg-card border border-border rounded-xl shadow-lg z-50 overflow-hidden">
                   <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-                    <p className="font-semibold text-sm">Notifications</p>
+                    <p className="font-semibold text-sm">{t.adNotifications}</p>
                     <button onClick={() => setShowNotifications(false)}><X className="w-4 h-4 text-muted-foreground" /></button>
                   </div>
                   <div className="max-h-64 overflow-y-auto">
                     {notifications.length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-6">No notifications</p>
+                      <p className="text-sm text-muted-foreground text-center py-6">{t.adNoNotifications}</p>
                     ) : notifications.map(n => (
                       <div key={n.id} className="px-4 py-3 border-b border-border/50 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => { setActiveTab("orders"); setShowNotifications(false); }}>
                         <p className="text-xs text-foreground">{n.text}</p>
