@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import dalabLogo from "@/assets/dalabplus-logo.png";
 import {
   LayoutDashboard, Building2, CreditCard, DollarSign,
   Settings, LogOut, ChevronLeft, ChevronRight, Globe,
