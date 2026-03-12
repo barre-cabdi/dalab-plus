@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, Globe } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { motion, AnimatePresence } from "framer-motion";
+import dalabLogo from "@/assets/dalabplus-logo.png";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -25,9 +26,7 @@ const Navbar = () => {
     >
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="w-9 h-9 rounded-lg bg-gold-gradient flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-            <span className="font-display font-bold text-accent-foreground text-sm">D+</span>
-          </div>
+          <img src={dalabLogo} alt="DALABplus+" className="w-9 h-9 rounded-lg group-hover:scale-110 transition-transform duration-300" />
           <span className="font-display font-bold text-lg text-foreground">DALABplus+</span>
         </Link>
 

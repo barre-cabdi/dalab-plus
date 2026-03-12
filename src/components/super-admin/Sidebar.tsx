@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import dalabLogo from "@/assets/dalabplus-logo.png";
 import {
   LayoutDashboard, Building2, CreditCard, DollarSign,
   Settings, LogOut, ChevronLeft, ChevronRight, Globe,
@@ -32,9 +33,7 @@ const SuperAdminSidebar = ({ collapsed, setCollapsed, activeTab, setActiveTab }:
     >
       {/* Logo */}
       <div className="h-16 flex items-center gap-3 px-4 border-b border-border shrink-0">
-        <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center shrink-0">
-          <span className="font-display font-bold text-foreground text-xs">SA</span>
-        </div>
+        <img src={dalabLogo} alt="DALABplus+" className="w-9 h-9 rounded-full shrink-0" />
         {!collapsed && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-w-0">
             <p className="font-display font-bold text-sm text-foreground truncate">Super Admin</p>
