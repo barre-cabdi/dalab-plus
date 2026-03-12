@@ -292,6 +292,7 @@ const translations = {
     adNotifications: "Ogeysiisyada",
     adNoNotifications: "Ogeysiis cusub ma jiro",
     adDisabledBySuperAdmin: "Feature-kan wuu xidhay Super Admin",
+  },
 };
 
 type Translations = typeof translations.en;
