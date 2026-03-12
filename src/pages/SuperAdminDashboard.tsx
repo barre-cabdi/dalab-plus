@@ -79,9 +79,9 @@ const SuperAdminDashboard = () => {
             {/* Quick business list */}
             <div>
               <div className="flex items-center justify-between mb-5">
-                <h2 className="font-display font-bold text-xl text-foreground">Recent Businesses</h2>
+                <h2 className="font-display font-bold text-xl text-foreground">{t.saRecentBiz}</h2>
                 <Button variant="outline" size="sm" onClick={() => setActiveTab("businesses")}>
-                  View All <Building2 className="w-3.5 h-3.5 ml-1.5" />
+                  {t.saViewAll} <Building2 className="w-3.5 h-3.5 ml-1.5" />
                 </Button>
               </div>
               <BusinessTable
