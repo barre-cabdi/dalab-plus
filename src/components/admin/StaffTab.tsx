@@ -241,25 +241,7 @@ const StaffTab = ({ businessId }: StaffTabProps) => {
             </div>
 
             {isLoginRole && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                className="p-4 rounded-xl bg-accent/5 border border-accent/20 space-y-3">
-                <p className="text-sm font-semibold text-accent flex items-center gap-2">
-                  <Shield className="w-4 h-4" /> {form.jobTitle === "Hotel Manager" ? "Hotel Manager Login" : form.jobTitle === "Cashier" ? "Cashier Login" : "Waiter Login"} Credentials
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {form.jobTitle === "Hotel Manager" 
-                    ? "This hotel manager will be able to log in and manage hotel operations only (sub-admin)."
-                    : form.jobTitle === "Cashier"
-                    ? "This cashier will be able to log in and manage orders, payments, receipts & POS."
-                    : "This waiter will be able to log in and place orders for customers."}
-                </p>
-                <div className="grid grid-cols-2 gap-3">
-                  <div><label className="text-sm font-medium mb-1 block">Username</label>
-                    <Input value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} placeholder={form.jobTitle === "Hotel Manager" ? "e.g. hotel_manager1" : "e.g. waiter_ahmed"} /></div>
-                  <div><label className="text-sm font-medium mb-1 block">Password</label>
-                    <Input type="text" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} placeholder="e.g. pass1234" /></div>
-                </div>
-              </motion.div>
+              <StaffLoginCredentials form={form} setForm={setForm} businessId={businessId} />
             )}
           </div>
           <DialogFooter>

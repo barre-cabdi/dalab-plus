@@ -18,7 +18,7 @@ import {
   CreditCard, Banknote, Smartphone, Check, XCircle, Receipt, RefreshCw,
   BarChart3, Clock, DollarSign, TrendingUp, User, ChevronLeft, ChevronRight,
   LayoutDashboard, ShoppingCart, FileText, Bell, Users, AlertCircle, Eye,
-  Phone, Mail, Award, Calendar, Filter, ArrowUpRight, Package,
+  Phone, Mail, Award, Calendar, Filter, ArrowUpRight, Package, Globe,
 } from "lucide-react";
 import {
   StaffMember, Business, MenuItem, Category, Order, TableItem, Customer,
@@ -27,6 +27,7 @@ import {
 } from "@/lib/store";
 import { toast } from "sonner";
 import { printReceipt } from "@/lib/printReceipt";
+import { useI18n } from "@/lib/i18n";
 
 interface Notification {
   id: string;
@@ -39,6 +40,7 @@ interface Notification {
 
 const CashierDashboard = () => {
   const navigate = useNavigate();
+  const { t, lang, setLang } = useI18n();
   const [cashier, setCashier] = useState<StaffMember | null>(null);
   const [business, setBusiness] = useState<Business | null>(null);
   const [activeTab, setActiveTab] = useState<string>("dashboard");
@@ -96,7 +98,6 @@ const CashierDashboard = () => {
     setCustomers(getCustomers(business.id));
     const currentOrders = getOrders(business.id);
 
-    // Detect new orders for notifications
     const currentIds = new Set(currentOrders.map(o => o.id));
     const newOrders = currentOrders.filter(o => !prevOrderIdsRef.current.has(o.id));
     const newReady = currentOrders.filter(o => o.status === "ready" && !prevReadyIdsRef.current.has(o.id));
@@ -104,10 +105,10 @@ const CashierDashboard = () => {
     if (prevOrderIdsRef.current.size > 0) {
       newOrders.forEach(o => {
         playSound();
-        addNotification("new_order", `Dalab cusub: ${(o as any).customerName || "Guest"} - $${o.total.toFixed(2)}`, o.id);
+        addNotification("new_order", `${t.csNewOrder}: ${(o as any).customerName || "Guest"} - $${o.total.toFixed(2)}`, o.id);
       });
       newReady.forEach(o => {
-        addNotification("order_ready", `Dalabka ${(o as any).customerName || "Guest"} diyaar ayuu yahay!`, o.id);
+        addNotification("order_ready", `${(o as any).customerName || "Guest"} ${t.csReady}!`, o.id);
       });
     }
 
@@ -179,7 +180,7 @@ const CashierDashboard = () => {
       customerName: customerName || "Walking Customer",
     } as any;
     saveOrder(order);
-    addNotification("new_order", `Dalab cusub oo aad samaysay: $${cartTotal.toFixed(2)}`, order.id);
+    addNotification("new_order", `${t.csNewOrder}: $${cartTotal.toFixed(2)}`, order.id);
     setCart([]);
     setCustomerName("Walking Customer");
     setSelectedTable("");
@@ -194,7 +195,7 @@ const CashierDashboard = () => {
       paidAt: new Date().toISOString(),
       cashierId: cashier?.id,
     });
-    addNotification("payment", `Lacagta la qaatay: $${paymentDialog.total.toFixed(2)} (${paymentMethod})`, paymentDialog.id);
+    addNotification("payment", `${t.csPaid}: $${paymentDialog.total.toFixed(2)} (${paymentMethod})`, paymentDialog.id);
     if (business) {
       printReceipt({
         order: paymentDialog,
@@ -211,18 +212,16 @@ const CashierDashboard = () => {
   const handleRefund = () => {
     if (!refundDialog) return;
     updateOrder(refundDialog.id, { status: "cancelled" });
-    addNotification("cancel", `Order la cancel-gareeye: $${refundDialog.total.toFixed(2)}`, refundDialog.id);
+    addNotification("cancel", `${t.csCancelOrder}: $${refundDialog.total.toFixed(2)}`, refundDialog.id);
     setRefundDialog(null);
     refresh();
   };
 
   if (!business || !cashier) return null;
 
-  // ===== CASHIER-SPECIFIC STATS (only their own orders, starting from zero) =====
   const todayStr = new Date().toDateString();
   const allTodayOrders = orders.filter(o => new Date(o.createdAt).toDateString() === todayStr);
   
-  // Only show this cashier's orders
   const myOrders = allTodayOrders.filter(o => 
     o.cashierId === cashier.id || (o as any).orderedBy === `cashier:${cashier.name}`
   );
@@ -231,7 +230,6 @@ const CashierDashboard = () => {
   const myPreparing = myOrders.filter(o => o.status === "preparing");
   const myReady = myOrders.filter(o => o.status === "ready");
 
-  // Also show customer-originated orders that need cashier attention
   const customerPendingOrders = allTodayOrders.filter(o => 
     o.status === "pending" && (o as any).orderedBy === "customer"
   );
@@ -244,13 +242,11 @@ const CashierDashboard = () => {
     .filter(m => selectedCat === "all" || m.categoryId === selectedCat)
     .filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
 
-  // Filtered orders for Orders tab
   const filteredOrders = (orderStatusFilter === "all" 
     ? orders 
     : orders.filter(o => o.status === orderStatusFilter)
   ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-  // Filtered customers
   const filteredCustomers = customers.filter(c => 
     c.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
     c.phone.toLowerCase().includes(customerSearch.toLowerCase())
@@ -261,13 +257,13 @@ const CashierDashboard = () => {
   const mobilePayments = myOrders.filter(o => o.paymentMethod === "mobile" && o.status === "paid");
 
   const navItems = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { id: "orders", label: "Orders", icon: ClipboardList, badge: allPending.length || undefined },
-    { id: "pos", label: "POS / Walk-in", icon: ShoppingCart },
-    { id: "payment-methods", label: "Payments", icon: CreditCard },
-    { id: "customers", label: "Customers", icon: Users },
-    { id: "notifications", label: "Notifications", icon: Bell, badge: unreadCount || undefined },
-    { id: "shift-report", label: "Shift Report", icon: FileText },
+    { id: "dashboard", label: t.csDashboard, icon: LayoutDashboard },
+    { id: "orders", label: t.csOrders, icon: ClipboardList, badge: allPending.length || undefined },
+    { id: "pos", label: t.csPOS, icon: ShoppingCart },
+    { id: "payment-methods", label: t.csPayments, icon: CreditCard },
+    { id: "customers", label: t.csCustomers, icon: Users },
+    { id: "notifications", label: t.csNotifications, icon: Bell, badge: unreadCount || undefined },
+    { id: "shift-report", label: t.csShiftReport, icon: FileText },
   ];
 
   return (
@@ -333,7 +329,14 @@ const CashierDashboard = () => {
           {collapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
         </button>
 
-        <div className="p-3 border-t border-border">
+        <div className="p-3 border-t border-border space-y-0.5">
+          <button
+            onClick={() => setLang(lang === "en" ? "so" : "en")}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all group relative"
+          >
+            <Globe className="w-5 h-5 shrink-0" />
+            {!collapsed && <span>{lang === "en" ? "Soomaali" : "English"}</span>}
+          </button>
           <button
             onClick={() => {
               localStorage.removeItem("dp_active_cashier");
@@ -342,7 +345,7 @@ const CashierDashboard = () => {
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all group relative"
           >
             <LogOut className="w-5 h-5 shrink-0" />
-            {!collapsed && <span>Log Out</span>}
+            {!collapsed && <span>{t.csLogOut}</span>}
           </button>
         </div>
       </motion.aside>
@@ -353,17 +356,16 @@ const CashierDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="font-display font-bold text-2xl">
-                {activeTab === "dashboard" ? "Cashier Dashboard" : 
-                 activeTab === "orders" ? "Order Management" : 
-                 activeTab === "pos" ? "POS / Walk-in Order" : 
-                 activeTab === "payment-methods" ? "Payment Methods" :
-                 activeTab === "customers" ? "Customers" :
-                 activeTab === "notifications" ? "Notifications" :
-                 "Shift Report"}
+                {activeTab === "dashboard" ? t.csDashboard : 
+                 activeTab === "orders" ? t.csOrders : 
+                 activeTab === "pos" ? t.csPOS : 
+                 activeTab === "payment-methods" ? t.csPayments :
+                 activeTab === "customers" ? t.csCustomers :
+                 activeTab === "notifications" ? t.csNotifications :
+                 t.csShiftReport}
               </h1>
               <p className="text-sm text-muted-foreground">{cashier.name} · {new Date().toLocaleDateString()}</p>
             </div>
-            {/* Quick notification bell in header */}
             <button 
               onClick={() => setActiveTab("notifications")}
               className="relative p-2 rounded-lg hover:bg-muted transition-colors"
@@ -382,7 +384,6 @@ const CashierDashboard = () => {
           {/* ===== DASHBOARD ===== */}
           {activeTab === "dashboard" && (
             <div className="space-y-6">
-              {/* Alert for customer orders needing attention */}
               {customerPendingOrders.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
@@ -391,22 +392,21 @@ const CashierDashboard = () => {
                 >
                   <AlertCircle className="w-5 h-5 text-secondary shrink-0" />
                   <div className="flex-1">
-                    <p className="font-medium text-sm">{customerPendingOrders.length} dalab cusub oo macaamiisha ka yimid!</p>
-                    <p className="text-xs text-muted-foreground">Fadlan ka jawaab dalabyadaas</p>
+                    <p className="font-medium text-sm">{customerPendingOrders.length} {t.csNewOrderAlert}</p>
+                    <p className="text-xs text-muted-foreground">{t.csRespondAlert}</p>
                   </div>
                   <Button size="sm" variant="hero" onClick={() => setActiveTab("orders")} className="text-xs gap-1">
-                    <Eye className="w-3 h-3" /> Arag
+                    <Eye className="w-3 h-3" /> {t.csView}
                   </Button>
                 </motion.div>
               )}
 
-              {/* My Stats (cashier-specific, zero-based) */}
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: "My Orders", value: myOrders.length, icon: ShoppingBag, desc: "Maanta" },
-                  { label: "My Revenue", value: `$${myRevenue.toFixed(2)}`, icon: DollarSign, desc: "Lacag la qaatay" },
-                  { label: "My Pending", value: myPendingOrders.length, icon: Clock, desc: "Sugaya" },
-                  { label: "Ready to Serve", value: myReady.length, icon: Package, desc: "Diyaar" },
+                  { label: t.csMyOrders, value: myOrders.length, icon: ShoppingBag, desc: t.csToday },
+                  { label: t.csMyRevenue, value: `$${myRevenue.toFixed(2)}`, icon: DollarSign, desc: t.csPaid },
+                  { label: t.csMyPending, value: myPendingOrders.length, icon: Clock, desc: t.csWaiting },
+                  { label: t.csReadyServe, value: myReady.length, icon: Package, desc: t.csReady },
                 ].map((s, i) => (
                   <motion.div key={s.label} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                     className="bg-card border border-border rounded-xl p-4 shadow-card-custom">
@@ -431,8 +431,8 @@ const CashierDashboard = () => {
                   className="bg-card border border-border rounded-xl p-5 shadow-card-custom text-left hover:border-accent/30 transition-all"
                 >
                   <ShoppingCart className="w-8 h-8 text-accent mb-3" />
-                  <p className="font-display font-bold text-sm">New Order</p>
-                  <p className="text-xs text-muted-foreground mt-1">Dalab cusub samee</p>
+                  <p className="font-display font-bold text-sm">{t.csNewOrder}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{t.csPlaceOrder}</p>
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -441,7 +441,7 @@ const CashierDashboard = () => {
                   className="bg-card border border-border rounded-xl p-5 shadow-card-custom text-left hover:border-accent/30 transition-all"
                 >
                   <ClipboardList className="w-8 h-8 text-accent mb-3" />
-                  <p className="font-display font-bold text-sm">Manage Orders</p>
+                  <p className="font-display font-bold text-sm">{t.csManageOrders}</p>
                   <p className="text-xs text-muted-foreground mt-1">{allPending.length} pending</p>
                 </motion.button>
                 <motion.button
@@ -451,7 +451,7 @@ const CashierDashboard = () => {
                   className="bg-card border border-border rounded-xl p-5 shadow-card-custom text-left hover:border-accent/30 transition-all"
                 >
                   <Users className="w-8 h-8 text-accent mb-3" />
-                  <p className="font-display font-bold text-sm">Customers</p>
+                  <p className="font-display font-bold text-sm">{t.csCustomers}</p>
                   <p className="text-xs text-muted-foreground mt-1">{customers.length} registered</p>
                 </motion.button>
               </div>
@@ -459,21 +459,21 @@ const CashierDashboard = () => {
               {/* Recent orders quick view */}
               <div className="bg-card border border-border rounded-xl shadow-card-custom overflow-hidden">
                 <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-                  <h3 className="font-display font-bold">Recent Orders (Mine)</h3>
-                  <Button variant="outline" size="sm" onClick={() => setActiveTab("orders")}>View All</Button>
+                  <h3 className="font-display font-bold">{t.csRecentOrders}</h3>
+                  <Button variant="outline" size="sm" onClick={() => setActiveTab("orders")}>{t.csViewAll}</Button>
                 </div>
                 {myOrders.length === 0 ? (
                   <div className="py-12 text-center text-muted-foreground">
                     <ShoppingBag className="w-10 h-10 mx-auto mb-3 opacity-20" />
-                    <p className="text-sm font-medium">Wali dalab ma samaysan</p>
-                    <p className="text-xs mt-1">POS tab-ka tag si aad dalab cusub u samayso</p>
+                    <p className="text-sm font-medium">{t.csNoOrdersYet}</p>
+                    <p className="text-xs mt-1">{t.csGoToPOS}</p>
                   </div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Customer</TableHead>
-                        <TableHead>Table</TableHead>
+                        <TableHead>{t.csCustomerName}</TableHead>
+                        <TableHead>{t.csTable}</TableHead>
                         <TableHead>Items</TableHead>
                         <TableHead>Total</TableHead>
                         <TableHead>Status</TableHead>
@@ -493,7 +493,7 @@ const CashierDashboard = () => {
                           <TableCell className="text-right">
                             {(o.status === "ready" || o.status === "delivered") && (
                               <Button size="sm" variant="hero" className="text-xs gap-1" onClick={() => { setPaymentDialog(o); setPaidAmount(String(o.total)); }}>
-                                <CreditCard className="w-3 h-3" /> Pay
+                                <CreditCard className="w-3 h-3" /> {t.csConfirmPayment}
                               </Button>
                             )}
                           </TableCell>
@@ -509,12 +509,11 @@ const CashierDashboard = () => {
           {/* ===== ORDERS ===== */}
           {activeTab === "orders" && (
             <div className="space-y-6">
-              {/* Status filter */}
               <div className="flex gap-2 flex-wrap">
                 {["all", "pending", "preparing", "ready", "delivered", "paid", "cancelled"].map(s => (
                   <Button key={s} variant={orderStatusFilter === s ? "default" : "outline"} size="sm" className="text-xs capitalize"
                     onClick={() => setOrderStatusFilter(s)}>
-                    {s === "all" ? "All" : s}
+                    {s === "all" ? t.wtAll : s}
                     {s === "pending" && allPending.length > 0 && (
                       <Badge variant="destructive" className="ml-1.5 text-[9px] px-1 py-0">{allPending.length}</Badge>
                     )}
@@ -526,7 +525,7 @@ const CashierDashboard = () => {
                 {filteredOrders.length === 0 ? (
                   <div className="bg-card border border-border rounded-xl p-12 text-center">
                     <ClipboardList className="w-10 h-10 mx-auto mb-3 text-muted-foreground opacity-20" />
-                    <p className="text-sm text-muted-foreground">Dalab la helin</p>
+                    <p className="text-sm text-muted-foreground">{t.csNoOrderFound}</p>
                   </div>
                 ) : (
                   filteredOrders.map((o, i) => (
@@ -545,7 +544,7 @@ const CashierDashboard = () => {
                           </div>
                           <div>
                             <p className="font-display font-bold text-sm">{(o as any).customerName || "Guest"}</p>
-                            <p className="text-xs text-muted-foreground">Table: {o.tableId} · {new Date(o.createdAt).toLocaleTimeString()}</p>
+                            <p className="text-xs text-muted-foreground">{t.csTable}: {o.tableId} · {new Date(o.createdAt).toLocaleTimeString()}</p>
                             {o.orderedBy && <p className="text-[10px] text-muted-foreground">By: {o.orderedBy}</p>}
                           </div>
                         </div>
@@ -569,42 +568,42 @@ const CashierDashboard = () => {
                         {o.status === "pending" && (
                           <>
                             <Button size="sm" variant="hero" className="text-xs gap-1"
-                              onClick={() => { updateOrder(o.id, { status: "preparing" }); toast.success("Aqbalay ✓"); refresh(); }}>
-                              <Check className="w-3 h-3" /> Aqbal
+                              onClick={() => { updateOrder(o.id, { status: "preparing" }); toast.success(`${t.csAccept} ✓`); refresh(); }}>
+                              <Check className="w-3 h-3" /> {t.csAccept}
                             </Button>
                             <Button size="sm" variant="destructive" className="text-xs gap-1"
-                              onClick={() => { updateOrder(o.id, { status: "cancelled" }); toast.info("La joojiyay"); refresh(); }}>
-                              <XCircle className="w-3 h-3" /> Diid
+                              onClick={() => { updateOrder(o.id, { status: "cancelled" }); toast.info(t.csReject); refresh(); }}>
+                              <XCircle className="w-3 h-3" /> {t.csReject}
                             </Button>
                           </>
                         )}
                         {o.status === "preparing" && (
                           <Button size="sm" className="text-xs gap-1 bg-green-600 hover:bg-green-700 text-white"
-                            onClick={() => { updateOrder(o.id, { status: "ready" }); toast.success("Diyaar ✓"); refresh(); }}>
-                            <Check className="w-3 h-3" /> Diyaar
+                            onClick={() => { updateOrder(o.id, { status: "ready" }); toast.success(`${t.csReadyBtn} ✓`); refresh(); }}>
+                            <Check className="w-3 h-3" /> {t.csReadyBtn}
                           </Button>
                         )}
                         {o.status === "ready" && (
                           <Button size="sm" variant="outline" className="text-xs gap-1"
-                            onClick={() => { updateOrder(o.id, { status: "delivered" }); toast.success("La geeyay ✓"); refresh(); }}>
-                            <Check className="w-3 h-3" /> Served
+                            onClick={() => { updateOrder(o.id, { status: "delivered" }); toast.success(`${t.csServed} ✓`); refresh(); }}>
+                            <Check className="w-3 h-3" /> {t.csServed}
                           </Button>
                         )}
                         {(o.status === "ready" || o.status === "delivered") && (
                           <Button size="sm" variant="hero" className="text-xs gap-1"
                             onClick={() => { setPaymentDialog(o); setPaidAmount(String(o.total)); }}>
-                            <CreditCard className="w-3 h-3" /> Confirm Payment
+                            <CreditCard className="w-3 h-3" /> {t.csConfirmPayment}
                           </Button>
                         )}
                         {o.status !== "cancelled" && o.status !== "paid" && (
                           <Button size="sm" variant="outline" className="text-xs gap-1"
                             onClick={() => setRefundDialog(o)}>
-                            <RefreshCw className="w-3 h-3" /> Cancel/Refund
+                            <RefreshCw className="w-3 h-3" /> {t.csCancelRefund}
                           </Button>
                         )}
                         <Button size="sm" variant="outline" className="text-xs gap-1"
                           onClick={() => printReceipt({ order: o, business, servedBy: cashier.name })}>
-                          <Receipt className="w-3 h-3" /> Receipt
+                          <Receipt className="w-3 h-3" /> {t.csReceipt}
                         </Button>
                       </div>
                     </motion.div>
@@ -617,17 +616,16 @@ const CashierDashboard = () => {
           {/* ===== POS ===== */}
           {activeTab === "pos" && (
             <div className="grid lg:grid-cols-5 gap-6">
-              {/* Menu side */}
               <div className="lg:col-span-3 space-y-4">
                 <div className="flex gap-3">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input placeholder="Search menu..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+                    <Input placeholder={t.csSearchMenu} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
                   </div>
                 </div>
 
                 <div className="flex gap-2 overflow-x-auto pb-2">
-                  <Button variant={selectedCat === "all" ? "default" : "outline"} size="sm" onClick={() => setSelectedCat("all")}>All</Button>
+                  <Button variant={selectedCat === "all" ? "default" : "outline"} size="sm" onClick={() => setSelectedCat("all")}>{t.wtAll}</Button>
                   {categories.map(c => (
                     <Button key={c.id} variant={selectedCat === c.id ? "default" : "outline"} size="sm" onClick={() => setSelectedCat(c.id)} className="whitespace-nowrap">
                       {isImageUrl(c.icon) ? "📁" : c.icon} {c.name}
@@ -650,27 +648,26 @@ const CashierDashboard = () => {
                 </div>
               </div>
 
-              {/* Cart side */}
               <div className="lg:col-span-2">
                 <div className="bg-card border border-border rounded-xl shadow-card-custom sticky top-8">
                   <div className="px-5 py-4 border-b border-border">
                     <h3 className="font-display font-bold flex items-center gap-2">
-                      <ShoppingCart className="w-5 h-5 text-accent" /> Order Cart
+                      <ShoppingCart className="w-5 h-5 text-accent" /> {t.csOrderCart}
                     </h3>
                   </div>
 
                   <div className="p-5 space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs font-medium mb-1 block">Customer Name</label>
-                        <Input value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="Walking Customer" className="h-9 text-sm" />
+                        <label className="text-xs font-medium mb-1 block">{t.csCustomerName}</label>
+                        <Input value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder={t.csCustomerName} className="h-9 text-sm" />
                       </div>
                       <div>
-                        <label className="text-xs font-medium mb-1 block">Table</label>
+                        <label className="text-xs font-medium mb-1 block">{t.csTable}</label>
                         <Select value={selectedTable} onValueChange={setSelectedTable}>
-                          <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Takeaway" /></SelectTrigger>
+                          <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={t.csTakeaway} /></SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="takeaway">Takeaway</SelectItem>
+                            <SelectItem value="takeaway">{t.csTakeaway}</SelectItem>
                             {tables.map(t => (
                               <SelectItem key={t.id} value={String(t.number)}>Table #{t.number}</SelectItem>
                             ))}
@@ -682,8 +679,8 @@ const CashierDashboard = () => {
                     {cart.length === 0 ? (
                       <div className="text-center py-8 text-muted-foreground">
                         <ShoppingBag className="w-10 h-10 mx-auto mb-2 opacity-20" />
-                        <p className="text-sm">Cart is empty</p>
-                        <p className="text-xs">Click menu items to add</p>
+                        <p className="text-sm">{t.csCartEmpty}</p>
+                        <p className="text-xs">{t.csClickToAdd}</p>
                       </div>
                     ) : (
                       <div className="space-y-2 max-h-[300px] overflow-y-auto">
@@ -715,7 +712,7 @@ const CashierDashboard = () => {
                           <span className="text-accent">${cartTotal.toFixed(2)}</span>
                         </div>
                         <Button variant="hero" className="w-full" onClick={placeOrder}>
-                          <Check className="w-4 h-4 mr-2" /> Place Order
+                          <Check className="w-4 h-4 mr-2" /> {t.csPlaceOrder}
                         </Button>
                       </div>
                     )}
@@ -728,13 +725,12 @@ const CashierDashboard = () => {
           {/* ===== PAYMENT METHODS ===== */}
           {activeTab === "payment-methods" && (
             <div className="space-y-6">
-              {/* Stats */}
               <div className="grid sm:grid-cols-4 gap-4">
                 {[
-                  { label: "Total Paid", value: `$${myRevenue.toFixed(2)}`, icon: DollarSign, desc: `${myOrders.filter(o => o.status === "paid").length} orders` },
-                  { label: "Cash", value: `$${cashPayments.reduce((s, o) => s + o.total, 0).toFixed(2)}`, icon: Banknote, desc: `${cashPayments.length} payments` },
-                  { label: "Card", value: `$${cardPayments.reduce((s, o) => s + o.total, 0).toFixed(2)}`, icon: CreditCard, desc: `${cardPayments.length} payments` },
-                  { label: "Mobile", value: `$${mobilePayments.reduce((s, o) => s + o.total, 0).toFixed(2)}`, icon: Smartphone, desc: `${mobilePayments.length} payments` },
+                  { label: t.csTotalPaid, value: `$${myRevenue.toFixed(2)}`, icon: DollarSign, desc: `${myOrders.filter(o => o.status === "paid").length} orders` },
+                  { label: t.csCash, value: `$${cashPayments.reduce((s, o) => s + o.total, 0).toFixed(2)}`, icon: Banknote, desc: `${cashPayments.length}` },
+                  { label: t.csCard, value: `$${cardPayments.reduce((s, o) => s + o.total, 0).toFixed(2)}`, icon: CreditCard, desc: `${cardPayments.length}` },
+                  { label: t.csMobile, value: `$${mobilePayments.reduce((s, o) => s + o.total, 0).toFixed(2)}`, icon: Smartphone, desc: `${mobilePayments.length}` },
                 ].map((s, i) => (
                   <motion.div key={s.label} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                     className="bg-card border border-border rounded-xl p-4 shadow-card-custom">
@@ -748,14 +744,13 @@ const CashierDashboard = () => {
                 ))}
               </div>
 
-              {/* Breakdown bar */}
               <div className="bg-card border border-border rounded-xl p-6 shadow-card-custom">
-                <h3 className="font-display font-bold mb-4">Revenue Breakdown</h3>
+                <h3 className="font-display font-bold mb-4">{t.csRevenueBreakdown}</h3>
                 <div className="space-y-4">
                   {[
-                    { label: "💵 Cash", total: cashPayments.reduce((s, o) => s + o.total, 0), pct: myRevenue ? (cashPayments.reduce((s, o) => s + o.total, 0) / myRevenue * 100) : 0 },
-                    { label: "💳 Card", total: cardPayments.reduce((s, o) => s + o.total, 0), pct: myRevenue ? (cardPayments.reduce((s, o) => s + o.total, 0) / myRevenue * 100) : 0 },
-                    { label: "📱 Mobile Money", total: mobilePayments.reduce((s, o) => s + o.total, 0), pct: myRevenue ? (mobilePayments.reduce((s, o) => s + o.total, 0) / myRevenue * 100) : 0 },
+                    { label: `💵 ${t.csCash}`, total: cashPayments.reduce((s, o) => s + o.total, 0), pct: myRevenue ? (cashPayments.reduce((s, o) => s + o.total, 0) / myRevenue * 100) : 0 },
+                    { label: `💳 ${t.csCard}`, total: cardPayments.reduce((s, o) => s + o.total, 0), pct: myRevenue ? (cardPayments.reduce((s, o) => s + o.total, 0) / myRevenue * 100) : 0 },
+                    { label: `📱 ${t.csMobile}`, total: mobilePayments.reduce((s, o) => s + o.total, 0), pct: myRevenue ? (mobilePayments.reduce((s, o) => s + o.total, 0) / myRevenue * 100) : 0 },
                   ].map((p, i) => (
                     <div key={p.label}>
                       <div className="flex justify-between text-sm mb-1">
@@ -775,23 +770,22 @@ const CashierDashboard = () => {
                 </div>
               </div>
 
-              {/* Recent paid list */}
               <div className="bg-card border border-border rounded-xl shadow-card-custom overflow-hidden">
                 <div className="px-5 py-4 border-b border-border">
-                  <h3 className="font-display font-bold">Recent Payments (My Shift)</h3>
+                  <h3 className="font-display font-bold">{t.csRecentPayments}</h3>
                 </div>
                 {myOrders.filter(o => o.status === "paid").length === 0 ? (
                   <div className="py-12 text-center text-muted-foreground">
                     <CreditCard className="w-10 h-10 mx-auto mb-3 opacity-20" />
-                    <p className="text-sm">Wali lacag lama qaatin</p>
+                    <p className="text-sm">{t.csNoPaymentYet}</p>
                   </div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Customer</TableHead>
-                        <TableHead>Method</TableHead>
-                        <TableHead>Amount</TableHead>
+                        <TableHead>{t.csCustomerName}</TableHead>
+                        <TableHead>{t.csPaymentMethod}</TableHead>
+                        <TableHead>{t.csAmountPaid}</TableHead>
                         <TableHead>Time</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -801,7 +795,7 @@ const CashierDashboard = () => {
                           <TableCell className="font-medium">{(o as any).customerName || "Guest"}</TableCell>
                           <TableCell>
                             <Badge variant="outline" className="text-[10px]">
-                              {o.paymentMethod === "cash" ? "💵 Cash" : o.paymentMethod === "card" ? "💳 Card" : "📱 Mobile"}
+                              {o.paymentMethod === "cash" ? `💵 ${t.csCash}` : o.paymentMethod === "card" ? `💳 ${t.csCard}` : `📱 ${t.csMobile}`}
                             </Badge>
                           </TableCell>
                           <TableCell className="font-bold text-accent">${o.total.toFixed(2)}</TableCell>
@@ -818,12 +812,11 @@ const CashierDashboard = () => {
           {/* ===== CUSTOMERS ===== */}
           {activeTab === "customers" && (
             <div className="space-y-6">
-              {/* Stats */}
               <div className="grid sm:grid-cols-3 gap-4">
                 {[
-                  { label: "Total Customers", value: customers.length, icon: Users },
-                  { label: "Registered Today", value: customers.filter(c => new Date(c.registeredAt).toDateString() === todayStr).length, icon: Calendar },
-                  { label: "Active Spenders", value: customers.filter(c => c.totalSpent > 0).length, icon: Award },
+                  { label: t.csTotalCustomers, value: customers.length, icon: Users },
+                  { label: t.csRegisteredToday, value: customers.filter(c => new Date(c.registeredAt).toDateString() === todayStr).length, icon: Calendar },
+                  { label: t.csActiveSpenders, value: customers.filter(c => c.totalSpent > 0).length, icon: Award },
                 ].map((s, i) => (
                   <motion.div key={s.label} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                     className="bg-card border border-border rounded-xl p-4 shadow-card-custom">
@@ -836,24 +829,22 @@ const CashierDashboard = () => {
                 ))}
               </div>
 
-              {/* Search */}
               <div className="relative max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input placeholder="Raadi macmiil... (magac ama telefoon)" value={customerSearch} onChange={e => setCustomerSearch(e.target.value)} className="pl-9" />
+                <Input placeholder={t.csSearchCustomer} value={customerSearch} onChange={e => setCustomerSearch(e.target.value)} className="pl-9" />
               </div>
 
-              {/* Customer list */}
               <div className="bg-card border border-border rounded-xl shadow-card-custom overflow-hidden">
                 {filteredCustomers.length === 0 ? (
                   <div className="py-12 text-center text-muted-foreground">
                     <Users className="w-10 h-10 mx-auto mb-3 opacity-20" />
-                    <p className="text-sm">Macmiil la helin</p>
+                    <p className="text-sm">{t.csNoCustomerFound}</p>
                   </div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Customer</TableHead>
+                        <TableHead>{t.csCustomerName}</TableHead>
                         <TableHead>Phone</TableHead>
                         <TableHead>Orders</TableHead>
                         <TableHead>Total Spent</TableHead>
@@ -896,10 +887,10 @@ const CashierDashboard = () => {
           {activeTab === "notifications" && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">{unreadCount} unread notification{unreadCount !== 1 ? "s" : ""}</p>
+                <p className="text-sm text-muted-foreground">{unreadCount} {t.csUnread}{unreadCount !== 1 ? "s" : ""}</p>
                 {unreadCount > 0 && (
                   <Button variant="outline" size="sm" className="text-xs" onClick={markAllNotificationsRead}>
-                    <Check className="w-3 h-3 mr-1" /> Mark all read
+                    <Check className="w-3 h-3 mr-1" /> {t.csMarkAllRead}
                   </Button>
                 )}
               </div>
@@ -907,8 +898,8 @@ const CashierDashboard = () => {
               {notifications.length === 0 ? (
                 <div className="bg-card border border-border rounded-xl p-12 text-center">
                   <Bell className="w-10 h-10 mx-auto mb-3 text-muted-foreground opacity-20" />
-                  <p className="text-sm text-muted-foreground font-medium">Wali ogeysiis ma jiro</p>
-                  <p className="text-xs text-muted-foreground mt-1">Marka dalab cusub yimaado halkan ayuu ka soo muuqan doonaa</p>
+                  <p className="text-sm text-muted-foreground font-medium">{t.csNoNotifYet}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{t.csNotifWillAppear}</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -958,10 +949,10 @@ const CashierDashboard = () => {
             <div className="space-y-6">
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: "My Total Orders", value: myOrders.length, icon: ShoppingBag },
-                  { label: "My Revenue", value: `$${myRevenue.toFixed(2)}`, icon: DollarSign },
-                  { label: "Cash Payments", value: `$${cashPayments.reduce((s, o) => s + o.total, 0).toFixed(2)} (${cashPayments.length})`, icon: Banknote },
-                  { label: "Mobile Payments", value: `$${mobilePayments.reduce((s, o) => s + o.total, 0).toFixed(2)} (${mobilePayments.length})`, icon: Smartphone },
+                  { label: t.csMyTotalOrders, value: myOrders.length, icon: ShoppingBag },
+                  { label: t.csMyRevenue, value: `$${myRevenue.toFixed(2)}`, icon: DollarSign },
+                  { label: t.csCashPayments, value: `$${cashPayments.reduce((s, o) => s + o.total, 0).toFixed(2)} (${cashPayments.length})`, icon: Banknote },
+                  { label: t.csMobilePayments, value: `$${mobilePayments.reduce((s, o) => s + o.total, 0).toFixed(2)} (${mobilePayments.length})`, icon: Smartphone },
                 ].map((s, i) => (
                   <motion.div key={s.label} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                     className="bg-card border border-border rounded-xl p-4 shadow-card-custom">
@@ -975,12 +966,12 @@ const CashierDashboard = () => {
               </div>
 
               <div className="bg-card border border-border rounded-xl p-5 shadow-card-custom">
-                <h3 className="font-display font-bold mb-4">Payment Breakdown</h3>
+                <h3 className="font-display font-bold mb-4">{t.csPaymentBreakdown}</h3>
                 <div className="space-y-3">
                   {[
-                    { label: "Cash", count: cashPayments.length, total: cashPayments.reduce((s, o) => s + o.total, 0), icon: "💵" },
-                    { label: "Card", count: cardPayments.length, total: cardPayments.reduce((s, o) => s + o.total, 0), icon: "💳" },
-                    { label: "Mobile Money", count: mobilePayments.length, total: mobilePayments.reduce((s, o) => s + o.total, 0), icon: "📱" },
+                    { label: t.csCash, count: cashPayments.length, total: cashPayments.reduce((s, o) => s + o.total, 0), icon: "💵" },
+                    { label: t.csCard, count: cardPayments.length, total: cardPayments.reduce((s, o) => s + o.total, 0), icon: "💳" },
+                    { label: t.csMobile, count: mobilePayments.length, total: mobilePayments.reduce((s, o) => s + o.total, 0), icon: "📱" },
                   ].map(p => (
                     <div key={p.label} className="flex items-center justify-between bg-muted/50 rounded-lg p-3">
                       <div className="flex items-center gap-3">
@@ -998,22 +989,22 @@ const CashierDashboard = () => {
 
               <div className="bg-card border border-border rounded-xl shadow-card-custom overflow-hidden">
                 <div className="px-5 py-4 border-b border-border">
-                  <h3 className="font-display font-bold">My Orders Today</h3>
+                  <h3 className="font-display font-bold">{t.csMyOrdersToday}</h3>
                 </div>
                 {myOrders.length === 0 ? (
                   <div className="py-12 text-center text-muted-foreground">
                     <FileText className="w-10 h-10 mx-auto mb-3 opacity-20" />
-                    <p className="text-sm">Maanta wali dalab ma samaysan</p>
+                    <p className="text-sm">{t.csNoOrderToday}</p>
                   </div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>Time</TableHead>
-                        <TableHead>Customer</TableHead>
+                        <TableHead>{t.csCustomerName}</TableHead>
                         <TableHead>Items</TableHead>
                         <TableHead>Total</TableHead>
-                        <TableHead>Payment</TableHead>
+                        <TableHead>{t.csPaymentMethod}</TableHead>
                         <TableHead>Status</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -1041,19 +1032,19 @@ const CashierDashboard = () => {
       <Dialog open={!!paymentDialog} onOpenChange={() => setPaymentDialog(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>💰 Confirm Payment</DialogTitle>
+            <DialogTitle>💰 {t.csConfirmPayment}</DialogTitle>
             <DialogDescription>
               {(paymentDialog as any)?.customerName || "Guest"} · Total: ${paymentDialog?.total.toFixed(2)}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">Payment Method</label>
+              <label className="text-sm font-medium mb-2 block">{t.csPaymentMethod}</label>
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { value: "cash", label: "Cash", icon: "💵" },
-                  { value: "card", label: "Card", icon: "💳" },
-                  { value: "mobile", label: "Mobile", icon: "📱" },
+                  { value: "cash", label: t.csCash, icon: "💵" },
+                  { value: "card", label: t.csCard, icon: "💳" },
+                  { value: "mobile", label: t.csMobile, icon: "📱" },
                 ].map(m => (
                   <button key={m.value} onClick={() => setPaymentMethod(m.value as any)}
                     className={`p-3 rounded-xl border text-center transition-all ${
@@ -1066,19 +1057,19 @@ const CashierDashboard = () => {
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Amount Paid</label>
+              <label className="text-sm font-medium mb-1 block">{t.csAmountPaid}</label>
               <Input type="number" value={paidAmount} onChange={e => setPaidAmount(e.target.value)} placeholder="0.00" />
             </div>
             {Number(paidAmount) > (paymentDialog?.total || 0) && (
               <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 text-sm">
-                <p className="text-green-700 dark:text-green-400">Change: ${(Number(paidAmount) - (paymentDialog?.total || 0)).toFixed(2)}</p>
+                <p className="text-green-700 dark:text-green-400">{t.csChange}: ${(Number(paidAmount) - (paymentDialog?.total || 0)).toFixed(2)}</p>
               </div>
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setPaymentDialog(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setPaymentDialog(null)}>{t.wtCancel}</Button>
             <Button variant="hero" onClick={handlePayment}>
-              <Check className="w-4 h-4 mr-1" /> Confirm & Print Receipt
+              <Check className="w-4 h-4 mr-1" /> {t.csConfirmPrint}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1088,13 +1079,13 @@ const CashierDashboard = () => {
       <Dialog open={!!refundDialog} onOpenChange={() => setRefundDialog(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Cancel / Refund Order</DialogTitle>
-            <DialogDescription>This will cancel order #{refundDialog?.id.slice(0, 10)} (${refundDialog?.total.toFixed(2)})</DialogDescription>
+            <DialogTitle>{t.csCancelOrder}</DialogTitle>
+            <DialogDescription>{t.csCancelDesc} #{refundDialog?.id.slice(0, 10)} (${refundDialog?.total.toFixed(2)})</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRefundDialog(null)}>Keep Order</Button>
+            <Button variant="outline" onClick={() => setRefundDialog(null)}>{t.csKeepOrder}</Button>
             <Button variant="destructive" onClick={handleRefund}>
-              <XCircle className="w-4 h-4 mr-1" /> Cancel & Refund
+              <XCircle className="w-4 h-4 mr-1" /> {t.csCancelRefundBtn}
             </Button>
           </DialogFooter>
         </DialogContent>
