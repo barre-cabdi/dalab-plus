@@ -6,56 +6,11 @@ import {
   ChevronLeft, ChevronRight, Users, UserCheck,
   DollarSign, Package, Layers, UserCog, Hotel,
   BedDouble, CalendarCheck, BookOpen, Contact, History, Receipt,
-  Wallet, Lock,
+  Wallet, Lock, Globe,
 } from "lucide-react";
 import { Business, getDefaultPermissions } from "@/lib/store";
+import { useI18n } from "@/lib/i18n";
 import { useState } from "react";
-
-const baseNavItems = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "home", label: "Business Home", icon: Hotel },
-  { id: "menu", label: "Menu", icon: UtensilsCrossed },
-  { id: "admin-order", label: "Place Order", icon: Package },
-  { id: "tables", label: "Tables", icon: Grid3X3 },
-  { id: "qr", label: "QR Codes", icon: QrCode },
-  { id: "orders", label: "Orders", icon: ClipboardList },
-  { id: "order-history", label: "Order History", icon: History },
-  { id: "staff", label: "Staff", icon: UserCog },
-  { id: "customers", label: "Customers", icon: Users },
-  { id: "loyalty", label: "Loyalty", icon: Heart },
-  { id: "payment-methods", label: "Payment Methods", icon: Wallet },
-  {
-    id: "reports", label: "Reports", icon: BarChart3,
-    children: [
-      { id: "reports-sales", label: "Sales Report", icon: DollarSign },
-      { id: "reports-items", label: "Item Report", icon: Package },
-      { id: "reports-categories", label: "Category Report", icon: Layers },
-      { id: "reports-waiters", label: "Waiter Report", icon: UserCheck },
-      { id: "reports-cashiers", label: "Cashier Report", icon: Receipt },
-    ],
-  },
-];
-
-const hotelNavItems = [
-  {
-    id: "hotel", label: "Hotel Management", icon: Hotel,
-    children: [
-      { id: "hotel-overview", label: "Overview", icon: LayoutDashboard },
-      { id: "hotel-rooms", label: "Rooms", icon: BedDouble },
-      { id: "hotel-bookings", label: "Bookings", icon: CalendarCheck },
-      { id: "hotel-guests", label: "Guests", icon: Contact },
-    ],
-  },
-  {
-    id: "hotel-report", label: "Hotel Reports", icon: BarChart3,
-    children: [
-      { id: "hotel-report-overview", label: "Overview", icon: BarChart3 },
-      { id: "hotel-report-sales", label: "Hotel Sales", icon: DollarSign },
-      { id: "hotel-report-occupancy", label: "Occupancy", icon: BedDouble },
-      { id: "hotel-report-guests", label: "Guest Analytics", icon: Users },
-    ],
-  },
-];
 
 interface AdminSidebarProps {
   business: Business;
@@ -66,10 +21,56 @@ interface AdminSidebarProps {
 }
 
 const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollapsed }: AdminSidebarProps) => {
+  const { t, lang, setLang } = useI18n();
   const isHotel = business.type === "hotel";
   const perms = business.permissions || getDefaultPermissions();
-  
-  // Filter nav items based on permissions
+
+  const baseNavItems = [
+    { id: "dashboard", label: t.adDashboard, icon: LayoutDashboard },
+    { id: "home", label: t.adBusinessHome, icon: Hotel },
+    { id: "menu", label: t.adMenu, icon: UtensilsCrossed },
+    { id: "admin-order", label: t.adPlaceOrder, icon: Package },
+    { id: "tables", label: t.adTables, icon: Grid3X3 },
+    { id: "qr", label: t.adQrCodes, icon: QrCode },
+    { id: "orders", label: t.adOrders, icon: ClipboardList },
+    { id: "order-history", label: t.adOrderHistory, icon: History },
+    { id: "staff", label: t.adStaff, icon: UserCog },
+    { id: "customers", label: t.adCustomers, icon: Users },
+    { id: "loyalty", label: t.adLoyalty, icon: Heart },
+    { id: "payment-methods", label: t.adPaymentMethods, icon: Wallet },
+    {
+      id: "reports", label: t.adReports, icon: BarChart3,
+      children: [
+        { id: "reports-sales", label: t.adSalesReport, icon: DollarSign },
+        { id: "reports-items", label: t.adItemReport, icon: Package },
+        { id: "reports-categories", label: t.adCategoryReport, icon: Layers },
+        { id: "reports-waiters", label: t.adWaiterReport, icon: UserCheck },
+        { id: "reports-cashiers", label: t.adCashierReport, icon: Receipt },
+      ],
+    },
+  ];
+
+  const hotelNavItems = [
+    {
+      id: "hotel", label: t.adHotelMgmt, icon: Hotel,
+      children: [
+        { id: "hotel-overview", label: t.adOverview, icon: LayoutDashboard },
+        { id: "hotel-rooms", label: t.adRooms, icon: BedDouble },
+        { id: "hotel-bookings", label: t.adBookings, icon: CalendarCheck },
+        { id: "hotel-guests", label: t.adGuests, icon: Contact },
+      ],
+    },
+    {
+      id: "hotel-report", label: t.adHotelReports, icon: BarChart3,
+      children: [
+        { id: "hotel-report-overview", label: t.adOverview, icon: BarChart3 },
+        { id: "hotel-report-sales", label: t.adHotelSales, icon: DollarSign },
+        { id: "hotel-report-occupancy", label: t.adOccupancy, icon: BedDouble },
+        { id: "hotel-report-guests", label: t.adGuestAnalytics, icon: Users },
+      ],
+    },
+  ];
+
   const filteredBaseItems = baseNavItems.filter(item => {
     if (item.id === "menu") return perms.canEditMenu;
     if (item.id === "staff") return perms.canManageStaff;
@@ -79,7 +80,7 @@ const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollaps
     if (item.id === "reports") return perms.canViewReports;
     return true;
   });
-  
+
   const navItems = isHotel ? [...filteredBaseItems.slice(0, 1), ...(perms.canManageHotel ? hotelNavItems : []), ...filteredBaseItems.slice(1)] : filteredBaseItems;
   const [reportsOpen, setReportsOpen] = useState(activeTab.startsWith("reports"));
   const [hotelOpen, setHotelOpen] = useState(activeTab.startsWith("hotel-") && !activeTab.startsWith("hotel-report"));
@@ -105,7 +106,7 @@ const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollaps
         {!collapsed && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-w-0">
             <p className="font-display font-bold text-sm text-foreground truncate">{business.name}</p>
-            <p className="text-[10px] text-muted-foreground capitalize">Business Admin</p>
+            <p className="text-[10px] text-muted-foreground capitalize">{t.adBusinessAdmin}</p>
           </motion.div>
         )}
       </div>
@@ -144,7 +145,6 @@ const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollaps
                 {hasChildren && (
                   <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`} />
                 )}
-                {/* Hover tooltip when collapsed */}
                 {collapsed && (
                   <span className="absolute left-full ml-2 px-2 py-1 rounded-md bg-foreground text-background text-xs font-medium opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50">
                     {item.label}
@@ -152,7 +152,6 @@ const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollaps
                 )}
               </button>
 
-              {/* Report sub-items */}
               {hasChildren && isOpen && (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
                   className="ml-5 mt-0.5 space-y-0.5 border-l-2 border-border pl-3">
@@ -187,10 +186,10 @@ const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollaps
             }`}
           >
             <Receipt className={`w-5 h-5 shrink-0 transition-transform duration-200 group-hover:scale-110 ${activeTab === "receipt-settings" ? "text-accent" : ""}`} />
-            {!collapsed && <span>Receipt Settings</span>}
+            {!collapsed && <span>{t.adReceiptSettings}</span>}
             {collapsed && (
               <span className="absolute left-full ml-2 px-2 py-1 rounded-md bg-foreground text-background text-xs font-medium opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50">
-                Receipt Settings
+                {t.adReceiptSettings}
               </span>
             )}
           </button>
@@ -204,10 +203,10 @@ const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollaps
           }`}
         >
           <Settings className={`w-5 h-5 shrink-0 transition-transform duration-200 group-hover:rotate-90 ${activeTab === "settings" ? "text-accent" : ""}`} />
-          {!collapsed && <span>Settings</span>}
+          {!collapsed && <span>{t.adSettings}</span>}
           {collapsed && (
             <span className="absolute left-full ml-2 px-2 py-1 rounded-md bg-foreground text-background text-xs font-medium opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50">
-              Settings
+              {t.adSettings}
             </span>
           )}
         </button>
@@ -221,18 +220,30 @@ const AdminSidebar = ({ business, activeTab, setActiveTab, collapsed, setCollaps
         {collapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
       </button>
 
-      {/* Log Out */}
-      <div className="p-3 border-t border-border">
+      {/* Language + Log Out */}
+      <div className="p-3 border-t border-border space-y-1">
+        <button
+          onClick={() => setLang(lang === "en" ? "so" : "en")}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors group relative"
+        >
+          <Globe className="w-5 h-5 shrink-0" />
+          {!collapsed && <span>{lang === "en" ? "Somali" : "English"}</span>}
+          {collapsed && (
+            <span className="absolute left-full ml-2 px-2 py-1 rounded-md bg-foreground text-background text-xs font-medium opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50">
+              {lang === "en" ? "Somali" : "English"}
+            </span>
+          )}
+        </button>
         <Link
           to="/login"
           onClick={() => localStorage.removeItem("dp_active_business")}
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200 group relative"
         >
           <LogOut className="w-5 h-5 shrink-0 transition-transform duration-200 group-hover:scale-110" />
-          {!collapsed && <span>Log Out</span>}
+          {!collapsed && <span>{t.adLogOut}</span>}
           {collapsed && (
             <span className="absolute left-full ml-2 px-2 py-1 rounded-md bg-foreground text-background text-xs font-medium opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50">
-              Log Out
+              {t.adLogOut}
             </span>
           )}
         </Link>
