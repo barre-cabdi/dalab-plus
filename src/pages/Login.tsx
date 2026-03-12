@@ -129,9 +129,7 @@ const Login = () => {
 
         <div className="glass rounded-2xl p-8">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-lg bg-gold-gradient flex items-center justify-center">
-              <span className="font-display font-bold text-accent-foreground text-lg">D+</span>
-            </div>
+            <img src={dalabLogo} alt="DALABplus+" className="w-10 h-10 rounded-lg" />
             <div>
               <h1 className="font-display font-bold text-xl text-primary-foreground">DALABplus+</h1>
               <p className="text-xs text-primary-foreground/50">{t.signIn}</p>
