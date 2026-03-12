@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { getBusinessByAdmin, getStaffByUsername, getBusinesses } from "@/lib/store";
 import { useI18n } from "@/lib/i18n";
+import dalabLogo from "@/assets/dalabplus-logo.png";
 
 const Login = () => {
   const navigate = useNavigate();
