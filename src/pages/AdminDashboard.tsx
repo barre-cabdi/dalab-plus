@@ -1175,12 +1175,12 @@ const AdminDashboard = () => {
               {showNotifications && (
                 <div className="absolute right-0 top-11 w-72 bg-card border border-border rounded-xl shadow-lg z-50 overflow-hidden">
                   <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-                    <p className="font-semibold text-sm">Notifications</p>
+                    <p className="font-semibold text-sm">{t.adNotifications}</p>
                     <button onClick={() => setShowNotifications(false)}><X className="w-4 h-4 text-muted-foreground" /></button>
                   </div>
                   <div className="max-h-64 overflow-y-auto">
                     {notifications.length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-6">No notifications</p>
+                      <p className="text-sm text-muted-foreground text-center py-6">{t.adNoNotifications}</p>
                     ) : notifications.map(n => (
                       <div key={n.id} className="px-4 py-3 border-b border-border/50 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => { setActiveTab("orders"); setShowNotifications(false); }}>
                         <p className="text-xs text-foreground">{n.text}</p>
