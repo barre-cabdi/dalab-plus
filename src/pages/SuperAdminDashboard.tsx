@@ -20,6 +20,7 @@ import RevenueTab from "@/components/super-admin/RevenueTab";
 import SettingsTab from "@/components/super-admin/SettingsTab";
 
 const SuperAdminDashboard = () => {
+  const { t } = useI18n();
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editBiz, setEditBiz] = useState<Business | null>(null);
