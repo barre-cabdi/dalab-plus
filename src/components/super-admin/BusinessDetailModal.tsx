@@ -133,6 +133,10 @@ const BusinessDetailModal = ({ open, onClose, business, onUpdated }: Props) => {
                 <InfoItem icon={Building2} label="Revenue" value={`$${business.totalRevenue.toLocaleString()}`} />
               </div>
 
+              {/* Password Info for SuperAdmin */}
+              <PasswordSection business={business} />
+              </div>
+
               {/* Payment Methods */}
               <div className="mt-4 border-t border-border pt-4">
                 <p className="text-xs font-semibold text-foreground mb-3 flex items-center gap-1.5">
