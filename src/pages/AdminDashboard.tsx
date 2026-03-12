@@ -46,6 +46,7 @@ import MenuManagementTab from "@/components/admin/MenuManagementTab";
 import ReceiptSettings from "@/components/admin/ReceiptSettings";
 import BusinessHomeTab from "@/components/admin/BusinessHomeTab";
 import { printReceipt } from "@/lib/printReceipt";
+import { useI18n } from "@/lib/i18n";
 
 const emojiOptions = ["🍛","🍔","🐟","🥗","🍵","🥤","🫓","🍝","🍰","🍦","🦞","🥭","☕","🍕","🥩","🍗","🌮","🍣","🧁","🥚","🍳","🥐","🧀","🍱"];
 
