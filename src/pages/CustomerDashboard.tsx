@@ -29,9 +29,8 @@ const CustomerDashboard = () => {
   const lastOrder = orders[orders.length - 1];
   const businessId = urlBusinessId || customer.businessId || lastOrder?.businessId || "1001";
   const [businessData, setBusinessData] = useState<any>(null);
-  useEffect(() => {
-    getBusinessById(businessId).then(b => setBusinessData(b || null));
-  }, [businessId]);
+  useEffect(() => { getBusinessById(businessId).then(b => setBusinessData(b || null)); }, [businessId]);
+  const branding = (() => { try { return JSON.parse(localStorage.getItem("dp_customer_branding") || "{}"); } catch { return {}; } })();
   const businessName = businessData?.name || branding.businessName || customer?.businessName || "DALABplus+";
   const businessLogo = businessData?.logo || branding.businessLogo || customer?.businessLogo || "";
   const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");

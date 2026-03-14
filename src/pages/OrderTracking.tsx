@@ -75,6 +75,7 @@ const OrderTracking = () => {
 
   const [businessData, setBusinessData] = useState<any>(null);
   useEffect(() => { if (order) getBusinessById(order.businessId).then(b => setBusinessData(b || null)); }, [order?.businessId]);
+  const branding = (() => { try { return JSON.parse(localStorage.getItem("dp_customer_branding") || "{}"); } catch { return {}; } })();
   const businessName = businessData?.name || branding.businessName || customer?.businessName || "DALABplus+";
   const businessLogo = businessData?.logo || branding.businessLogo || customer?.businessLogo || "";
   const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");
