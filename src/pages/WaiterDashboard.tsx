@@ -80,8 +80,8 @@ const WaiterDashboard = () => {
 
   useEffect(() => {
     if (!business || !waiter) return;
-    const interval = setInterval(() => {
-      const currentOrders = getOrders(business.id);
+    const interval = setInterval(async () => {
+      const currentOrders = await getOrders(business.id);
       const waiterCurrentOrders = currentOrders.filter(o => o.customerId === waiter.id || (o as any).waiterId === waiter.id);
       
       waiterCurrentOrders.forEach(o => {
@@ -111,8 +111,8 @@ const WaiterDashboard = () => {
       prevOrderStatesRef.current = stateMap;
 
       setOrders(currentOrders);
-      setMenuItems(getMenuItems(business.id));
-      setTables(getTables(business.id));
+      setMenuItems(await getMenuItems(business.id));
+      setTables(await getTables(business.id));
     }, 4000);
     return () => clearInterval(interval);
   }, [business?.id, waiter?.id]);
