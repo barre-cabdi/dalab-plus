@@ -153,11 +153,14 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
     }));
   };
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editBusiness && getBusinesses().some(b => b.adminUsername === form.adminUsername)) {
-      toast.error("Username already taken!");
-      return;
+    if (!editBusiness) {
+      const allBiz = await getBusinesses();
+      if (allBiz.some(b => b.adminUsername === form.adminUsername)) {
+        toast.error("Username already taken!");
+        return;
+      }
     }
     const validServices = services.filter(s => s.title.trim());
     const newBiz: Business = {
