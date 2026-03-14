@@ -84,7 +84,7 @@ const AdminOrderTab = ({ business, categories, menuItems, tables, onOrderPlaced 
       orderedBy: "admin",
     } as any;
     (order as any).customerName = "Admin Order";
-    saveOrder(order);
+    await saveOrder(order);
     toast.success("Admin order placed ✓");
     setCart([]); setSelectedTable("");
     onOrderPlaced();
