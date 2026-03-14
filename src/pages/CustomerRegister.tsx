@@ -30,8 +30,11 @@ const CustomerRegister = () => {
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   useEffect(() => {
-    const b = getBusinessById(businessId);
-    if (b) setBusiness(b);
+    const load = async () => {
+      const b = await getBusinessById(businessId);
+      if (b) setBusiness(b);
+    };
+    load();
   }, [businessId]);
 
   useEffect(() => {
