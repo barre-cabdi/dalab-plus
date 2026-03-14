@@ -22,7 +22,7 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
 
-    setTimeout(() => {
+    try {
       if (username === "superadmin" && password === "super123") {
         toast.success(`${t.welcome}, Super Admin!`);
         navigate("/super-admin");
@@ -30,7 +30,7 @@ const Login = () => {
         return;
       }
 
-      const biz = getBusinessByAdmin(username);
+      const biz = await getBusinessByAdmin(username);
       if (biz) {
         if (biz.adminPassword !== password) {
           toast.error(t.wrongPassword);
@@ -50,17 +50,16 @@ const Login = () => {
       }
 
       // Check waiter / hotel manager login
-      const waiter = getStaffByUsername(username);
+      const waiter = await getStaffByUsername(username);
       if (waiter) {
         if (waiter.password !== password) {
           toast.error(t.wrongPassword);
           setLoading(false);
           return;
         }
-        const businesses = getBusinesses();
+        const businesses = await getBusinesses();
         const waiterBiz = businesses.find(b => b.id === waiter.businessId);
         if (waiterBiz) {
-          // Hotel Manager → hotel manager dashboard
           if (waiter.jobTitle.toLowerCase() === "hotel manager") {
             localStorage.setItem("dp_active_hotel_manager", JSON.stringify(waiter));
             localStorage.setItem("dp_active_business", JSON.stringify(waiterBiz));
@@ -69,7 +68,6 @@ const Login = () => {
             setLoading(false);
             return;
           }
-          // Cashier → cashier dashboard
           if (waiter.jobTitle.toLowerCase() === "cashier") {
             localStorage.setItem("dp_active_cashier", JSON.stringify(waiter));
             localStorage.setItem("dp_active_business", JSON.stringify(waiterBiz));
@@ -78,7 +76,6 @@ const Login = () => {
             setLoading(false);
             return;
           }
-          // Regular waiter
           localStorage.setItem("dp_active_waiter", JSON.stringify(waiter));
           localStorage.setItem("dp_active_business", JSON.stringify(waiterBiz));
           toast.success(`${t.welcome}, ${waiter.name}!`);
@@ -91,7 +88,11 @@ const Login = () => {
       toast.success(`${t.welcome}!`);
       navigate("/customer");
       setLoading(false);
-    }, 600);
+    } catch (err) {
+      console.error("Login error:", err);
+      toast.error("Login failed");
+      setLoading(false);
+    }
   };
 
   return (
