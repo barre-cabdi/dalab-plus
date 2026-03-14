@@ -411,9 +411,9 @@ export const getTables = async (businessId: string): Promise<TableItem[]> => {
 };
 
 export const saveTable = async (table: TableItem): Promise<void> => {
-  const { error } = await supabase.from("restaurant_tables").insert({
-    id: table.id, business_id: table.businessId, table_number: table.number, seats: table.seats, status: table.status,
-  });
+  const row: any = { business_id: table.businessId, table_number: table.number, seats: table.seats, status: table.status };
+  if (table.id && /^[0-9a-f]{8}-/i.test(table.id)) row.id = table.id;
+  const { error } = await supabase.from("restaurant_tables").insert(row);
   if (error) console.error("saveTable error:", error);
 };
 
