@@ -455,13 +455,14 @@ export const getOrders = async (businessId: string): Promise<Order[]> => {
 };
 
 export const saveOrder = async (order: Order): Promise<void> => {
-  const { error } = await supabase.from("orders").insert({
-    id: order.id, business_id: order.businessId, table_id: order.tableId,
+  const row: any = {
+    business_id: order.businessId, table_id: order.tableId,
     customer_id: order.customerId || null, items: order.items as any, total: order.total,
     status: order.status, ordered_by: order.orderedBy || "", payment_method: order.paymentMethod || null,
     paid_at: order.paidAt || null, cashier_id: order.cashierId || "",
-    created_at: order.createdAt,
-  });
+  };
+  if (order.id && /^[0-9a-f]{8}-/i.test(order.id)) row.id = order.id;
+  const { error } = await supabase.from("orders").insert(row);
   if (error) console.error("saveOrder error:", error);
 };
 
