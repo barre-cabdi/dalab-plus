@@ -90,13 +90,13 @@ const CashierDashboard = () => {
     }
   }, [business?.id]);
 
-  const refresh = () => {
+  const refresh = async () => {
     if (!business) return;
-    setCategories(getCategories(business.id));
-    setMenuItems(getMenuItems(business.id));
-    setTables(getTables(business.id));
-    setCustomers(getCustomers(business.id));
-    const currentOrders = getOrders(business.id);
+    setCategories(await getCategories(business.id));
+    setMenuItems(await getMenuItems(business.id));
+    setTables(await getTables(business.id));
+    setCustomers(await getCustomers(business.id));
+    const currentOrders = await getOrders(business.id);
 
     const currentIds = new Set(currentOrders.map(o => o.id));
     const newOrders = currentOrders.filter(o => !prevOrderIdsRef.current.has(o.id));

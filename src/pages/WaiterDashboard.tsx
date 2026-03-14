@@ -62,14 +62,17 @@ const WaiterDashboard = () => {
       const bizData = JSON.parse(b);
       setWaiter(waiterData);
       setBusiness(bizData);
-      setCategories(getCategories(bizData.id));
-      setMenuItems(getMenuItems(bizData.id));
-      setTables(getTables(bizData.id));
-      const initialOrders = getOrders(bizData.id);
-      setOrders(initialOrders);
-      const stateMap: Record<string, string> = {};
-      initialOrders.forEach(o => { stateMap[o.id] = o.status; });
-      prevOrderStatesRef.current = stateMap;
+      const load = async () => {
+        setCategories(await getCategories(bizData.id));
+        setMenuItems(await getMenuItems(bizData.id));
+        setTables(await getTables(bizData.id));
+        const initialOrders = await getOrders(bizData.id);
+        setOrders(initialOrders);
+        const stateMap: Record<string, string> = {};
+        initialOrders.forEach(o => { stateMap[o.id] = o.status; });
+        prevOrderStatesRef.current = stateMap;
+      };
+      load();
     } else {
       navigate("/login");
     }
