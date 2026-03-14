@@ -274,12 +274,15 @@ export const getBusinesses = async (): Promise<Business[]> => {
   return (data || []).map(mapBusinessFromDb);
 };
 
-export const saveBusiness = async (business: Business): Promise<void> => {
+export const saveBusiness = async (business: Business): Promise<Business | null> => {
   const dbRow = mapBusinessToDb(business);
-  dbRow.id = business.id;
-  dbRow.created_at = business.createdAt;
-  const { error } = await supabase.from("businesses").insert(dbRow);
-  if (error) console.error("saveBusiness error:", error);
+  // Let DB auto-generate id if not a valid UUID
+  if (business.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(business.id)) {
+    dbRow.id = business.id;
+  }
+  const { data, error } = await supabase.from("businesses").insert(dbRow).select().single();
+  if (error) { console.error("saveBusiness error:", error); return null; }
+  return data ? mapBusinessFromDb(data) : null;
 };
 
 export const updateBusiness = async (id: string, updates: Partial<Business>): Promise<void> => {

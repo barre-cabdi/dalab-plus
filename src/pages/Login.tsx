@@ -85,8 +85,7 @@ const Login = () => {
         }
       }
 
-      toast.success(`${t.welcome}!`);
-      navigate("/customer");
+      toast.error(t.wrongPassword || "Invalid username or password");
       setLoading(false);
     } catch (err) {
       console.error("Login error:", err);
