@@ -170,8 +170,16 @@ const AdminOrderTab = ({ business, categories, menuItems, tables, onOrderPlaced 
 
 // Cashier Report component
 const CashierReportTab = ({ businessId }: { businessId: string }) => {
-  const staff = getStaff(businessId).filter(s => s.jobTitle.toLowerCase() === "cashier");
-  const allOrders = getOrders(businessId);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
+  const [allOrders, setAllOrders] = useState<Order[]>([]);
+  useEffect(() => {
+    const load = async () => {
+      const s = await getStaff(businessId);
+      setStaff(s.filter(s => s.jobTitle.toLowerCase() === "cashier"));
+      setAllOrders(await getOrders(businessId));
+    };
+    load();
+  }, [businessId]);
   const todayOrders = allOrders.filter(o => new Date(o.createdAt).toDateString() === new Date().toDateString());
 
   return (
