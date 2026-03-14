@@ -366,11 +366,13 @@ export const getMenuItems = async (businessId: string): Promise<MenuItem[]> => {
 };
 
 export const saveMenuItem = async (item: MenuItem): Promise<void> => {
-  const { error } = await supabase.from("menu_items").insert({
-    id: item.id, business_id: item.businessId, category_id: item.categoryId,
+  const row: any = {
+    business_id: item.businessId, category_id: item.categoryId,
     name: item.name, description: item.description, price: item.price,
     image: item.image, rating: item.rating, available: item.available,
-  });
+  };
+  if (item.id && /^[0-9a-f]{8}-/i.test(item.id)) row.id = item.id;
+  const { error } = await supabase.from("menu_items").insert(row);
   if (error) console.error("saveMenuItem error:", error);
 };
 
