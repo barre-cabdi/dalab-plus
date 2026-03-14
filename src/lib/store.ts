@@ -1,10 +1,11 @@
-// Centralized localStorage-based store for DALABplus+
+// Centralized Supabase-based store for DALABplus+
+import { supabase } from "@/integrations/supabase/client";
 
 export interface BusinessService {
   id: string;
   title: string;
   description: string;
-  icon: string; // emoji
+  icon: string;
 }
 
 export interface Business {
@@ -34,7 +35,7 @@ export interface Business {
 
 export interface MobilePaymentProvider {
   id: string;
-  name: string; // e.g. Sahal, Zaad, EVC, T-plus, MyCash
+  name: string;
   accountNumber: string;
 }
 
@@ -101,6 +102,58 @@ export const getDefaultServices = (type: string): BusinessService[] => {
   ];
 };
 
+// ============= MAPPERS: DB row <-> Interface =============
+
+const mapBusinessFromDb = (row: any): Business => ({
+  id: row.id,
+  name: row.name,
+  type: row.type,
+  address: row.address || "",
+  city: row.city || "",
+  country: row.country || "",
+  countryCode: row.country_code || "",
+  phonePrefix: row.phone_prefix || "",
+  phone: row.phone || "",
+  email: row.email || "",
+  logo: row.logo || "",
+  description: row.description || "",
+  adminUsername: row.admin_username,
+  adminPassword: row.admin_password,
+  status: row.status as "active" | "inactive",
+  createdAt: row.created_at,
+  totalOrders: row.total_orders || 0,
+  totalRevenue: Number(row.total_revenue) || 0,
+  subscription: row.subscription || "free",
+  services: row.services as BusinessService[] || [],
+  paymentMethods: row.payment_methods as any || getDefaultPaymentMethods(),
+  permissions: row.permissions as any || getDefaultPermissions(),
+});
+
+const mapBusinessToDb = (biz: Partial<Business>): any => {
+  const m: any = {};
+  if (biz.name !== undefined) m.name = biz.name;
+  if (biz.type !== undefined) m.type = biz.type;
+  if (biz.address !== undefined) m.address = biz.address;
+  if (biz.city !== undefined) m.city = biz.city;
+  if (biz.country !== undefined) m.country = biz.country;
+  if (biz.countryCode !== undefined) m.country_code = biz.countryCode;
+  if (biz.phonePrefix !== undefined) m.phone_prefix = biz.phonePrefix;
+  if (biz.phone !== undefined) m.phone = biz.phone;
+  if (biz.email !== undefined) m.email = biz.email;
+  if (biz.logo !== undefined) m.logo = biz.logo;
+  if (biz.description !== undefined) m.description = biz.description;
+  if (biz.adminUsername !== undefined) m.admin_username = biz.adminUsername;
+  if (biz.adminPassword !== undefined) m.admin_password = biz.adminPassword;
+  if (biz.status !== undefined) m.status = biz.status;
+  if (biz.totalOrders !== undefined) m.total_orders = biz.totalOrders;
+  if (biz.totalRevenue !== undefined) m.total_revenue = biz.totalRevenue;
+  if (biz.subscription !== undefined) m.subscription = biz.subscription;
+  if (biz.services !== undefined) m.services = biz.services;
+  if (biz.paymentMethods !== undefined) m.payment_methods = biz.paymentMethods;
+  if (biz.permissions !== undefined) m.permissions = biz.permissions;
+  return m;
+};
+
 export interface Category {
   id: string;
   businessId: string;
@@ -138,7 +191,7 @@ export interface Order {
   total: number;
   status: "pending" | "preparing" | "ready" | "delivered" | "cancelled" | "paid";
   createdAt: string;
-  orderedBy?: string; // "admin", "cashier:name", "waiter:name", "customer"
+  orderedBy?: string;
   paymentMethod?: "cash" | "card" | "mobile";
   paidAt?: string;
   cashierId?: string;
@@ -152,94 +205,6 @@ export interface LoyaltyLevelConfig {
   reward: string;
   color: string;
 }
-
-const LOYALTY_LEVELS_CONFIG_KEY = "dp_loyalty_levels_config";
-
-export const getLoyaltyLevels = (businessId: string): LoyaltyLevelConfig[] => {
-  try {
-    const stored = localStorage.getItem(`${LOYALTY_LEVELS_CONFIG_KEY}_${businessId}`);
-    if (stored) return JSON.parse(stored);
-  } catch {}
-  return [
-    { name: "Bronze", min: 0, max: 99, icon: "🥉", reward: "5% discount on next order", color: "bg-amber-700/15 text-amber-700 border-amber-700/30" },
-    { name: "Silver", min: 100, max: 299, icon: "🥈", reward: "10% discount + free drink", color: "bg-slate-400/15 text-slate-500 border-slate-400/30" },
-    { name: "Gold", min: 300, max: 599, icon: "🥇", reward: "15% discount + free dessert", color: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30" },
-    { name: "Platinum", min: 600, max: 99999, icon: "💎", reward: "20% discount + free meal", color: "bg-purple-500/15 text-purple-600 border-purple-500/30" },
-  ];
-};
-
-export const saveLoyaltyLevels = (businessId: string, levels: LoyaltyLevelConfig[]) => {
-  localStorage.setItem(`${LOYALTY_LEVELS_CONFIG_KEY}_${businessId}`, JSON.stringify(levels));
-};
-
-const BUSINESSES_KEY = "dp_businesses";
-const CATEGORIES_KEY = "dp_categories";
-const MENU_ITEMS_KEY = "dp_menu_items";
-const TABLES_KEY = "dp_tables";
-const ORDERS_KEY = "dp_orders";
-
-export const getBusinesses = (): Business[] => JSON.parse(localStorage.getItem(BUSINESSES_KEY) || "[]");
-export const saveBusiness = (business: Business) => { const b = getBusinesses(); b.push(business); localStorage.setItem(BUSINESSES_KEY, JSON.stringify(b)); };
-export const updateBusiness = (id: string, updates: Partial<Business>) => { localStorage.setItem(BUSINESSES_KEY, JSON.stringify(getBusinesses().map(b => b.id === id ? { ...b, ...updates } : b))); };
-export const deleteBusiness = (id: string) => { localStorage.setItem(BUSINESSES_KEY, JSON.stringify(getBusinesses().filter(b => b.id !== id))); };
-export const getBusinessByAdmin = (username: string): Business | undefined => getBusinesses().find(b => b.adminUsername === username);
-
-// Robust business lookup: checks dp_businesses first, then falls back to dp_active_business
-export const getBusinessById = (id: string): Business | undefined => {
-  const fromList = getBusinesses().find(b => b.id === id);
-  if (fromList) return fromList;
-  // Fallback: check active business (same browser session as admin)
-  try {
-    const active = localStorage.getItem("dp_active_business");
-    if (active) {
-      const biz = JSON.parse(active) as Business;
-      if (biz.id === id) return biz;
-    }
-  } catch {}
-  return undefined;
-};
-
-export const getCategories = (businessId: string): Category[] => {
-  const all: Category[] = JSON.parse(localStorage.getItem(CATEGORIES_KEY) || "[]");
-  return all.filter(c => c.businessId === businessId).sort((a, b) => a.order - b.order);
-};
-export const saveCategory = (cat: Category) => { const all: Category[] = JSON.parse(localStorage.getItem(CATEGORIES_KEY) || "[]"); all.push(cat); localStorage.setItem(CATEGORIES_KEY, JSON.stringify(all)); };
-export const updateCategory = (id: string, updates: Partial<Category>) => { const all: Category[] = JSON.parse(localStorage.getItem(CATEGORIES_KEY) || "[]"); localStorage.setItem(CATEGORIES_KEY, JSON.stringify(all.map(c => c.id === id ? { ...c, ...updates } : c))); };
-export const deleteCategory = (id: string) => { const all: Category[] = JSON.parse(localStorage.getItem(CATEGORIES_KEY) || "[]"); localStorage.setItem(CATEGORIES_KEY, JSON.stringify(all.filter(c => c.id !== id))); };
-
-export const getMenuItems = (businessId: string): MenuItem[] => {
-  const all: MenuItem[] = JSON.parse(localStorage.getItem(MENU_ITEMS_KEY) || "[]");
-  return all.filter(m => m.businessId === businessId);
-};
-export const saveMenuItem = (item: MenuItem) => { const all: MenuItem[] = JSON.parse(localStorage.getItem(MENU_ITEMS_KEY) || "[]"); all.push(item); localStorage.setItem(MENU_ITEMS_KEY, JSON.stringify(all)); };
-export const updateMenuItem = (id: string, updates: Partial<MenuItem>) => { const all: MenuItem[] = JSON.parse(localStorage.getItem(MENU_ITEMS_KEY) || "[]"); localStorage.setItem(MENU_ITEMS_KEY, JSON.stringify(all.map(m => m.id === id ? { ...m, ...updates } : m))); };
-export const deleteMenuItem = (id: string) => { const all: MenuItem[] = JSON.parse(localStorage.getItem(MENU_ITEMS_KEY) || "[]"); localStorage.setItem(MENU_ITEMS_KEY, JSON.stringify(all.filter(m => m.id !== id))); };
-
-export const getTables = (businessId: string): TableItem[] => {
-  const all: TableItem[] = JSON.parse(localStorage.getItem(TABLES_KEY) || "[]");
-  return all.filter(t => t.businessId === businessId);
-};
-export const saveTable = (table: TableItem) => { const all: TableItem[] = JSON.parse(localStorage.getItem(TABLES_KEY) || "[]"); all.push(table); localStorage.setItem(TABLES_KEY, JSON.stringify(all)); };
-export const updateTable = (id: string, updates: Partial<TableItem>) => { const all: TableItem[] = JSON.parse(localStorage.getItem(TABLES_KEY) || "[]"); localStorage.setItem(TABLES_KEY, JSON.stringify(all.map(t => t.id === id ? { ...t, ...updates } : t))); };
-export const deleteTable = (id: string) => { const all: TableItem[] = JSON.parse(localStorage.getItem(TABLES_KEY) || "[]"); localStorage.setItem(TABLES_KEY, JSON.stringify(all.filter(t => t.id !== id))); };
-
-export const getOrders = (businessId: string): Order[] => {
-  const all: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]");
-  return all.filter(o => o.businessId === businessId);
-};
-export const updateOrder = (id: string, updates: Partial<Order>) => {
-  const all: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]");
-  localStorage.setItem(ORDERS_KEY, JSON.stringify(all.map(o => o.id === id ? { ...o, ...updates } : o)));
-};
-export const saveOrder = (order: Order) => {
-  const all: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]");
-  all.push(order);
-  localStorage.setItem(ORDERS_KEY, JSON.stringify(all));
-};
-export const deleteOrder = (id: string) => {
-  const all: Order[] = JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]");
-  localStorage.setItem(ORDERS_KEY, JSON.stringify(all.filter(o => o.id !== id)));
-};
 
 export interface StaffMember {
   id: string;
@@ -268,28 +233,6 @@ export interface Customer {
   loyaltyPoints: number;
   registeredAt: string;
 }
-
-const STAFF_KEY = "dp_staff";
-const CUSTOMERS_KEY = "dp_customers";
-
-export const getStaff = (businessId: string): StaffMember[] => {
-  const all: StaffMember[] = JSON.parse(localStorage.getItem(STAFF_KEY) || "[]");
-  return all.filter(s => s.businessId === businessId);
-};
-export const saveStaff = (staff: StaffMember) => { const all: StaffMember[] = JSON.parse(localStorage.getItem(STAFF_KEY) || "[]"); all.push(staff); localStorage.setItem(STAFF_KEY, JSON.stringify(all)); };
-export const updateStaff = (id: string, updates: Partial<StaffMember>) => { const all: StaffMember[] = JSON.parse(localStorage.getItem(STAFF_KEY) || "[]"); localStorage.setItem(STAFF_KEY, JSON.stringify(all.map(s => s.id === id ? { ...s, ...updates } : s))); };
-export const deleteStaff = (id: string) => { const all: StaffMember[] = JSON.parse(localStorage.getItem(STAFF_KEY) || "[]"); localStorage.setItem(STAFF_KEY, JSON.stringify(all.filter(s => s.id !== id))); };
-export const getStaffByUsername = (username: string): StaffMember | undefined => {
-  const all: StaffMember[] = JSON.parse(localStorage.getItem(STAFF_KEY) || "[]");
-  return all.find(s => s.username === username);
-};
-
-export const getCustomers = (businessId: string): Customer[] => {
-  const all: Customer[] = JSON.parse(localStorage.getItem(CUSTOMERS_KEY) || "[]");
-  return all.filter(c => c.businessId === businessId);
-};
-export const saveCustomer = (customer: Customer) => { const all: Customer[] = JSON.parse(localStorage.getItem(CUSTOMERS_KEY) || "[]"); all.push(customer); localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(all)); };
-export const updateCustomer = (id: string, updates: Partial<Customer>) => { const all: Customer[] = JSON.parse(localStorage.getItem(CUSTOMERS_KEY) || "[]"); localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(all.map(c => c.id === id ? { ...c, ...updates } : c))); };
 
 export interface HotelRoom {
   id: string;
@@ -320,10 +263,474 @@ export interface HotelBooking {
   status: "confirmed" | "checked-in" | "checked-out" | "cancelled";
   specialRequests: string;
   createdAt: string;
-  checkedInAt?: string; // actual check-in timestamp for auto-charge calculation
+  checkedInAt?: string;
 }
 
-// Calculate running total for a checked-in guest based on elapsed nights
+// ============= BUSINESSES =============
+
+export const getBusinesses = async (): Promise<Business[]> => {
+  const { data, error } = await supabase.from("businesses").select("*").order("created_at", { ascending: false });
+  if (error) { console.error("getBusinesses error:", error); return []; }
+  return (data || []).map(mapBusinessFromDb);
+};
+
+export const saveBusiness = async (business: Business): Promise<void> => {
+  const dbRow = mapBusinessToDb(business);
+  dbRow.id = business.id;
+  dbRow.created_at = business.createdAt;
+  const { error } = await supabase.from("businesses").insert(dbRow);
+  if (error) console.error("saveBusiness error:", error);
+};
+
+export const updateBusiness = async (id: string, updates: Partial<Business>): Promise<void> => {
+  const dbUpdates = mapBusinessToDb(updates);
+  const { error } = await supabase.from("businesses").update(dbUpdates).eq("id", id);
+  if (error) console.error("updateBusiness error:", error);
+};
+
+export const deleteBusiness = async (id: string): Promise<void> => {
+  const { error } = await supabase.from("businesses").delete().eq("id", id);
+  if (error) console.error("deleteBusiness error:", error);
+};
+
+export const getBusinessByAdmin = async (username: string): Promise<Business | undefined> => {
+  const { data, error } = await supabase.from("businesses").select("*").eq("admin_username", username).maybeSingle();
+  if (error || !data) return undefined;
+  return mapBusinessFromDb(data);
+};
+
+export const getBusinessById = async (id: string): Promise<Business | undefined> => {
+  const { data, error } = await supabase.from("businesses").select("*").eq("id", id).maybeSingle();
+  if (error || !data) return undefined;
+  return mapBusinessFromDb(data);
+};
+
+// ============= CATEGORIES =============
+
+const mapCategoryFromDb = (row: any): Category => ({
+  id: row.id,
+  businessId: row.business_id,
+  name: row.name,
+  icon: row.icon || "📁",
+  order: row.sort_order || 0,
+});
+
+export const getCategories = async (businessId: string): Promise<Category[]> => {
+  const { data, error } = await supabase.from("categories").select("*").eq("business_id", businessId).order("sort_order");
+  if (error) { console.error("getCategories error:", error); return []; }
+  return (data || []).map(mapCategoryFromDb);
+};
+
+export const saveCategory = async (cat: Category): Promise<void> => {
+  const { error } = await supabase.from("categories").insert({
+    id: cat.id, business_id: cat.businessId, name: cat.name, icon: cat.icon, sort_order: cat.order,
+  });
+  if (error) console.error("saveCategory error:", error);
+};
+
+export const updateCategory = async (id: string, updates: Partial<Category>): Promise<void> => {
+  const m: any = {};
+  if (updates.name !== undefined) m.name = updates.name;
+  if (updates.icon !== undefined) m.icon = updates.icon;
+  if (updates.order !== undefined) m.sort_order = updates.order;
+  const { error } = await supabase.from("categories").update(m).eq("id", id);
+  if (error) console.error("updateCategory error:", error);
+};
+
+export const deleteCategory = async (id: string): Promise<void> => {
+  const { error } = await supabase.from("categories").delete().eq("id", id);
+  if (error) console.error("deleteCategory error:", error);
+};
+
+// ============= MENU ITEMS =============
+
+const mapMenuItemFromDb = (row: any): MenuItem => ({
+  id: row.id,
+  businessId: row.business_id,
+  categoryId: row.category_id,
+  name: row.name,
+  description: row.description || "",
+  price: Number(row.price) || 0,
+  image: row.image || "",
+  rating: Number(row.rating) || 0,
+  available: row.available ?? true,
+});
+
+export const getMenuItems = async (businessId: string): Promise<MenuItem[]> => {
+  const { data, error } = await supabase.from("menu_items").select("*").eq("business_id", businessId);
+  if (error) { console.error("getMenuItems error:", error); return []; }
+  return (data || []).map(mapMenuItemFromDb);
+};
+
+export const saveMenuItem = async (item: MenuItem): Promise<void> => {
+  const { error } = await supabase.from("menu_items").insert({
+    id: item.id, business_id: item.businessId, category_id: item.categoryId,
+    name: item.name, description: item.description, price: item.price,
+    image: item.image, rating: item.rating, available: item.available,
+  });
+  if (error) console.error("saveMenuItem error:", error);
+};
+
+export const updateMenuItem = async (id: string, updates: Partial<MenuItem>): Promise<void> => {
+  const m: any = {};
+  if (updates.name !== undefined) m.name = updates.name;
+  if (updates.description !== undefined) m.description = updates.description;
+  if (updates.price !== undefined) m.price = updates.price;
+  if (updates.image !== undefined) m.image = updates.image;
+  if (updates.rating !== undefined) m.rating = updates.rating;
+  if (updates.available !== undefined) m.available = updates.available;
+  if (updates.categoryId !== undefined) m.category_id = updates.categoryId;
+  const { error } = await supabase.from("menu_items").update(m).eq("id", id);
+  if (error) console.error("updateMenuItem error:", error);
+};
+
+export const deleteMenuItem = async (id: string): Promise<void> => {
+  const { error } = await supabase.from("menu_items").delete().eq("id", id);
+  if (error) console.error("deleteMenuItem error:", error);
+};
+
+// ============= TABLES =============
+
+const mapTableFromDb = (row: any): TableItem => ({
+  id: row.id,
+  businessId: row.business_id,
+  number: row.table_number,
+  seats: row.seats || 4,
+  status: row.status as TableItem["status"],
+});
+
+export const getTables = async (businessId: string): Promise<TableItem[]> => {
+  const { data, error } = await supabase.from("restaurant_tables").select("*").eq("business_id", businessId).order("table_number");
+  if (error) { console.error("getTables error:", error); return []; }
+  return (data || []).map(mapTableFromDb);
+};
+
+export const saveTable = async (table: TableItem): Promise<void> => {
+  const { error } = await supabase.from("restaurant_tables").insert({
+    id: table.id, business_id: table.businessId, table_number: table.number, seats: table.seats, status: table.status,
+  });
+  if (error) console.error("saveTable error:", error);
+};
+
+export const updateTable = async (id: string, updates: Partial<TableItem>): Promise<void> => {
+  const m: any = {};
+  if (updates.number !== undefined) m.table_number = updates.number;
+  if (updates.seats !== undefined) m.seats = updates.seats;
+  if (updates.status !== undefined) m.status = updates.status;
+  const { error } = await supabase.from("restaurant_tables").update(m).eq("id", id);
+  if (error) console.error("updateTable error:", error);
+};
+
+export const deleteTable = async (id: string): Promise<void> => {
+  const { error } = await supabase.from("restaurant_tables").delete().eq("id", id);
+  if (error) console.error("deleteTable error:", error);
+};
+
+// ============= ORDERS =============
+
+const mapOrderFromDb = (row: any): Order => ({
+  id: row.id,
+  businessId: row.business_id,
+  tableId: row.table_id || "",
+  customerId: row.customer_id || undefined,
+  items: (row.items as any) || [],
+  total: Number(row.total) || 0,
+  status: row.status as Order["status"],
+  createdAt: row.created_at,
+  orderedBy: row.ordered_by || undefined,
+  paymentMethod: row.payment_method as Order["paymentMethod"] || undefined,
+  paidAt: row.paid_at || undefined,
+  cashierId: row.cashier_id || undefined,
+});
+
+export const getOrders = async (businessId: string): Promise<Order[]> => {
+  const { data, error } = await supabase.from("orders").select("*").eq("business_id", businessId).order("created_at", { ascending: false });
+  if (error) { console.error("getOrders error:", error); return []; }
+  return (data || []).map(mapOrderFromDb);
+};
+
+export const saveOrder = async (order: Order): Promise<void> => {
+  const { error } = await supabase.from("orders").insert({
+    id: order.id, business_id: order.businessId, table_id: order.tableId,
+    customer_id: order.customerId || null, items: order.items as any, total: order.total,
+    status: order.status, ordered_by: order.orderedBy || "", payment_method: order.paymentMethod || null,
+    paid_at: order.paidAt || null, cashier_id: order.cashierId || "",
+    created_at: order.createdAt,
+  });
+  if (error) console.error("saveOrder error:", error);
+};
+
+export const updateOrder = async (id: string, updates: Partial<Order>): Promise<void> => {
+  const m: any = {};
+  if (updates.status !== undefined) m.status = updates.status;
+  if (updates.paymentMethod !== undefined) m.payment_method = updates.paymentMethod;
+  if (updates.paidAt !== undefined) m.paid_at = updates.paidAt;
+  if (updates.cashierId !== undefined) m.cashier_id = updates.cashierId;
+  if (updates.items !== undefined) m.items = updates.items;
+  if (updates.total !== undefined) m.total = updates.total;
+  if (updates.tableId !== undefined) m.table_id = updates.tableId;
+  if (updates.orderedBy !== undefined) m.ordered_by = updates.orderedBy;
+  const { error } = await supabase.from("orders").update(m).eq("id", id);
+  if (error) console.error("updateOrder error:", error);
+};
+
+export const deleteOrder = async (id: string): Promise<void> => {
+  const { error } = await supabase.from("orders").delete().eq("id", id);
+  if (error) console.error("deleteOrder error:", error);
+};
+
+// ============= STAFF =============
+
+const mapStaffFromDb = (row: any): StaffMember => ({
+  id: row.id,
+  businessId: row.business_id,
+  name: row.name,
+  phone: row.phone || "",
+  nationality: row.nationality || "",
+  jobTitle: row.job_title,
+  customJobTitle: row.custom_job_title || "",
+  shifts: row.shifts || "",
+  startTime: row.start_time || "",
+  endTime: row.end_time || "",
+  username: row.username || undefined,
+  password: row.password || undefined,
+  createdAt: row.created_at,
+});
+
+export const getStaff = async (businessId: string): Promise<StaffMember[]> => {
+  const { data, error } = await supabase.from("staff").select("*").eq("business_id", businessId).order("created_at", { ascending: false });
+  if (error) { console.error("getStaff error:", error); return []; }
+  return (data || []).map(mapStaffFromDb);
+};
+
+export const saveStaff = async (staff: StaffMember): Promise<void> => {
+  const { error } = await supabase.from("staff").insert({
+    id: staff.id, business_id: staff.businessId, name: staff.name, phone: staff.phone,
+    nationality: staff.nationality, job_title: staff.jobTitle, custom_job_title: staff.customJobTitle || "",
+    shifts: staff.shifts, start_time: staff.startTime, end_time: staff.endTime,
+    username: staff.username || null, password: staff.password || "",
+    created_at: staff.createdAt,
+  });
+  if (error) console.error("saveStaff error:", error);
+};
+
+export const updateStaff = async (id: string, updates: Partial<StaffMember>): Promise<void> => {
+  const m: any = {};
+  if (updates.name !== undefined) m.name = updates.name;
+  if (updates.phone !== undefined) m.phone = updates.phone;
+  if (updates.nationality !== undefined) m.nationality = updates.nationality;
+  if (updates.jobTitle !== undefined) m.job_title = updates.jobTitle;
+  if (updates.customJobTitle !== undefined) m.custom_job_title = updates.customJobTitle;
+  if (updates.shifts !== undefined) m.shifts = updates.shifts;
+  if (updates.startTime !== undefined) m.start_time = updates.startTime;
+  if (updates.endTime !== undefined) m.end_time = updates.endTime;
+  if (updates.username !== undefined) m.username = updates.username;
+  if (updates.password !== undefined) m.password = updates.password;
+  const { error } = await supabase.from("staff").update(m).eq("id", id);
+  if (error) console.error("updateStaff error:", error);
+};
+
+export const deleteStaff = async (id: string): Promise<void> => {
+  const { error } = await supabase.from("staff").delete().eq("id", id);
+  if (error) console.error("deleteStaff error:", error);
+};
+
+export const getStaffByUsername = async (username: string): Promise<StaffMember | undefined> => {
+  const { data, error } = await supabase.from("staff").select("*").eq("username", username).maybeSingle();
+  if (error || !data) return undefined;
+  return mapStaffFromDb(data);
+};
+
+// ============= CUSTOMERS =============
+
+const mapCustomerFromDb = (row: any): Customer => ({
+  id: row.id,
+  businessId: row.business_id,
+  name: row.name,
+  phone: row.phone || "",
+  email: row.email || "",
+  totalOrders: row.total_orders || 0,
+  totalSpent: Number(row.total_spent) || 0,
+  loyaltyPoints: row.loyalty_points || 0,
+  registeredAt: row.registered_at || row.created_at,
+});
+
+export const getCustomers = async (businessId: string): Promise<Customer[]> => {
+  const { data, error } = await supabase.from("customers").select("*").eq("business_id", businessId).order("created_at", { ascending: false });
+  if (error) { console.error("getCustomers error:", error); return []; }
+  return (data || []).map(mapCustomerFromDb);
+};
+
+export const saveCustomer = async (customer: Customer): Promise<void> => {
+  const { error } = await supabase.from("customers").insert({
+    id: customer.id, business_id: customer.businessId, name: customer.name,
+    phone: customer.phone, email: customer.email || "", total_orders: customer.totalOrders,
+    total_spent: customer.totalSpent, loyalty_points: customer.loyaltyPoints,
+    registered_at: customer.registeredAt,
+  });
+  if (error) console.error("saveCustomer error:", error);
+};
+
+export const updateCustomer = async (id: string, updates: Partial<Customer>): Promise<void> => {
+  const m: any = {};
+  if (updates.name !== undefined) m.name = updates.name;
+  if (updates.phone !== undefined) m.phone = updates.phone;
+  if (updates.email !== undefined) m.email = updates.email;
+  if (updates.totalOrders !== undefined) m.total_orders = updates.totalOrders;
+  if (updates.totalSpent !== undefined) m.total_spent = updates.totalSpent;
+  if (updates.loyaltyPoints !== undefined) m.loyalty_points = updates.loyaltyPoints;
+  const { error } = await supabase.from("customers").update(m).eq("id", id);
+  if (error) console.error("updateCustomer error:", error);
+};
+
+// ============= HOTEL ROOMS =============
+
+const mapHotelRoomFromDb = (row: any): HotelRoom => ({
+  id: row.id,
+  businessId: row.business_id,
+  roomNumber: row.room_number,
+  type: row.type as HotelRoom["type"],
+  floor: row.floor || 1,
+  pricePerNight: Number(row.price_per_night) || 0,
+  status: row.status as HotelRoom["status"],
+  amenities: (row.amenities as string[]) || [],
+  image: row.image || "",
+  maxGuests: row.max_guests || 2,
+});
+
+export const getHotelRooms = async (businessId: string): Promise<HotelRoom[]> => {
+  const { data, error } = await supabase.from("hotel_rooms").select("*").eq("business_id", businessId).order("room_number");
+  if (error) { console.error("getHotelRooms error:", error); return []; }
+  return (data || []).map(mapHotelRoomFromDb);
+};
+
+export const saveHotelRoom = async (room: HotelRoom): Promise<void> => {
+  const { error } = await supabase.from("hotel_rooms").insert({
+    id: room.id, business_id: room.businessId, room_number: room.roomNumber,
+    type: room.type, floor: room.floor, price_per_night: room.pricePerNight,
+    status: room.status, amenities: room.amenities as any, image: room.image, max_guests: room.maxGuests,
+  });
+  if (error) console.error("saveHotelRoom error:", error);
+};
+
+export const updateHotelRoom = async (id: string, updates: Partial<HotelRoom>): Promise<void> => {
+  const m: any = {};
+  if (updates.roomNumber !== undefined) m.room_number = updates.roomNumber;
+  if (updates.type !== undefined) m.type = updates.type;
+  if (updates.floor !== undefined) m.floor = updates.floor;
+  if (updates.pricePerNight !== undefined) m.price_per_night = updates.pricePerNight;
+  if (updates.status !== undefined) m.status = updates.status;
+  if (updates.amenities !== undefined) m.amenities = updates.amenities;
+  if (updates.image !== undefined) m.image = updates.image;
+  if (updates.maxGuests !== undefined) m.max_guests = updates.maxGuests;
+  const { error } = await supabase.from("hotel_rooms").update(m).eq("id", id);
+  if (error) console.error("updateHotelRoom error:", error);
+};
+
+export const deleteHotelRoom = async (id: string): Promise<void> => {
+  const { error } = await supabase.from("hotel_rooms").delete().eq("id", id);
+  if (error) console.error("deleteHotelRoom error:", error);
+};
+
+// ============= HOTEL BOOKINGS =============
+
+const mapHotelBookingFromDb = (row: any): HotelBooking => ({
+  id: row.id,
+  businessId: row.business_id,
+  roomId: row.room_id,
+  guestName: row.guest_name,
+  guestPhone: row.guest_phone || "",
+  guestEmail: row.guest_email || "",
+  guestNationality: row.guest_nationality || "",
+  idNumber: row.id_number || "",
+  checkIn: row.check_in,
+  checkOut: row.check_out,
+  nights: row.nights || 1,
+  totalPrice: Number(row.total_price) || 0,
+  status: row.status as HotelBooking["status"],
+  specialRequests: row.special_requests || "",
+  createdAt: row.created_at,
+  checkedInAt: row.checked_in_at || undefined,
+});
+
+export const getHotelBookings = async (businessId: string): Promise<HotelBooking[]> => {
+  const { data, error } = await supabase.from("hotel_bookings").select("*").eq("business_id", businessId).order("created_at", { ascending: false });
+  if (error) { console.error("getHotelBookings error:", error); return []; }
+  return (data || []).map(mapHotelBookingFromDb);
+};
+
+export const saveHotelBooking = async (booking: HotelBooking): Promise<void> => {
+  const { error } = await supabase.from("hotel_bookings").insert({
+    id: booking.id, business_id: booking.businessId, room_id: booking.roomId,
+    guest_name: booking.guestName, guest_phone: booking.guestPhone, guest_email: booking.guestEmail,
+    guest_nationality: booking.guestNationality, id_number: booking.idNumber,
+    check_in: booking.checkIn, check_out: booking.checkOut, nights: booking.nights,
+    total_price: booking.totalPrice, status: booking.status, special_requests: booking.specialRequests,
+    checked_in_at: booking.checkedInAt || null, created_at: booking.createdAt,
+  });
+  if (error) console.error("saveHotelBooking error:", error);
+};
+
+export const updateHotelBooking = async (id: string, updates: Partial<HotelBooking>): Promise<void> => {
+  const m: any = {};
+  if (updates.status !== undefined) m.status = updates.status;
+  if (updates.checkIn !== undefined) m.check_in = updates.checkIn;
+  if (updates.checkOut !== undefined) m.check_out = updates.checkOut;
+  if (updates.nights !== undefined) m.nights = updates.nights;
+  if (updates.totalPrice !== undefined) m.total_price = updates.totalPrice;
+  if (updates.checkedInAt !== undefined) m.checked_in_at = updates.checkedInAt;
+  if (updates.specialRequests !== undefined) m.special_requests = updates.specialRequests;
+  if (updates.guestName !== undefined) m.guest_name = updates.guestName;
+  if (updates.guestPhone !== undefined) m.guest_phone = updates.guestPhone;
+  if (updates.guestEmail !== undefined) m.guest_email = updates.guestEmail;
+  const { error } = await supabase.from("hotel_bookings").update(m).eq("id", id);
+  if (error) console.error("updateHotelBooking error:", error);
+};
+
+export const deleteHotelBooking = async (id: string): Promise<void> => {
+  const { error } = await supabase.from("hotel_bookings").delete().eq("id", id);
+  if (error) console.error("deleteHotelBooking error:", error);
+};
+
+// ============= LOYALTY LEVELS =============
+
+export const getLoyaltyLevels = async (businessId: string): Promise<LoyaltyLevelConfig[]> => {
+  const { data, error } = await supabase.from("loyalty_levels").select("*").eq("business_id", businessId).order("sort_order");
+  if (error || !data || data.length === 0) {
+    return [
+      { name: "Bronze", min: 0, max: 99, icon: "🥉", reward: "5% discount on next order", color: "bg-amber-700/15 text-amber-700 border-amber-700/30" },
+      { name: "Silver", min: 100, max: 299, icon: "🥈", reward: "10% discount + free drink", color: "bg-slate-400/15 text-slate-500 border-slate-400/30" },
+      { name: "Gold", min: 300, max: 599, icon: "🥇", reward: "15% discount + free dessert", color: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30" },
+      { name: "Platinum", min: 600, max: 99999, icon: "💎", reward: "20% discount + free meal", color: "bg-purple-500/15 text-purple-600 border-purple-500/30" },
+    ];
+  }
+  return data.map(row => ({
+    name: row.name,
+    min: row.min_points || 0,
+    max: row.max_points || 0,
+    icon: row.icon || "🥉",
+    reward: row.reward || "",
+    color: row.color || "",
+  }));
+};
+
+export const saveLoyaltyLevels = async (businessId: string, levels: LoyaltyLevelConfig[]): Promise<void> => {
+  // Delete existing and re-insert
+  await supabase.from("loyalty_levels").delete().eq("business_id", businessId);
+  const rows = levels.map((l, i) => ({
+    business_id: businessId, name: l.name, min_points: l.min, max_points: l.max,
+    icon: l.icon, reward: l.reward, color: l.color, sort_order: i,
+  }));
+  if (rows.length > 0) {
+    const { error } = await supabase.from("loyalty_levels").insert(rows);
+    if (error) console.error("saveLoyaltyLevels error:", error);
+  }
+};
+
+// ============= UTILITIES =============
+
+export const generateId = (prefix: string) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+
 export const calcRunningTotal = (booking: HotelBooking, pricePerNight: number): { elapsedNights: number; runningTotal: number } => {
   if (booking.status !== "checked-in" || !booking.checkedInAt) {
     return { elapsedNights: booking.nights, runningTotal: booking.totalPrice };
@@ -335,72 +742,65 @@ export const calcRunningTotal = (booking: HotelBooking, pricePerNight: number): 
   return { elapsedNights, runningTotal: elapsedNights * pricePerNight };
 };
 
-const HOTEL_ROOMS_KEY = "dp_hotel_rooms";
-const HOTEL_BOOKINGS_KEY = "dp_hotel_bookings";
+// ============= SEED DEMO DATA =============
 
-export const getHotelRooms = (businessId: string): HotelRoom[] => {
-  const all: HotelRoom[] = JSON.parse(localStorage.getItem(HOTEL_ROOMS_KEY) || "[]");
-  return all.filter(r => r.businessId === businessId);
-};
-export const saveHotelRoom = (room: HotelRoom) => { const all: HotelRoom[] = JSON.parse(localStorage.getItem(HOTEL_ROOMS_KEY) || "[]"); all.push(room); localStorage.setItem(HOTEL_ROOMS_KEY, JSON.stringify(all)); };
-export const updateHotelRoom = (id: string, updates: Partial<HotelRoom>) => { const all: HotelRoom[] = JSON.parse(localStorage.getItem(HOTEL_ROOMS_KEY) || "[]"); localStorage.setItem(HOTEL_ROOMS_KEY, JSON.stringify(all.map(r => r.id === id ? { ...r, ...updates } : r))); };
-export const deleteHotelRoom = (id: string) => { const all: HotelRoom[] = JSON.parse(localStorage.getItem(HOTEL_ROOMS_KEY) || "[]"); localStorage.setItem(HOTEL_ROOMS_KEY, JSON.stringify(all.filter(r => r.id !== id))); };
-
-export const getHotelBookings = (businessId: string): HotelBooking[] => {
-  const all: HotelBooking[] = JSON.parse(localStorage.getItem(HOTEL_BOOKINGS_KEY) || "[]");
-  return all.filter(b => b.businessId === businessId);
-};
-export const saveHotelBooking = (booking: HotelBooking) => { const all: HotelBooking[] = JSON.parse(localStorage.getItem(HOTEL_BOOKINGS_KEY) || "[]"); all.push(booking); localStorage.setItem(HOTEL_BOOKINGS_KEY, JSON.stringify(all)); };
-export const updateHotelBooking = (id: string, updates: Partial<HotelBooking>) => { const all: HotelBooking[] = JSON.parse(localStorage.getItem(HOTEL_BOOKINGS_KEY) || "[]"); localStorage.setItem(HOTEL_BOOKINGS_KEY, JSON.stringify(all.map(b => b.id === id ? { ...b, ...updates } : b))); };
-export const deleteHotelBooking = (id: string) => { const all: HotelBooking[] = JSON.parse(localStorage.getItem(HOTEL_BOOKINGS_KEY) || "[]"); localStorage.setItem(HOTEL_BOOKINGS_KEY, JSON.stringify(all.filter(b => b.id !== id))); };
-
-export const generateId = (prefix: string) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-
-export const seedDemoData = (businessId: string) => {
-  const existingCats = getCategories(businessId);
+export const seedDemoData = async (businessId: string): Promise<void> => {
+  const existingCats = await getCategories(businessId);
   if (existingCats.length > 0) return;
 
-  const cats: Category[] = [
-    { id: "cat-mains", businessId, name: "Cuntada Aasaasiga", icon: "🍛", order: 1 },
-    { id: "cat-breakfast", businessId, name: "Quraac", icon: "🍳", order: 2 },
-    { id: "cat-grills", businessId, name: "Shiilka", icon: "🥩", order: 3 },
-    { id: "cat-pasta", businessId, name: "Baasto", icon: "🍝", order: 4 },
-    { id: "cat-seafood", businessId, name: "Kalluunka", icon: "🐟", order: 5 },
-    { id: "cat-drinks", businessId, name: "Cabbitaanka", icon: "🥤", order: 6 },
-    { id: "cat-desserts", businessId, name: "Macmacaan", icon: "🍰", order: 7 },
-    { id: "cat-salads", businessId, name: "Salad", icon: "🥗", order: 8 },
+  const catIds = {
+    mains: generateId("cat"),
+    breakfast: generateId("cat"),
+    grills: generateId("cat"),
+    pasta: generateId("cat"),
+    seafood: generateId("cat"),
+    drinks: generateId("cat"),
+    desserts: generateId("cat"),
+    salads: generateId("cat"),
+  };
+
+  const cats = [
+    { id: catIds.mains, business_id: businessId, name: "Cuntada Aasaasiga", icon: "🍛", sort_order: 1 },
+    { id: catIds.breakfast, business_id: businessId, name: "Quraac", icon: "🍳", sort_order: 2 },
+    { id: catIds.grills, business_id: businessId, name: "Shiilka", icon: "🥩", sort_order: 3 },
+    { id: catIds.pasta, business_id: businessId, name: "Baasto", icon: "🍝", sort_order: 4 },
+    { id: catIds.seafood, business_id: businessId, name: "Kalluunka", icon: "🐟", sort_order: 5 },
+    { id: catIds.drinks, business_id: businessId, name: "Cabbitaanka", icon: "🥤", sort_order: 6 },
+    { id: catIds.desserts, business_id: businessId, name: "Macmacaan", icon: "🍰", sort_order: 7 },
+    { id: catIds.salads, business_id: businessId, name: "Salad", icon: "🥗", sort_order: 8 },
   ];
 
-  const items: MenuItem[] = [
-    { id: "item-1", businessId, categoryId: "cat-mains", name: "Bariis Hilib Ari", description: "Bariis cad oo lagu daray hilib ari iyo xawaash macaan", price: 8.50, image: "🍛", rating: 4.8, available: true },
-    { id: "item-2", businessId, categoryId: "cat-mains", name: "Bariis Iskukaris", description: "Bariis la iskukaris oo leh khudrad iyo hilib", price: 7.00, image: "🍚", rating: 4.5, available: true },
-    { id: "item-3", businessId, categoryId: "cat-mains", name: "Suqaar iyo Canjeero", description: "Suqaar hilib lo'aad oo leh canjeero cusub", price: 6.50, image: "🥘", rating: 4.7, available: true },
-    { id: "item-4", businessId, categoryId: "cat-mains", name: "Hilib Geel", description: "Hilib geel la dubay oo leh baradho", price: 9.00, image: "🥩", rating: 4.6, available: true },
-    { id: "item-5", businessId, categoryId: "cat-breakfast", name: "Canjeero iyo Subag", description: "Canjeero cusub oo leh subag iyo malab", price: 3.50, image: "🫓", rating: 4.9, available: true },
-    { id: "item-6", businessId, categoryId: "cat-breakfast", name: "Bur Shax", description: "Bur kulul oo leh ukun iyo shaah", price: 4.00, image: "🍳", rating: 4.3, available: true },
-    { id: "item-7", businessId, categoryId: "cat-breakfast", name: "Fool iyo Canjeero", description: "Fool Masri oo leh saliid saytuun iyo canjeero", price: 4.50, image: "🫘", rating: 4.4, available: true },
-    { id: "item-8", businessId, categoryId: "cat-grills", name: "Chicken Tikka", description: "Digaag la dubay oo leh xawaash gaar ah", price: 10.00, image: "🍗", rating: 4.7, available: true },
-    { id: "item-9", businessId, categoryId: "cat-grills", name: "Mishkaki", description: "Hilib lo'aad oo la dubay oo usha ku jira", price: 8.00, image: "🥩", rating: 4.8, available: true },
-    { id: "item-10", businessId, categoryId: "cat-grills", name: "Burger Gaar ah", description: "Burger weyn oo leh salad iyo cheese", price: 7.50, image: "🍔", rating: 4.5, available: true },
-    { id: "item-11", businessId, categoryId: "cat-pasta", name: "Baasto Suugo", description: "Baasto leh suugo hilib iyo khudrad", price: 6.00, image: "🍝", rating: 4.4, available: true },
-    { id: "item-12", businessId, categoryId: "cat-pasta", name: "Baasto Cream", description: "Baasto leh cream sauce iyo mushroom", price: 7.00, image: "🍝", rating: 4.3, available: true },
-    { id: "item-13", businessId, categoryId: "cat-pasta", name: "Lasagna", description: "Lasagna hilib oo leh cheese badan", price: 8.50, image: "🫕", rating: 4.6, available: true },
-    { id: "item-14", businessId, categoryId: "cat-seafood", name: "Kalluun la Dubay", description: "Kalluun cusub oo la dubay oo leh liin", price: 12.00, image: "🐟", rating: 4.9, available: true },
-    { id: "item-15", businessId, categoryId: "cat-seafood", name: "Calamari", description: "Calamari la shiilshiilay oo leh sauce", price: 9.50, image: "🦑", rating: 4.5, available: true },
-    { id: "item-16", businessId, categoryId: "cat-seafood", name: "Prawns Garlic", description: "Prawns leh toon iyo butter", price: 11.00, image: "🦐", rating: 4.7, available: true },
-    { id: "item-17", businessId, categoryId: "cat-drinks", name: "Shaah Cadays", description: "Shaah xawaash leh caano", price: 1.50, image: "☕", rating: 4.8, available: true },
-    { id: "item-18", businessId, categoryId: "cat-drinks", name: "Juice Mango", description: "Cambe cusub oo la miixay", price: 3.00, image: "🥭", rating: 4.6, available: true },
-    { id: "item-19", businessId, categoryId: "cat-drinks", name: "Smoothie Berry", description: "Berry iyo yogurt la isku daray", price: 4.00, image: "🫐", rating: 4.5, available: true },
-    { id: "item-20", businessId, categoryId: "cat-drinks", name: "Juice Avocado", description: "Avocado iyo caano la isku daray", price: 3.50, image: "🥑", rating: 4.7, available: true },
-    { id: "item-21", businessId, categoryId: "cat-desserts", name: "Halwo", description: "Halwo Soomaali oo macaan", price: 3.00, image: "🍮", rating: 4.8, available: true },
-    { id: "item-22", businessId, categoryId: "cat-desserts", name: "Ice Cream", description: "Ice cream vanilla iyo chocolate", price: 3.50, image: "🍨", rating: 4.4, available: true },
-    { id: "item-23", businessId, categoryId: "cat-desserts", name: "Cheesecake", description: "Cheesecake leh berry sauce", price: 5.00, image: "🍰", rating: 4.6, available: true },
-    { id: "item-24", businessId, categoryId: "cat-salads", name: "Caesar Salad", description: "Salad Caesar oo leh digaag la dubay", price: 5.50, image: "🥗", rating: 4.3, available: true },
-    { id: "item-25", businessId, categoryId: "cat-salads", name: "Fattoush", description: "Salad Fattoush oo cusub oo dhadhan fiican", price: 4.50, image: "🥬", rating: 4.4, available: true },
+  const { error: catError } = await supabase.from("categories").insert(cats);
+  if (catError) { console.error("seedDemoData cats error:", catError); return; }
+
+  const items = [
+    { business_id: businessId, category_id: catIds.mains, name: "Bariis Hilib Ari", description: "Bariis cad oo lagu daray hilib ari iyo xawaash macaan", price: 8.50, image: "🍛", rating: 4.8, available: true },
+    { business_id: businessId, category_id: catIds.mains, name: "Bariis Iskukaris", description: "Bariis la iskukaris oo leh khudrad iyo hilib", price: 7.00, image: "🍚", rating: 4.5, available: true },
+    { business_id: businessId, category_id: catIds.mains, name: "Suqaar iyo Canjeero", description: "Suqaar hilib lo'aad oo leh canjeero cusub", price: 6.50, image: "🥘", rating: 4.7, available: true },
+    { business_id: businessId, category_id: catIds.mains, name: "Hilib Geel", description: "Hilib geel la dubay oo leh baradho", price: 9.00, image: "🥩", rating: 4.6, available: true },
+    { business_id: businessId, category_id: catIds.breakfast, name: "Canjeero iyo Subag", description: "Canjeero cusub oo leh subag iyo malab", price: 3.50, image: "🫓", rating: 4.9, available: true },
+    { business_id: businessId, category_id: catIds.breakfast, name: "Bur Shax", description: "Bur kulul oo leh ukun iyo shaah", price: 4.00, image: "🍳", rating: 4.3, available: true },
+    { business_id: businessId, category_id: catIds.breakfast, name: "Fool iyo Canjeero", description: "Fool Masri oo leh saliid saytuun iyo canjeero", price: 4.50, image: "🫘", rating: 4.4, available: true },
+    { business_id: businessId, category_id: catIds.grills, name: "Chicken Tikka", description: "Digaag la dubay oo leh xawaash gaar ah", price: 10.00, image: "🍗", rating: 4.7, available: true },
+    { business_id: businessId, category_id: catIds.grills, name: "Mishkaki", description: "Hilib lo'aad oo la dubay oo usha ku jira", price: 8.00, image: "🥩", rating: 4.8, available: true },
+    { business_id: businessId, category_id: catIds.grills, name: "Burger Gaar ah", description: "Burger weyn oo leh salad iyo cheese", price: 7.50, image: "🍔", rating: 4.5, available: true },
+    { business_id: businessId, category_id: catIds.pasta, name: "Baasto Suugo", description: "Baasto leh suugo hilib iyo khudrad", price: 6.00, image: "🍝", rating: 4.4, available: true },
+    { business_id: businessId, category_id: catIds.pasta, name: "Baasto Cream", description: "Baasto leh cream sauce iyo mushroom", price: 7.00, image: "🍝", rating: 4.3, available: true },
+    { business_id: businessId, category_id: catIds.pasta, name: "Lasagna", description: "Lasagna hilib oo leh cheese badan", price: 8.50, image: "🫕", rating: 4.6, available: true },
+    { business_id: businessId, category_id: catIds.seafood, name: "Kalluun la Dubay", description: "Kalluun cusub oo la dubay oo leh liin", price: 12.00, image: "🐟", rating: 4.9, available: true },
+    { business_id: businessId, category_id: catIds.seafood, name: "Calamari", description: "Calamari la shiilshiilay oo leh sauce", price: 9.50, image: "🦑", rating: 4.5, available: true },
+    { business_id: businessId, category_id: catIds.seafood, name: "Prawns Garlic", description: "Prawns leh toon iyo butter", price: 11.00, image: "🦐", rating: 4.7, available: true },
+    { business_id: businessId, category_id: catIds.drinks, name: "Shaah Cadays", description: "Shaah xawaash leh caano", price: 1.50, image: "☕", rating: 4.8, available: true },
+    { business_id: businessId, category_id: catIds.drinks, name: "Juice Mango", description: "Cambe cusub oo la miixay", price: 3.00, image: "🥭", rating: 4.6, available: true },
+    { business_id: businessId, category_id: catIds.drinks, name: "Smoothie Berry", description: "Berry iyo yogurt la isku daray", price: 4.00, image: "🫐", rating: 4.5, available: true },
+    { business_id: businessId, category_id: catIds.drinks, name: "Juice Avocado", description: "Avocado iyo caano la isku daray", price: 3.50, image: "🥑", rating: 4.7, available: true },
+    { business_id: businessId, category_id: catIds.desserts, name: "Halwo", description: "Halwo Soomaali oo macaan", price: 3.00, image: "🍮", rating: 4.8, available: true },
+    { business_id: businessId, category_id: catIds.desserts, name: "Ice Cream", description: "Ice cream vanilla iyo chocolate", price: 3.50, image: "🍨", rating: 4.4, available: true },
+    { business_id: businessId, category_id: catIds.desserts, name: "Cheesecake", description: "Cheesecake leh berry sauce", price: 5.00, image: "🍰", rating: 4.6, available: true },
+    { business_id: businessId, category_id: catIds.salads, name: "Caesar Salad", description: "Salad Caesar oo leh digaag la dubay", price: 5.50, image: "🥗", rating: 4.3, available: true },
+    { business_id: businessId, category_id: catIds.salads, name: "Fattoush", description: "Salad Fattoush oo cusub oo dhadhan fiican", price: 4.50, image: "🥬", rating: 4.4, available: true },
   ];
 
-  const allCats: Category[] = JSON.parse(localStorage.getItem(CATEGORIES_KEY) || "[]");
-  localStorage.setItem(CATEGORIES_KEY, JSON.stringify([...allCats, ...cats]));
-  const allItems: MenuItem[] = JSON.parse(localStorage.getItem(MENU_ITEMS_KEY) || "[]");
-  localStorage.setItem(MENU_ITEMS_KEY, JSON.stringify([...allItems, ...items]));
+  const { error: itemError } = await supabase.from("menu_items").insert(items);
+  if (itemError) console.error("seedDemoData items error:", itemError);
 };
