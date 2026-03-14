@@ -325,9 +325,9 @@ export const getCategories = async (businessId: string): Promise<Category[]> => 
 };
 
 export const saveCategory = async (cat: Category): Promise<void> => {
-  const { error } = await supabase.from("categories").insert({
-    id: cat.id, business_id: cat.businessId, name: cat.name, icon: cat.icon, sort_order: cat.order,
-  });
+  const row: any = { business_id: cat.businessId, name: cat.name, icon: cat.icon, sort_order: cat.order };
+  if (cat.id && /^[0-9a-f]{8}-/i.test(cat.id)) row.id = cat.id;
+  const { error } = await supabase.from("categories").insert(row);
   if (error) console.error("saveCategory error:", error);
 };
 
