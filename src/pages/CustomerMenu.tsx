@@ -28,7 +28,7 @@ const CustomerMenu = () => {
   const [addedItemId, setAddedItemId] = useState<string | null>(null);
 
   useEffect(() => { const stored = localStorage.getItem("dp_customer"); if (stored) setCustomer(JSON.parse(stored)); }, []);
-  useEffect(() => { if (!businessId) return; seedDemoData(businessId); setCategories(getCategories(businessId)); setMenuItems(getMenuItems(businessId).filter(m => m.available)); }, [businessId]);
+  useEffect(() => { if (!businessId) return; const load = async () => { await seedDemoData(businessId); setCategories(await getCategories(businessId)); setMenuItems((await getMenuItems(businessId)).filter(m => m.available)); }; load(); }, [businessId]);
 
   useEffect(() => {
     const pollOrders = () => {
