@@ -155,43 +155,64 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editBusiness) {
-      const allBiz = await getBusinesses();
-      if (allBiz.some(b => b.adminUsername === form.adminUsername)) {
-        toast.error("Username already taken!");
-        return;
-      }
+    if (!form.name.trim() || !form.adminUsername.trim() || !form.adminPassword.trim()) {
+      toast.error("Please fill all required fields");
+      return;
     }
-    const validServices = services.filter(s => s.title.trim());
-    const newBiz: Business = {
-      id: editBusiness?.id || generateId("biz"),
-      ...form,
-      services: validServices,
-      paymentMethods,
-      permissions,
-      status: editBusiness?.status || "active",
-      createdAt: editBusiness?.createdAt || new Date().toISOString(),
-      totalOrders: editBusiness?.totalOrders || 0,
-      totalRevenue: editBusiness?.totalRevenue || 0,
-    };
-
-    if (editBusiness) {
-      await updateBusiness(editBusiness.id, newBiz);
-      try {
-        const active = localStorage.getItem("dp_active_business");
-        if (active) {
-          const activeBiz = JSON.parse(active);
-          if (activeBiz.id === editBusiness.id) {
-            localStorage.setItem("dp_active_business", JSON.stringify({ ...activeBiz, ...newBiz }));
-          }
+    try {
+      if (!editBusiness) {
+        const allBiz = await getBusinesses();
+        if (allBiz.some(b => b.adminUsername === form.adminUsername)) {
+          toast.error("Username already taken!");
+          return;
         }
-      } catch {}
-    } else {
-      await saveBusiness(newBiz);
+      }
+      const validServices = services.filter(s => s.title.trim());
+      
+      if (editBusiness) {
+        await updateBusiness(editBusiness.id, {
+          ...form,
+          services: validServices,
+          paymentMethods,
+          permissions,
+        });
+        try {
+          const active = localStorage.getItem("dp_active_business");
+          if (active) {
+            const activeBiz = JSON.parse(active);
+            if (activeBiz.id === editBusiness.id) {
+              const updated = await getBusinesses();
+              const freshBiz = updated.find(b => b.id === editBusiness.id);
+              if (freshBiz) localStorage.setItem("dp_active_business", JSON.stringify(freshBiz));
+            }
+          }
+        } catch {}
+        toast.success(`"${form.name}" updated!`);
+      } else {
+        const newBiz: Business = {
+          id: crypto.randomUUID(),
+          ...form,
+          services: validServices,
+          paymentMethods,
+          permissions,
+          status: "active",
+          createdAt: new Date().toISOString(),
+          totalOrders: 0,
+          totalRevenue: 0,
+        };
+        const result = await saveBusiness(newBiz);
+        if (!result) {
+          toast.error("Failed to create business. Please try again.");
+          return;
+        }
+        toast.success(`"${form.name}" created with home page! 🎉`);
+      }
+      onCreated();
+      onClose();
+    } catch (err) {
+      console.error("Business save error:", err);
+      toast.error("An error occurred. Please try again.");
     }
-    onCreated();
-    onClose();
-    toast.success(editBusiness ? `"${newBiz.name}" updated!` : `"${newBiz.name}" created with home page! 🎉`);
   };
 
   return (
