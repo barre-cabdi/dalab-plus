@@ -29,8 +29,8 @@ const SuperAdminDashboard = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
 
-  useEffect(() => { setBusinesses(getBusinesses()); }, []);
-  const refresh = () => setBusinesses(getBusinesses());
+  useEffect(() => { getBusinesses().then(setBusinesses); }, []);
+  const refresh = () => getBusinesses().then(setBusinesses);
 
   const filtered = businesses.filter(b =>
     b.name.toLowerCase().includes(search.toLowerCase()) ||
