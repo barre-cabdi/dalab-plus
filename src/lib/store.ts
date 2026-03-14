@@ -614,11 +614,13 @@ export const getHotelRooms = async (businessId: string): Promise<HotelRoom[]> =>
 };
 
 export const saveHotelRoom = async (room: HotelRoom): Promise<void> => {
-  const { error } = await supabase.from("hotel_rooms").insert({
-    id: room.id, business_id: room.businessId, room_number: room.roomNumber,
+  const row: any = {
+    business_id: room.businessId, room_number: room.roomNumber,
     type: room.type, floor: room.floor, price_per_night: room.pricePerNight,
     status: room.status, amenities: room.amenities as any, image: room.image, max_guests: room.maxGuests,
-  });
+  };
+  if (room.id && /^[0-9a-f]{8}-/i.test(room.id)) row.id = room.id;
+  const { error } = await supabase.from("hotel_rooms").insert(row);
   if (error) console.error("saveHotelRoom error:", error);
 };
 
