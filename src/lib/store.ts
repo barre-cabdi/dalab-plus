@@ -510,13 +510,14 @@ export const getStaff = async (businessId: string): Promise<StaffMember[]> => {
 };
 
 export const saveStaff = async (staff: StaffMember): Promise<void> => {
-  const { error } = await supabase.from("staff").insert({
-    id: staff.id, business_id: staff.businessId, name: staff.name, phone: staff.phone,
+  const row: any = {
+    business_id: staff.businessId, name: staff.name, phone: staff.phone,
     nationality: staff.nationality, job_title: staff.jobTitle, custom_job_title: staff.customJobTitle || "",
     shifts: staff.shifts, start_time: staff.startTime, end_time: staff.endTime,
     username: staff.username || null, password: staff.password || "",
-    created_at: staff.createdAt,
-  });
+  };
+  if (staff.id && /^[0-9a-f]{8}-/i.test(staff.id)) row.id = staff.id;
+  const { error } = await supabase.from("staff").insert(row);
   if (error) console.error("saveStaff error:", error);
 };
 
