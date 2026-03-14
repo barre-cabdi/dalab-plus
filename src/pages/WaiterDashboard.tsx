@@ -188,11 +188,11 @@ const WaiterDashboard = () => {
     (order as any).waiterName = waiter.name;
     (order as any).customerName = `🧑‍🍳 ${waiter.name} (${t.wtWaiter})`;
     (order as any).customerPhone = waiter.phone || "";
-    saveOrder(order);
+    await saveOrder(order);
     setCart([]);
     setSelectedTable("");
     toast.success(t.wtOrderPlaced);
-    setOrders(getOrders(business.id));
+    setOrders(await getOrders(business.id));
   };
 
   const getOrderMessages = (orderId: string) => {
