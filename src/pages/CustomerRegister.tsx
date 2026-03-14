@@ -25,7 +25,7 @@ const CustomerRegister = () => {
   const [formData, setFormData] = useState({ name: "", phone: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [customerId] = useState(`CUS-${String(Math.floor(Math.random() * 999999)).padStart(6, "0")}`);
+  const [customerId] = useState(crypto.randomUUID());
   const [business, setBusiness] = useState<Business | null>(null);
   const [focusedField, setFocusedField] = useState<string | null>(null);
 

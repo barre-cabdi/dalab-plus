@@ -274,12 +274,15 @@ export const getBusinesses = async (): Promise<Business[]> => {
   return (data || []).map(mapBusinessFromDb);
 };
 
-export const saveBusiness = async (business: Business): Promise<void> => {
+export const saveBusiness = async (business: Business): Promise<Business | null> => {
   const dbRow = mapBusinessToDb(business);
-  dbRow.id = business.id;
-  dbRow.created_at = business.createdAt;
-  const { error } = await supabase.from("businesses").insert(dbRow);
-  if (error) console.error("saveBusiness error:", error);
+  // Let DB auto-generate id if not a valid UUID
+  if (business.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(business.id)) {
+    dbRow.id = business.id;
+  }
+  const { data, error } = await supabase.from("businesses").insert(dbRow).select().single();
+  if (error) { console.error("saveBusiness error:", error); return null; }
+  return data ? mapBusinessFromDb(data) : null;
 };
 
 export const updateBusiness = async (id: string, updates: Partial<Business>): Promise<void> => {
@@ -322,9 +325,9 @@ export const getCategories = async (businessId: string): Promise<Category[]> => 
 };
 
 export const saveCategory = async (cat: Category): Promise<void> => {
-  const { error } = await supabase.from("categories").insert({
-    id: cat.id, business_id: cat.businessId, name: cat.name, icon: cat.icon, sort_order: cat.order,
-  });
+  const row: any = { business_id: cat.businessId, name: cat.name, icon: cat.icon, sort_order: cat.order };
+  if (cat.id && /^[0-9a-f]{8}-/i.test(cat.id)) row.id = cat.id;
+  const { error } = await supabase.from("categories").insert(row);
   if (error) console.error("saveCategory error:", error);
 };
 
@@ -363,11 +366,13 @@ export const getMenuItems = async (businessId: string): Promise<MenuItem[]> => {
 };
 
 export const saveMenuItem = async (item: MenuItem): Promise<void> => {
-  const { error } = await supabase.from("menu_items").insert({
-    id: item.id, business_id: item.businessId, category_id: item.categoryId,
+  const row: any = {
+    business_id: item.businessId, category_id: item.categoryId,
     name: item.name, description: item.description, price: item.price,
     image: item.image, rating: item.rating, available: item.available,
-  });
+  };
+  if (item.id && /^[0-9a-f]{8}-/i.test(item.id)) row.id = item.id;
+  const { error } = await supabase.from("menu_items").insert(row);
   if (error) console.error("saveMenuItem error:", error);
 };
 
@@ -406,9 +411,9 @@ export const getTables = async (businessId: string): Promise<TableItem[]> => {
 };
 
 export const saveTable = async (table: TableItem): Promise<void> => {
-  const { error } = await supabase.from("restaurant_tables").insert({
-    id: table.id, business_id: table.businessId, table_number: table.number, seats: table.seats, status: table.status,
-  });
+  const row: any = { business_id: table.businessId, table_number: table.number, seats: table.seats, status: table.status };
+  if (table.id && /^[0-9a-f]{8}-/i.test(table.id)) row.id = table.id;
+  const { error } = await supabase.from("restaurant_tables").insert(row);
   if (error) console.error("saveTable error:", error);
 };
 
@@ -450,13 +455,14 @@ export const getOrders = async (businessId: string): Promise<Order[]> => {
 };
 
 export const saveOrder = async (order: Order): Promise<void> => {
-  const { error } = await supabase.from("orders").insert({
-    id: order.id, business_id: order.businessId, table_id: order.tableId,
+  const row: any = {
+    business_id: order.businessId, table_id: order.tableId,
     customer_id: order.customerId || null, items: order.items as any, total: order.total,
     status: order.status, ordered_by: order.orderedBy || "", payment_method: order.paymentMethod || null,
     paid_at: order.paidAt || null, cashier_id: order.cashierId || "",
-    created_at: order.createdAt,
-  });
+  };
+  if (order.id && /^[0-9a-f]{8}-/i.test(order.id)) row.id = order.id;
+  const { error } = await supabase.from("orders").insert(row);
   if (error) console.error("saveOrder error:", error);
 };
 
@@ -504,13 +510,14 @@ export const getStaff = async (businessId: string): Promise<StaffMember[]> => {
 };
 
 export const saveStaff = async (staff: StaffMember): Promise<void> => {
-  const { error } = await supabase.from("staff").insert({
-    id: staff.id, business_id: staff.businessId, name: staff.name, phone: staff.phone,
+  const row: any = {
+    business_id: staff.businessId, name: staff.name, phone: staff.phone,
     nationality: staff.nationality, job_title: staff.jobTitle, custom_job_title: staff.customJobTitle || "",
     shifts: staff.shifts, start_time: staff.startTime, end_time: staff.endTime,
     username: staff.username || null, password: staff.password || "",
-    created_at: staff.createdAt,
-  });
+  };
+  if (staff.id && /^[0-9a-f]{8}-/i.test(staff.id)) row.id = staff.id;
+  const { error } = await supabase.from("staff").insert(row);
   if (error) console.error("saveStaff error:", error);
 };
 
@@ -562,12 +569,14 @@ export const getCustomers = async (businessId: string): Promise<Customer[]> => {
 };
 
 export const saveCustomer = async (customer: Customer): Promise<void> => {
-  const { error } = await supabase.from("customers").insert({
-    id: customer.id, business_id: customer.businessId, name: customer.name,
+  const row: any = {
+    business_id: customer.businessId, name: customer.name,
     phone: customer.phone, email: customer.email || "", total_orders: customer.totalOrders,
     total_spent: customer.totalSpent, loyalty_points: customer.loyaltyPoints,
     registered_at: customer.registeredAt,
-  });
+  };
+  if (customer.id && /^[0-9a-f]{8}-/i.test(customer.id)) row.id = customer.id;
+  const { error } = await supabase.from("customers").insert(row);
   if (error) console.error("saveCustomer error:", error);
 };
 
@@ -605,11 +614,13 @@ export const getHotelRooms = async (businessId: string): Promise<HotelRoom[]> =>
 };
 
 export const saveHotelRoom = async (room: HotelRoom): Promise<void> => {
-  const { error } = await supabase.from("hotel_rooms").insert({
-    id: room.id, business_id: room.businessId, room_number: room.roomNumber,
+  const row: any = {
+    business_id: room.businessId, room_number: room.roomNumber,
     type: room.type, floor: room.floor, price_per_night: room.pricePerNight,
     status: room.status, amenities: room.amenities as any, image: room.image, max_guests: room.maxGuests,
-  });
+  };
+  if (room.id && /^[0-9a-f]{8}-/i.test(room.id)) row.id = room.id;
+  const { error } = await supabase.from("hotel_rooms").insert(row);
   if (error) console.error("saveHotelRoom error:", error);
 };
 
@@ -660,14 +671,16 @@ export const getHotelBookings = async (businessId: string): Promise<HotelBooking
 };
 
 export const saveHotelBooking = async (booking: HotelBooking): Promise<void> => {
-  const { error } = await supabase.from("hotel_bookings").insert({
-    id: booking.id, business_id: booking.businessId, room_id: booking.roomId,
+  const row: any = {
+    business_id: booking.businessId, room_id: booking.roomId,
     guest_name: booking.guestName, guest_phone: booking.guestPhone, guest_email: booking.guestEmail,
     guest_nationality: booking.guestNationality, id_number: booking.idNumber,
     check_in: booking.checkIn, check_out: booking.checkOut, nights: booking.nights,
     total_price: booking.totalPrice, status: booking.status, special_requests: booking.specialRequests,
-    checked_in_at: booking.checkedInAt || null, created_at: booking.createdAt,
-  });
+    checked_in_at: booking.checkedInAt || null,
+  };
+  if (booking.id && /^[0-9a-f]{8}-/i.test(booking.id)) row.id = booking.id;
+  const { error } = await supabase.from("hotel_bookings").insert(row);
   if (error) console.error("saveHotelBooking error:", error);
 };
 
@@ -729,7 +742,7 @@ export const saveLoyaltyLevels = async (businessId: string, levels: LoyaltyLevel
 
 // ============= UTILITIES =============
 
-export const generateId = (prefix: string) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+export const generateId = (_prefix?: string) => crypto.randomUUID();
 
 export const calcRunningTotal = (booking: HotelBooking, pricePerNight: number): { elapsedNights: number; runningTotal: number } => {
   if (booking.status !== "checked-in" || !booking.checkedInAt) {
