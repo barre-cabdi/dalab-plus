@@ -360,12 +360,12 @@ const AdminDashboard = () => {
     } catch (e) { /* silently fail */ }
   };
 
-  const refreshData = () => {
+  const refreshData = async () => {
     if (!business) return;
-    setCategories(getCategories(business.id));
-    setMenuItemsState(getMenuItems(business.id));
-    setTables(getTables(business.id));
-    const currentOrders = getOrders(business.id);
+    setCategories(await getCategories(business.id));
+    setMenuItemsState(await getMenuItems(business.id));
+    setTables(await getTables(business.id));
+    const currentOrders = await getOrders(business.id);
     
     // Check for new orders and play sound
     if (prevOrderCountRef.current > 0 && currentOrders.length > prevOrderCountRef.current) {
