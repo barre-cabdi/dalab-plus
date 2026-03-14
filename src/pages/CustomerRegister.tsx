@@ -57,19 +57,18 @@ const CustomerRegister = () => {
   const config = typeConfig[businessType] || typeConfig.restaurant;
   const TypeIcon = config.icon;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.phone) return;
     setIsSubmitting(true);
     setShowSuccess(true);
     const customer = { id: customerId, ...formData, tableId, businessId, businessName, businessLogo, points: 0, level: "Bronze", totalOrders: 0, totalSpent: 0, registeredAt: new Date().toISOString() };
     localStorage.setItem("dp_customer", JSON.stringify(customer));
-    // Save branding separately for persistence across all pages
     localStorage.setItem("dp_customer_branding", JSON.stringify({ businessId, businessName, businessLogo }));
-    const existing = getCustomers(businessId);
+    const existing = await getCustomers(businessId);
     const alreadyExists = existing.find(c => c.phone === formData.phone);
     if (!alreadyExists) {
-      saveCustomer({
+      await saveCustomer({
         id: customerId, businessId, name: formData.name, phone: formData.phone, email: "",
         totalOrders: 0, totalSpent: 0, loyaltyPoints: 0, registeredAt: new Date().toISOString(),
       });

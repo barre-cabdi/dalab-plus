@@ -32,8 +32,11 @@ const CustomerHome = () => {
   const [activeSection, setActiveSection] = useState("about");
 
   useEffect(() => {
-    const b = getBusinessById(businessId);
-    if (b) setBusiness(b);
+    const load = async () => {
+      const b = await getBusinessById(businessId);
+      if (b) setBusiness(b);
+    };
+    load();
   }, [businessId]);
 
   const businessName = business?.name || "";

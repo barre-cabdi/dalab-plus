@@ -169,7 +169,7 @@ const WaiterDashboard = () => {
 
   const cartTotal = cart.reduce((s, c) => s + c.price * c.quantity, 0);
 
-  const placeOrder = () => {
+  const placeOrder = async () => {
     if (cart.length === 0) { toast.error(t.wtCartEmpty); return; }
     if (!selectedTable) { toast.error(t.wtSelectTableErr); return; }
     const table = tables.find(t => t.id === selectedTable);

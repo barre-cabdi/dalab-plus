@@ -176,8 +176,7 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
     };
 
     if (editBusiness) {
-      updateBusiness(editBusiness.id, newBiz);
-      // Sync dp_active_business if admin is logged in with this business
+      await updateBusiness(editBusiness.id, newBiz);
       try {
         const active = localStorage.getItem("dp_active_business");
         if (active) {
@@ -188,7 +187,7 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
         }
       } catch {}
     } else {
-      saveBusiness(newBiz);
+      await saveBusiness(newBiz);
     }
     onCreated();
     onClose();

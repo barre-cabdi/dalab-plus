@@ -400,7 +400,8 @@ const CategoryReport = ({ orders, menuItems, categories }: { orders: Order[]; me
 };
 
 const WaiterReport = ({ orders, businessId }: { orders: Order[]; businessId: string }) => {
-  const staff = getStaff(businessId);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
+  useEffect(() => { getStaff(businessId).then(setStaff); }, [businessId]);
   const waiters = staff.filter(s => s.jobTitle.toLowerCase().includes("waiter"));
 
   const waiterStats = waiters.map((w, idx) => {
