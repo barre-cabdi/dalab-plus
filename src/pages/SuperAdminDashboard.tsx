@@ -42,9 +42,9 @@ const SuperAdminDashboard = () => {
   const activeCount = businesses.filter(b => b.status === "active").length;
   const totalRevenue = businesses.reduce((sum, b) => sum + b.totalRevenue, 0);
 
-  const handleToggleStatus = (id: string, status: string) => {
+  const handleToggleStatus = async (id: string, status: string) => {
     const newStatus = status === "active" ? "inactive" : "active";
-    updateBusiness(id, { status: newStatus as Business["status"] });
+    await updateBusiness(id, { status: newStatus as Business["status"] });
     refresh();
     toast.success(newStatus === "active" ? t.saActivated : t.saDeactivated);
   };
