@@ -40,7 +40,7 @@ const OrderHistoryTab = ({ businessId }: OrderHistoryTabProps) => {
   const [viewOrder, setViewOrder] = useState<Order | null>(null);
 
   useEffect(() => {
-    const refresh = () => setOrders(getOrders(businessId));
+    const refresh = async () => setOrders(await getOrders(businessId));
     refresh();
     const interval = setInterval(refresh, 5000);
     return () => clearInterval(interval);
