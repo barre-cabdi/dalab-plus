@@ -49,9 +49,9 @@ const SuperAdminDashboard = () => {
     toast.success(newStatus === "active" ? t.saActivated : t.saDeactivated);
   };
 
-  const handleDelete = (id: string, name: string) => {
+  const handleDelete = async (id: string, name: string) => {
     if (!confirm(`${t.saConfirmDelete} "${name}"?`)) return;
-    deleteBusiness(id);
+    await deleteBusiness(id);
     refresh();
     toast.success(t.saDeleted);
   };
