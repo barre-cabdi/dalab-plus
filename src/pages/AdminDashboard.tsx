@@ -75,7 +75,7 @@ const AdminOrderTab = ({ business, categories, menuItems, tables, onOrderPlaced 
     .filter(m => selectedCat === "all" || m.categoryId === selectedCat)
     .filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
 
-  const placeOrder = () => {
+  const placeOrder = async () => {
     if (cart.length === 0) return;
     const order: Order = {
       id: generateId("ord"), businessId: business.id,
