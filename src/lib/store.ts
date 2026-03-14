@@ -569,12 +569,14 @@ export const getCustomers = async (businessId: string): Promise<Customer[]> => {
 };
 
 export const saveCustomer = async (customer: Customer): Promise<void> => {
-  const { error } = await supabase.from("customers").insert({
-    id: customer.id, business_id: customer.businessId, name: customer.name,
+  const row: any = {
+    business_id: customer.businessId, name: customer.name,
     phone: customer.phone, email: customer.email || "", total_orders: customer.totalOrders,
     total_spent: customer.totalSpent, loyalty_points: customer.loyaltyPoints,
     registered_at: customer.registeredAt,
-  });
+  };
+  if (customer.id && /^[0-9a-f]{8}-/i.test(customer.id)) row.id = customer.id;
+  const { error } = await supabase.from("customers").insert(row);
   if (error) console.error("saveCustomer error:", error);
 };
 
