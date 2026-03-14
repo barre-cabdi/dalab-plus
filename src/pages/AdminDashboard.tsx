@@ -75,7 +75,7 @@ const AdminOrderTab = ({ business, categories, menuItems, tables, onOrderPlaced 
     .filter(m => selectedCat === "all" || m.categoryId === selectedCat)
     .filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
 
-  const placeOrder = () => {
+  const placeOrder = async () => {
     if (cart.length === 0) return;
     const order: Order = {
       id: generateId("ord"), businessId: business.id,
@@ -84,7 +84,7 @@ const AdminOrderTab = ({ business, categories, menuItems, tables, onOrderPlaced 
       orderedBy: "admin",
     } as any;
     (order as any).customerName = "Admin Order";
-    saveOrder(order);
+    await saveOrder(order);
     toast.success("Admin order placed ✓");
     setCart([]); setSelectedTable("");
     onOrderPlaced();
@@ -170,8 +170,16 @@ const AdminOrderTab = ({ business, categories, menuItems, tables, onOrderPlaced 
 
 // Cashier Report component
 const CashierReportTab = ({ businessId }: { businessId: string }) => {
-  const staff = getStaff(businessId).filter(s => s.jobTitle.toLowerCase() === "cashier");
-  const allOrders = getOrders(businessId);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
+  const [allOrders, setAllOrders] = useState<Order[]>([]);
+  useEffect(() => {
+    const load = async () => {
+      const s = await getStaff(businessId);
+      setStaff(s.filter(s => s.jobTitle.toLowerCase() === "cashier"));
+      setAllOrders(await getOrders(businessId));
+    };
+    load();
+  }, [businessId]);
   const todayOrders = allOrders.filter(o => new Date(o.createdAt).toDateString() === new Date().toDateString());
 
   return (
@@ -352,12 +360,12 @@ const AdminDashboard = () => {
     } catch (e) { /* silently fail */ }
   };
 
-  const refreshData = () => {
+  const refreshData = async () => {
     if (!business) return;
-    setCategories(getCategories(business.id));
-    setMenuItemsState(getMenuItems(business.id));
-    setTables(getTables(business.id));
-    const currentOrders = getOrders(business.id);
+    setCategories(await getCategories(business.id));
+    setMenuItemsState(await getMenuItems(business.id));
+    setTables(await getTables(business.id));
+    const currentOrders = await getOrders(business.id);
     
     // Check for new orders and play sound
     if (prevOrderCountRef.current > 0 && currentOrders.length > prevOrderCountRef.current) {

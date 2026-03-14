@@ -28,7 +28,7 @@ const CustomerMenu = () => {
   const [addedItemId, setAddedItemId] = useState<string | null>(null);
 
   useEffect(() => { const stored = localStorage.getItem("dp_customer"); if (stored) setCustomer(JSON.parse(stored)); }, []);
-  useEffect(() => { if (!businessId) return; seedDemoData(businessId); setCategories(getCategories(businessId)); setMenuItems(getMenuItems(businessId).filter(m => m.available)); }, [businessId]);
+  useEffect(() => { if (!businessId) return; const load = async () => { await seedDemoData(businessId); setCategories(await getCategories(businessId)); setMenuItems((await getMenuItems(businessId)).filter(m => m.available)); }; load(); }, [businessId]);
 
   useEffect(() => {
     const pollOrders = () => {
@@ -48,13 +48,11 @@ const CustomerMenu = () => {
     return () => clearInterval(interval);
   }, [businessId]);
 
-  // Get branding from multiple sources with priority
-  const business = getBusinessById(businessId);
-  const branding = (() => {
-    try { return JSON.parse(localStorage.getItem("dp_customer_branding") || "{}"); } catch { return {}; }
-  })();
-  const businessName = business?.name || branding.businessName || customer?.businessName || "DALABplus+";
-  const businessLogo = business?.logo || branding.businessLogo || customer?.businessLogo || "";
+  const [businessData, setBusinessData] = useState<any>(null);
+  useEffect(() => { getBusinessById(businessId).then(b => setBusinessData(b || null)); }, [businessId]);
+  const branding = (() => { try { return JSON.parse(localStorage.getItem("dp_customer_branding") || "{}"); } catch { return {}; } })();
+  const businessName = businessData?.name || branding.businessName || customer?.businessName || "DALABplus+";
+  const businessLogo = businessData?.logo || branding.businessLogo || customer?.businessLogo || "";
   const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");
 
   const filteredItems = menuItems.filter(item => {

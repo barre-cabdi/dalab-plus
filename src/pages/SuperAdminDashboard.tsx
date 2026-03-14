@@ -29,8 +29,8 @@ const SuperAdminDashboard = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
 
-  useEffect(() => { setBusinesses(getBusinesses()); }, []);
-  const refresh = () => setBusinesses(getBusinesses());
+  useEffect(() => { getBusinesses().then(setBusinesses); }, []);
+  const refresh = () => getBusinesses().then(setBusinesses);
 
   const filtered = businesses.filter(b =>
     b.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -42,16 +42,16 @@ const SuperAdminDashboard = () => {
   const activeCount = businesses.filter(b => b.status === "active").length;
   const totalRevenue = businesses.reduce((sum, b) => sum + b.totalRevenue, 0);
 
-  const handleToggleStatus = (id: string, status: string) => {
+  const handleToggleStatus = async (id: string, status: string) => {
     const newStatus = status === "active" ? "inactive" : "active";
-    updateBusiness(id, { status: newStatus as Business["status"] });
+    await updateBusiness(id, { status: newStatus as Business["status"] });
     refresh();
     toast.success(newStatus === "active" ? t.saActivated : t.saDeactivated);
   };
 
-  const handleDelete = (id: string, name: string) => {
+  const handleDelete = async (id: string, name: string) => {
     if (!confirm(`${t.saConfirmDelete} "${name}"?`)) return;
-    deleteBusiness(id);
+    await deleteBusiness(id);
     refresh();
     toast.success(t.saDeleted);
   };

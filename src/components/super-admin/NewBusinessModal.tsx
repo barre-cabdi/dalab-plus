@@ -153,11 +153,14 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
     }));
   };
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editBusiness && getBusinesses().some(b => b.adminUsername === form.adminUsername)) {
-      toast.error("Username already taken!");
-      return;
+    if (!editBusiness) {
+      const allBiz = await getBusinesses();
+      if (allBiz.some(b => b.adminUsername === form.adminUsername)) {
+        toast.error("Username already taken!");
+        return;
+      }
     }
     const validServices = services.filter(s => s.title.trim());
     const newBiz: Business = {
@@ -173,8 +176,7 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
     };
 
     if (editBusiness) {
-      updateBusiness(editBusiness.id, newBiz);
-      // Sync dp_active_business if admin is logged in with this business
+      await updateBusiness(editBusiness.id, newBiz);
       try {
         const active = localStorage.getItem("dp_active_business");
         if (active) {
@@ -185,7 +187,7 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
         }
       } catch {}
     } else {
-      saveBusiness(newBiz);
+      await saveBusiness(newBiz);
     }
     onCreated();
     onClose();

@@ -62,14 +62,17 @@ const WaiterDashboard = () => {
       const bizData = JSON.parse(b);
       setWaiter(waiterData);
       setBusiness(bizData);
-      setCategories(getCategories(bizData.id));
-      setMenuItems(getMenuItems(bizData.id));
-      setTables(getTables(bizData.id));
-      const initialOrders = getOrders(bizData.id);
-      setOrders(initialOrders);
-      const stateMap: Record<string, string> = {};
-      initialOrders.forEach(o => { stateMap[o.id] = o.status; });
-      prevOrderStatesRef.current = stateMap;
+      const load = async () => {
+        setCategories(await getCategories(bizData.id));
+        setMenuItems(await getMenuItems(bizData.id));
+        setTables(await getTables(bizData.id));
+        const initialOrders = await getOrders(bizData.id);
+        setOrders(initialOrders);
+        const stateMap: Record<string, string> = {};
+        initialOrders.forEach(o => { stateMap[o.id] = o.status; });
+        prevOrderStatesRef.current = stateMap;
+      };
+      load();
     } else {
       navigate("/login");
     }
@@ -77,8 +80,8 @@ const WaiterDashboard = () => {
 
   useEffect(() => {
     if (!business || !waiter) return;
-    const interval = setInterval(() => {
-      const currentOrders = getOrders(business.id);
+    const interval = setInterval(async () => {
+      const currentOrders = await getOrders(business.id);
       const waiterCurrentOrders = currentOrders.filter(o => o.customerId === waiter.id || (o as any).waiterId === waiter.id);
       
       waiterCurrentOrders.forEach(o => {
@@ -108,8 +111,8 @@ const WaiterDashboard = () => {
       prevOrderStatesRef.current = stateMap;
 
       setOrders(currentOrders);
-      setMenuItems(getMenuItems(business.id));
-      setTables(getTables(business.id));
+      setMenuItems(await getMenuItems(business.id));
+      setTables(await getTables(business.id));
     }, 4000);
     return () => clearInterval(interval);
   }, [business?.id, waiter?.id]);
@@ -166,7 +169,7 @@ const WaiterDashboard = () => {
 
   const cartTotal = cart.reduce((s, c) => s + c.price * c.quantity, 0);
 
-  const placeOrder = () => {
+  const placeOrder = async () => {
     if (cart.length === 0) { toast.error(t.wtCartEmpty); return; }
     if (!selectedTable) { toast.error(t.wtSelectTableErr); return; }
     const table = tables.find(t => t.id === selectedTable);
@@ -185,11 +188,11 @@ const WaiterDashboard = () => {
     (order as any).waiterName = waiter.name;
     (order as any).customerName = `🧑‍🍳 ${waiter.name} (${t.wtWaiter})`;
     (order as any).customerPhone = waiter.phone || "";
-    saveOrder(order);
+    await saveOrder(order);
     setCart([]);
     setSelectedTable("");
     toast.success(t.wtOrderPlaced);
-    setOrders(getOrders(business.id));
+    setOrders(await getOrders(business.id));
   };
 
   const getOrderMessages = (orderId: string) => {

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,8 +58,8 @@ interface MenuManagementTabProps {
 }
 
 const MenuManagementTab = ({ businessId, onDataChange }: MenuManagementTabProps) => {
-  const [categories, setCategories] = useState<Category[]>(() => getCategories(businessId));
-  const [menuItems, setMenuItems] = useState<MenuItem[]>(() => getMenuItems(businessId));
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [activeSubTab, setActiveSubTab] = useState("items");
   const [searchQuery, setSearchQuery] = useState("");
   const [catDialog, setCatDialog] = useState(false);
@@ -75,9 +75,11 @@ const MenuManagementTab = ({ businessId, onDataChange }: MenuManagementTabProps)
   const menuImageRef = useRef<HTMLInputElement>(null);
   const catImageRef = useRef<HTMLInputElement>(null);
 
-  const refreshData = () => {
-    setCategories(getCategories(businessId));
-    setMenuItems(getMenuItems(businessId));
+  useEffect(() => { refreshData(); }, [businessId]);
+
+  const refreshData = async () => {
+    setCategories(await getCategories(businessId));
+    setMenuItems(await getMenuItems(businessId));
     onDataChange();
   };
 

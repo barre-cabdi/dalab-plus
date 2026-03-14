@@ -17,9 +17,9 @@ const CustomersTab = ({ businessId }: CustomersTabProps) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [search, setSearch] = useState("");
 
-  const refreshData = () => {
-    setCustomers(getCustomers(businessId));
-    setOrders(getOrders(businessId));
+  const refreshData = async () => {
+    setCustomers(await getCustomers(businessId));
+    setOrders(await getOrders(businessId));
   };
 
   useEffect(() => {
