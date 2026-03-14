@@ -185,8 +185,9 @@ const OrderHistoryTab = ({ businessId }: OrderHistoryTabProps) => {
     toast.success("CSV soo dejiyay ✓");
   };
 
-  const handlePrintReceipt = (order: Order) => {
-    const business = getBusinesses().find(b => b.id === businessId);
+  const handlePrintReceipt = async (order: Order) => {
+    const businesses = await getBusinesses();
+    const business = businesses.find(b => b.id === businessId);
     if (!business) {
       toast.error("Business not found");
       return;

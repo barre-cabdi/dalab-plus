@@ -66,9 +66,9 @@ const HotelManagementTab = ({ businessId, initialView = "overview" }: HotelManag
   useEffect(() => { refresh(); }, [businessId]);
   useEffect(() => { setView(initialView); }, [initialView]);
 
-  const refresh = () => {
-    setRooms(getHotelRooms(businessId));
-    setBookings(getHotelBookings(businessId));
+  const refresh = async () => {
+    setRooms(await getHotelRooms(businessId));
+    setBookings(await getHotelBookings(businessId));
   };
 
   // Stats

@@ -35,7 +35,7 @@ const StaffTab = ({ businessId }: StaffTabProps) => {
   });
 
   useEffect(() => { refresh(); }, [businessId]);
-  const refresh = () => setStaff(getStaff(businessId));
+  const refresh = () => { getStaff(businessId).then(setStaff); };
 
   const openDialog = (s?: StaffMember) => {
     if (s) {

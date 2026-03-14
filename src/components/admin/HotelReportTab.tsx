@@ -33,8 +33,11 @@ const HotelReportTab = ({ businessId, initialView }: HotelReportTabProps) => {
   useEffect(() => { if (initialView) setView(initialView as HotelReportView); }, [initialView]);
 
   useEffect(() => {
-    setRooms(getHotelRooms(businessId));
-    setBookings(getHotelBookings(businessId));
+    const load = async () => {
+      setRooms(await getHotelRooms(businessId));
+      setBookings(await getHotelBookings(businessId));
+    };
+    load();
   }, [businessId]);
 
   const tabs = [

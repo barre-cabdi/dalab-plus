@@ -107,11 +107,11 @@ const LoyaltyTab = ({ businessId }: LoyaltyTabProps) => {
   const [editLevels, setEditLevels] = useState<LoyaltyLevelConfig[]>([]);
 
   useEffect(() => { refresh(); }, [businessId]);
-  const refresh = () => {
+  const refresh = async () => {
     setMembers(getLoyaltyMembers(businessId));
     setRewards(getLoyaltyRewards(businessId));
-    setOrders(getOrders(businessId));
-    setLevels(getLoyaltyLevels(businessId));
+    setOrders(await getOrders(businessId));
+    setLevels(await getLoyaltyLevels(businessId));
   };
 
   const getMemberOrders = (memberName: string, memberPhone: string) => {
