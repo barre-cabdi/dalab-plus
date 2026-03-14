@@ -49,9 +49,8 @@ const BusinessDetailModal = ({ open, onClose, business, onUpdated }: Props) => {
     }));
   };
 
-  const handleSave = () => {
-    updateBusiness(business.id, { paymentMethods, permissions });
-    // Also sync dp_active_business if it matches
+  const handleSave = async () => {
+    await updateBusiness(business.id, { paymentMethods, permissions });
     try {
       const active = localStorage.getItem("dp_active_business");
       if (active) {
