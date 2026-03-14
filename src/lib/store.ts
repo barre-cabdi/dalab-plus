@@ -729,7 +729,7 @@ export const saveLoyaltyLevels = async (businessId: string, levels: LoyaltyLevel
 
 // ============= UTILITIES =============
 
-export const generateId = (prefix: string) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+export const generateId = (_prefix?: string) => crypto.randomUUID();
 
 export const calcRunningTotal = (booking: HotelBooking, pricePerNight: number): { elapsedNights: number; runningTotal: number } => {
   if (booking.status !== "checked-in" || !booking.checkedInAt) {
