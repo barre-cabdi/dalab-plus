@@ -261,7 +261,7 @@ const CashierReportTab = ({ businessId }: { businessId: string }) => {
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [business, setBusiness] = useState<Business | null>(null);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [collapsed, setCollapsed] = useState(false);
