@@ -476,11 +476,11 @@ const AdminDashboard = () => {
     else { setEditingTable(null); setTableForm({ number: String(tables.length + 1), seats: "4" }); }
     setTableDialog(true);
   };
-  const saveTableForm = () => {
+  const saveTableForm = async () => {
     if (!tableForm.number) return;
-    if (editingTable) { updateTable(editingTable.id, { number: Number(tableForm.number), seats: Number(tableForm.seats) }); toast.success("Table updated"); }
-    else { saveTable({ id: generateId("tbl"), businessId: business.id, number: Number(tableForm.number), seats: Number(tableForm.seats), status: "available" }); toast.success("Table created"); }
-    setTableDialog(false); refreshData();
+    if (editingTable) { await updateTable(editingTable.id, { number: Number(tableForm.number), seats: Number(tableForm.seats) }); toast.success("Table updated"); }
+    else { await saveTable({ id: generateId("tbl"), businessId: business.id, number: Number(tableForm.number), seats: Number(tableForm.seats), status: "available" }); toast.success("Table created"); }
+    setTableDialog(false); await refreshData();
   };
 
   const confirmDelete = () => {
