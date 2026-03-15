@@ -783,7 +783,7 @@ const AdminDashboard = () => {
                           size="sm"
                           variant="hero"
                           className="gap-1.5 text-xs"
-                          onClick={() => { updateOrder(o.id, { status: "preparing" }); toast.success(t.csAccept ? `${t.csAccept} ✓` : "Accepted ✓"); refreshData(); }}
+                          onClick={async () => { await updateOrder(o.id, { status: "preparing" }); toast.success(t.csAccept ? `${t.csAccept} ✓` : "Accepted ✓"); await refreshData(); }}
                         >
                           <Check className="w-3.5 h-3.5" /> {t.csAccept || "Accept"}
                         </Button>
