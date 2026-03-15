@@ -784,17 +784,17 @@ const AdminDashboard = () => {
                           size="sm"
                           variant="hero"
                           className="gap-1.5 text-xs"
-                          onClick={() => { updateOrder(o.id, { status: "preparing" }); toast.success("Dalabka la aqbalay ✓"); refreshData(); }}
+                          onClick={() => { updateOrder(o.id, { status: "preparing" }); toast.success(t.csAccept ? `${t.csAccept} ✓` : "Accepted ✓"); refreshData(); }}
                         >
-                          <Check className="w-3.5 h-3.5" /> Aqbal
+                          <Check className="w-3.5 h-3.5" /> {t.csAccept || "Accept"}
                         </Button>
                         <Button
                           size="sm"
                           variant="destructive"
                           className="gap-1.5 text-xs"
-                          onClick={() => { updateOrder(o.id, { status: "cancelled" }); toast.info("Dalabka la joojiyay"); refreshData(); }}
+                          onClick={() => { updateOrder(o.id, { status: "cancelled" }); toast.info(t.csReject || "Rejected"); refreshData(); }}
                         >
-                          <XCircle className="w-3.5 h-3.5" /> Diid
+                          <XCircle className="w-3.5 h-3.5" /> {t.csReject || "Reject"}
                         </Button>
                       </>
                     )}
