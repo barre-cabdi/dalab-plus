@@ -261,7 +261,7 @@ const CashierReportTab = ({ businessId }: { businessId: string }) => {
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [business, setBusiness] = useState<Business | null>(null);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [collapsed, setCollapsed] = useState(false);
@@ -706,7 +706,7 @@ const AdminDashboard = () => {
             <div className="space-y-4">
               {filteredOrders.length === 0 ? (
                 <div className="bg-card border border-border rounded-xl p-12 text-center">
-                  <p className="text-muted-foreground">Dalab la helin</p>
+                  <p className="text-muted-foreground">{t.wtNoOrders || "No orders found"}</p>
                 </div>
               ) : filteredOrders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((o, i) => (
                 <motion.div
@@ -723,16 +723,23 @@ const AdminDashboard = () => {
                   }`}
                 >
                   {/* Header */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold">
-                        {((o as any).customerName || "G").charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-display font-bold text-sm">{(o as any).customerName || "Guest"}</p>
-                        <p className="text-xs text-muted-foreground">{(o as any).customerPhone || "No phone"} · Table #{o.tableId}</p>
-                      </div>
-                    </div>
+                   <div className="flex items-start justify-between mb-4">
+                      {(() => {
+                        const parts = (o.orderedBy || "").split(":");
+                        const custName = parts.length >= 2 ? parts[1] : (o as any).customerName || "Guest";
+                        const custPhone = parts.length >= 3 ? parts[2] : (o as any).customerPhone || "";
+                        return (
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold">
+                              {custName.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="font-display font-bold text-sm">{custName}</p>
+                              <p className="text-xs text-muted-foreground">{custPhone || "—"} · Table #{o.tableId}</p>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     <div className="text-right">
                       <Badge variant="secondary" className={`text-xs ${
                         o.status === "pending" ? "bg-secondary/20 text-secondary-foreground" :
@@ -741,11 +748,11 @@ const AdminDashboard = () => {
                         o.status === "delivered" ? "bg-muted text-muted-foreground" :
                         "bg-destructive/15 text-destructive"
                       }`}>
-                        {o.status === "pending" ? "⏳ Sugaya" :
-                         o.status === "preparing" ? "👨‍🍳 Diyaarinaya" :
-                         o.status === "ready" ? "✅ Diyaar" :
-                         o.status === "delivered" ? "📦 La Geeyay" :
-                         "❌ La Joojiyay"}
+                        {o.status === "pending" ? `⏳ ${t.wtPending?.replace("⏳ ", "") || "Pending"}` :
+                         o.status === "preparing" ? `👨‍🍳 ${t.wtPreparing?.replace("👨‍🍳 ", "") || "Preparing"}` :
+                         o.status === "ready" ? `✅ ${t.wtReady?.replace("✅ ", "") || "Ready"}` :
+                         o.status === "delivered" ? `📦 ${t.wtDelivered?.replace("📦 ", "") || "Delivered"}` :
+                         `❌ ${t.wtCancelledCount || "Cancelled"}`}
                       </Badge>
                       <p className="text-[10px] text-muted-foreground mt-1">{new Date(o.createdAt).toLocaleTimeString()}</p>
                       <p className="text-[10px] text-muted-foreground font-mono">{o.id.slice(0, 12)}</p>
@@ -762,8 +769,8 @@ const AdminDashboard = () => {
                         </div>
                       ))}
                     </div>
-                    <div className="border-t border-border mt-2 pt-2 flex justify-between">
-                      <span className="font-semibold text-sm">Wadarta</span>
+                     <div className="border-t border-border mt-2 pt-2 flex justify-between">
+                       <span className="font-semibold text-sm">{t.wtTotal || "Total"}</span>
                       <span className="font-display font-bold text-accent">${o.total.toFixed(2)}</span>
                     </div>
                   </div>
@@ -776,17 +783,17 @@ const AdminDashboard = () => {
                           size="sm"
                           variant="hero"
                           className="gap-1.5 text-xs"
-                          onClick={() => { updateOrder(o.id, { status: "preparing" }); toast.success("Dalabka la aqbalay ✓"); refreshData(); }}
+                          onClick={() => { updateOrder(o.id, { status: "preparing" }); toast.success(t.csAccept ? `${t.csAccept} ✓` : "Accepted ✓"); refreshData(); }}
                         >
-                          <Check className="w-3.5 h-3.5" /> Aqbal
+                          <Check className="w-3.5 h-3.5" /> {t.csAccept || "Accept"}
                         </Button>
                         <Button
                           size="sm"
                           variant="destructive"
                           className="gap-1.5 text-xs"
-                          onClick={() => { updateOrder(o.id, { status: "cancelled" }); toast.info("Dalabka la joojiyay"); refreshData(); }}
+                          onClick={() => { updateOrder(o.id, { status: "cancelled" }); toast.info(t.csReject || "Rejected"); refreshData(); }}
                         >
-                          <XCircle className="w-3.5 h-3.5" /> Diid
+                          <XCircle className="w-3.5 h-3.5" /> {t.csReject || "Reject"}
                         </Button>
                       </>
                     )}
@@ -794,9 +801,9 @@ const AdminDashboard = () => {
                       <Button
                         size="sm"
                         className="gap-1.5 text-xs bg-green-600 hover:bg-green-700 text-white"
-                        onClick={() => { updateOrder(o.id, { status: "ready" }); toast.success("Dalabka diyaar ayuu yahay ✓"); refreshData(); }}
+                        onClick={() => { updateOrder(o.id, { status: "ready" }); toast.success(t.csReadyBtn ? `${t.csReadyBtn} ✓` : "Ready ✓"); refreshData(); }}
                       >
-                        <Check className="w-3.5 h-3.5" /> Diyaar
+                        <Check className="w-3.5 h-3.5" /> {t.csReadyBtn || "Ready"}
                       </Button>
                     )}
                     {o.status === "ready" && (
@@ -804,9 +811,9 @@ const AdminDashboard = () => {
                         size="sm"
                         variant="outline"
                         className="gap-1.5 text-xs"
-                        onClick={() => { updateOrder(o.id, { status: "delivered" }); toast.success("Dalabka la geeyay ✓"); refreshData(); }}
+                        onClick={() => { updateOrder(o.id, { status: "delivered" }); toast.success(t.csServed ? `${t.csServed} ✓` : "Served ✓"); refreshData(); }}
                       >
-                        <Check className="w-3.5 h-3.5" /> La Geeyay
+                        <Check className="w-3.5 h-3.5" /> {t.csServed || "Served"}
                       </Button>
                     )}
                     {o.status !== "cancelled" && o.status !== "delivered" && (
@@ -814,9 +821,9 @@ const AdminDashboard = () => {
                         size="sm"
                         variant="outline"
                         className="gap-1.5 text-xs"
-                        onClick={() => setFeedbackDialog({ orderId: o.id, customerName: (o as any).customerName || "Guest" })}
+                        onClick={() => { const parts = (o.orderedBy || "").split(":"); setFeedbackDialog({ orderId: o.id, customerName: parts.length >= 2 ? parts[1] : "Guest" }); }}
                       >
-                        <MessageSquare className="w-3.5 h-3.5" /> Fariin U Dir
+                        <MessageSquare className="w-3.5 h-3.5" /> {t.wtSendMsg || "Send Message"}
                       </Button>
                     )}
                     <Button
@@ -836,24 +843,27 @@ const AdminDashboard = () => {
             <Dialog open={!!feedbackDialog} onOpenChange={() => { setFeedbackDialog(null); setFeedbackMessage(""); }}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Fariin U Dir {feedbackDialog?.customerName}</DialogTitle>
-                  <DialogDescription>Qor fariin aad u direyso macmiilka dalabka #{feedbackDialog?.orderId.slice(0, 10)}</DialogDescription>
+                  <DialogTitle>{t.wtSendMsg || "Send Message"} {feedbackDialog?.customerName}</DialogTitle>
+                  <DialogDescription>{t.wtWriteMsg || "Write your message"} #{feedbackDialog?.orderId.slice(0, 10)}</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3">
                   <div className="flex gap-2 flex-wrap">
-                    {["Dalabkaaga waa la diyaarinayaa ☕", "Dalabkaaga diyaar ayuu yahay! ✅", "Fadlan sug daqiiqado yar ⏳", "Mahadsanid dalabkaaga! 🙏"].map(q => (
+                    {(lang === "so" 
+                      ? ["Dalabkaaga waa la diyaarinayaa ☕", "Dalabkaaga diyaar ayuu yahay! ✅", "Fadlan sug daqiiqado yar ⏳", "Mahadsanid dalabkaaga! 🙏"]
+                      : ["Your order is being prepared ☕", "Your order is ready! ✅", "Please wait a few minutes ⏳", "Thank you for your order! 🙏"]
+                    ).map(q => (
                       <Button key={q} variant="outline" size="sm" className="text-xs" onClick={() => setFeedbackMessage(q)}>{q}</Button>
                     ))}
                   </div>
                   <Textarea
-                    placeholder="Qor fariintaada halkan..."
+                    placeholder={lang === "so" ? "Qor fariintaada halkan..." : "Write your message here..."}
                     value={feedbackMessage}
                     onChange={e => setFeedbackMessage(e.target.value)}
                     className="min-h-[80px]"
                   />
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => { setFeedbackDialog(null); setFeedbackMessage(""); }}>Jooji</Button>
+                  <Button variant="outline" onClick={() => { setFeedbackDialog(null); setFeedbackMessage(""); }}>{t.wtCancel || "Cancel"}</Button>
                   <Button variant="hero" onClick={sendFeedback} disabled={!feedbackMessage.trim()}>
                     <MessageSquare className="w-4 h-4 mr-1.5" /> U Dir
                   </Button>
@@ -1170,7 +1180,7 @@ const AdminDashboard = () => {
             )}
             <div className="relative">
               <button
-                onClick={() => { setShowNotifications(!showNotifications); setShowHelp(false); setHasNewNotification(false); }}
+                onClick={() => { setShowNotifications(!showNotifications); setShowHelp(false); setHasNewNotification(false); setNotifications(prev => showNotifications ? prev : []); }}
                 className={`w-9 h-9 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all relative ${hasNewNotification ? "animate-bounce" : ""}`}
               >
                 <Bell className={`w-4 h-4 ${hasNewNotification ? "text-accent" : ""}`} />

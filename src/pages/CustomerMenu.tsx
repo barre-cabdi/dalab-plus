@@ -94,11 +94,8 @@ const CustomerMenu = () => {
       total: cartTotal,
       status: "pending",
       createdAt: new Date().toISOString(),
-      orderedBy: "customer",
+      orderedBy: `customer:${customer.name || "Guest"}:${customer.phone || ""}`,
     };
-    // Add extra info as extended properties
-    (order as any).customerName = customer.name || "Guest";
-    (order as any).customerPhone = customer.phone || "";
     
     await saveOrder(order);
     
