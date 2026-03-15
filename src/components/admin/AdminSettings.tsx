@@ -38,6 +38,9 @@ const AdminSettings = ({ business, onUpdate }: AdminSettingsProps) => {
     logo: business.logo || "",
     type: business.type,
     description: business.description || "",
+    // Notification settings from DB
+    notificationSound: (business as any).notificationSound || localStorage.getItem(`dp_admin_notif_sound_${business.id}`) || "chime",
+    notificationDuration: (business as any).notificationDuration || Number(localStorage.getItem(`dp_admin_notif_duration_${business.id}`)) || 3,
     // Admin-editable settings stored in localStorage
     currency: localStorage.getItem(`dp_admin_currency_${business.id}`) || "USD",
     language: localStorage.getItem(`dp_admin_language_${business.id}`) || "so",
