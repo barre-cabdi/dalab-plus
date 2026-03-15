@@ -659,7 +659,7 @@ const AdminDashboard = () => {
             createdAt: new Date().toISOString(),
           });
           localStorage.setItem("dp_order_messages", JSON.stringify(allMessages));
-          toast.success(`Fariin loo diray ${feedbackDialog.customerName}`);
+          toast.success(lang === "so" ? `Fariin loo diray ${feedbackDialog.customerName}` : `Message sent to ${feedbackDialog.customerName}`);
           setFeedbackMessage("");
           setFeedbackDialog(null);
         };
