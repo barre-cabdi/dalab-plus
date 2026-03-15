@@ -483,13 +483,13 @@ const AdminDashboard = () => {
     setTableDialog(false); await refreshData();
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!deleteConfirm) return;
-    if (deleteConfirm.type === "category") deleteCategory(deleteConfirm.id);
-    else if (deleteConfirm.type === "menu") deleteMenuItem(deleteConfirm.id);
-    else if (deleteConfirm.type === "table") deleteTable(deleteConfirm.id);
+    if (deleteConfirm.type === "category") await deleteCategory(deleteConfirm.id);
+    else if (deleteConfirm.type === "menu") await deleteMenuItem(deleteConfirm.id);
+    else if (deleteConfirm.type === "table") await deleteTable(deleteConfirm.id);
     toast.success(`${deleteConfirm.name} deleted`);
-    setDeleteConfirm(null); refreshData();
+    setDeleteConfirm(null); await refreshData();
   };
 
   const getCategoryName = (id: string) => categories.find(c => c.id === id)?.name || "—";
