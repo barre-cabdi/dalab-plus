@@ -454,11 +454,11 @@ const AdminDashboard = () => {
     }
     setMenuDialog(true);
   };
-  const saveMenuForm = () => {
+  const saveMenuForm = async () => {
     if (!menuForm.name.trim() || !menuForm.price) return;
-    if (editingMenu) { updateMenuItem(editingMenu.id, { name: menuForm.name, description: menuForm.description, price: Number(menuForm.price), categoryId: menuForm.categoryId, image: menuForm.image, available: menuForm.available }); toast.success("Menu item updated"); }
-    else { saveMenuItem({ id: generateId("item"), businessId: business.id, categoryId: menuForm.categoryId, name: menuForm.name, description: menuForm.description, price: Number(menuForm.price), image: menuForm.image, rating: 0, available: menuForm.available }); toast.success("Menu item created"); }
-    setMenuDialog(false); refreshData();
+    if (editingMenu) { await updateMenuItem(editingMenu.id, { name: menuForm.name, description: menuForm.description, price: Number(menuForm.price), categoryId: menuForm.categoryId, image: menuForm.image, available: menuForm.available }); toast.success("Menu item updated"); }
+    else { await saveMenuItem({ id: generateId("item"), businessId: business.id, categoryId: menuForm.categoryId, name: menuForm.name, description: menuForm.description, price: Number(menuForm.price), image: menuForm.image, rating: 0, available: menuForm.available }); toast.success("Menu item created"); }
+    setMenuDialog(false); await refreshData();
   };
 
   const handleMenuImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
