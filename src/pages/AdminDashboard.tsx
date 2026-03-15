@@ -384,7 +384,7 @@ const AdminDashboard = () => {
     if (prevFeedbackCountRef.current > 0 && customerMessages.length > prevFeedbackCountRef.current) {
       playFeedbackSound();
       setHasNewNotification(true);
-      toast.info("💬 Macmiil cusub ayaa fariin ku soo diray!", { duration: 5000 });
+      toast.info(lang === "so" ? "💬 Macmiil cusub ayaa fariin ku soo diray!" : "💬 New customer message received!", { duration: 5000 });
     }
     prevFeedbackCountRef.current = customerMessages.length;
     
