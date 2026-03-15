@@ -824,7 +824,7 @@ const AdminDashboard = () => {
                         className="gap-1.5 text-xs"
                         onClick={() => setFeedbackDialog({ orderId: o.id, customerName: (o as any).customerName || "Guest" })}
                       >
-                        <MessageSquare className="w-3.5 h-3.5" /> Fariin U Dir
+                        <MessageSquare className="w-3.5 h-3.5" /> {t.wtSendMsg || "Send Message"}
                       </Button>
                     )}
                     <Button
