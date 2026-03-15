@@ -374,7 +374,7 @@ const AdminDashboard = () => {
       setHasNewNotification(true);
       setFlashOrder(true);
       setTimeout(() => setFlashOrder(false), 3000);
-      toast.success(`🔔 ${newCount} dalab cusub ayaa soo galay!`, { duration: 5000 });
+      toast.success(lang === "so" ? `🔔 ${newCount} dalab cusub ayaa soo galay!` : `🔔 ${newCount} new order(s) received!`, { duration: 5000 });
     }
     prevOrderCountRef.current = currentOrders.length;
 
