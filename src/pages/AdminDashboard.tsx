@@ -724,14 +724,22 @@ const AdminDashboard = () => {
                 >
                   {/* Header */}
                   <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold">
-                        {((o as any).customerName || "G").charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-display font-bold text-sm">{(o as any).customerName || "Guest"}</p>
-                        <p className="text-xs text-muted-foreground">{(o as any).customerPhone || "No phone"} · Table #{o.tableId}</p>
-                      </div>
+                      {(() => {
+                        const parts = (o.orderedBy || "").split(":");
+                        const custName = parts.length >= 2 ? parts[1] : (o as any).customerName || "Guest";
+                        const custPhone = parts.length >= 3 ? parts[2] : (o as any).customerPhone || "";
+                        return (
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold">
+                              {custName.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="font-display font-bold text-sm">{custName}</p>
+                              <p className="text-xs text-muted-foreground">{custPhone || "—"} · Table #{o.tableId}</p>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
                     <div className="text-right">
                       <Badge variant="secondary" className={`text-xs ${
