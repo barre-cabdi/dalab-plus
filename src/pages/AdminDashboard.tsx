@@ -682,12 +682,12 @@ const AdminDashboard = () => {
             {/* Status filter chips */}
             <div className="flex gap-2 flex-wrap">
               {[
-                { key: "all", label: "Dhammaan", count: orders.length },
-                { key: "pending", label: "⏳ Sugaya", count: pendingCount },
-                { key: "preparing", label: "👨‍🍳 Diyaarinaya", count: preparingCount },
-                { key: "ready", label: "✅ Diyaar", count: readyCount },
-                { key: "delivered", label: "📦 La Geeyay", count: orders.filter(o => o.status === "delivered").length },
-                { key: "cancelled", label: "❌ La Joojiyay", count: orders.filter(o => o.status === "cancelled").length },
+                { key: "all", label: lang === "so" ? "Dhammaan" : "All", count: orders.length },
+                { key: "pending", label: `⏳ ${lang === "so" ? "Sugaya" : "Pending"}`, count: pendingCount },
+                { key: "preparing", label: `👨‍🍳 ${lang === "so" ? "Diyaarinaya" : "Preparing"}`, count: preparingCount },
+                { key: "ready", label: `✅ ${lang === "so" ? "Diyaar" : "Ready"}`, count: readyCount },
+                { key: "delivered", label: `📦 ${lang === "so" ? "La Geeyay" : "Delivered"}`, count: orders.filter(o => o.status === "delivered").length },
+                { key: "cancelled", label: `❌ ${lang === "so" ? "La Joojiyay" : "Cancelled"}`, count: orders.filter(o => o.status === "cancelled").length },
               ].map(f => (
                 <Button
                   key={f.key}
