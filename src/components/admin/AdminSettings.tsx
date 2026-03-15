@@ -122,6 +122,8 @@ const AdminSettings = ({ business, onUpdate }: AdminSettingsProps) => {
     localStorage.setItem(`dp_admin_language_${business.id}`, form.language);
     localStorage.setItem(`dp_admin_notif_${business.id}`, String(form.orderNotifications));
     localStorage.setItem(`dp_admin_autoaccept_${business.id}`, String(form.autoAcceptOrders));
+    localStorage.setItem(`dp_admin_notif_sound_${business.id}`, form.notificationSound);
+    localStorage.setItem(`dp_admin_notif_duration_${business.id}`, String(form.notificationDuration));
 
     // SuperAdmin-only fields
     if (isSuperAdmin) {
