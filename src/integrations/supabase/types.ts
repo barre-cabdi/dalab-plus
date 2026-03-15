@@ -28,11 +28,14 @@ export type Database = {
           id: string
           logo: string | null
           name: string
+          notification_duration: number | null
+          notification_sound: string | null
           payment_methods: Json | null
           permissions: Json | null
           phone: string | null
           phone_prefix: string | null
           services: Json | null
+          short_id: number
           status: string
           subscription: string | null
           total_orders: number | null
@@ -53,11 +56,14 @@ export type Database = {
           id?: string
           logo?: string | null
           name: string
+          notification_duration?: number | null
+          notification_sound?: string | null
           payment_methods?: Json | null
           permissions?: Json | null
           phone?: string | null
           phone_prefix?: string | null
           services?: Json | null
+          short_id?: number
           status?: string
           subscription?: string | null
           total_orders?: number | null
@@ -78,11 +84,14 @@ export type Database = {
           id?: string
           logo?: string | null
           name?: string
+          notification_duration?: number | null
+          notification_sound?: string | null
           payment_methods?: Json | null
           permissions?: Json | null
           phone?: string | null
           phone_prefix?: string | null
           services?: Json | null
+          short_id?: number
           status?: string
           subscription?: string | null
           total_orders?: number | null
@@ -140,6 +149,7 @@ export type Database = {
           name: string
           phone: string | null
           registered_at: string
+          short_id: number
           total_orders: number | null
           total_spent: number | null
           updated_at: string
@@ -153,6 +163,7 @@ export type Database = {
           name: string
           phone?: string | null
           registered_at?: string
+          short_id?: number
           total_orders?: number | null
           total_spent?: number | null
           updated_at?: string
@@ -166,6 +177,7 @@ export type Database = {
           name?: string
           phone?: string | null
           registered_at?: string
+          short_id?: number
           total_orders?: number | null
           total_spent?: number | null
           updated_at?: string

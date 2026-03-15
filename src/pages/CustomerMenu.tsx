@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Plus, Minus, Search, Star, Trash2, Send, UtensilsCrossed, Trophy, ChevronRight, User, Clock, ChefHat, Package, CheckCircle, MessageSquare, XCircle, Sparkles, ArrowRight, Zap, Store } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { getCategories, getMenuItems, Category, MenuItem, seedDemoData, getBusinessById } from "@/lib/store";
+import { getCategories, getMenuItems, Category, MenuItem, seedDemoData, getBusinessById, saveOrder, getOrders, generateId, Order, updateCustomer, getCustomers } from "@/lib/store";
+import { useI18n } from "@/lib/i18n";
 
 type CartItem = { id: string; name: string; price: number; quantity: number; image: string };
 
 const CustomerMenu = () => {
   const navigate = useNavigate();
+  const { t, lang } = useI18n();
   const [searchParams] = useSearchParams();
   const tableId = searchParams.get("table") || "1";
   const businessId = searchParams.get("business") || "";
@@ -22,29 +24,31 @@ const CustomerMenu = () => {
   const [showCart, setShowCart] = useState(false);
   const [customer, setCustomer] = useState<any>(null);
   const [activeNav, setActiveNav] = useState("menu");
-  const [activeOrders, setActiveOrders] = useState<any[]>([]);
+  const [activeOrders, setActiveOrders] = useState<Order[]>([]);
   const [showOrderTracker, setShowOrderTracker] = useState(false);
-  const [orderMessages, setOrderMessages] = useState<any[]>([]);
   const [addedItemId, setAddedItemId] = useState<string | null>(null);
 
   useEffect(() => { const stored = localStorage.getItem("dp_customer"); if (stored) setCustomer(JSON.parse(stored)); }, []);
   useEffect(() => { if (!businessId) return; const load = async () => { await seedDemoData(businessId); setCategories(await getCategories(businessId)); setMenuItems((await getMenuItems(businessId)).filter(m => m.available)); }; load(); }, [businessId]);
 
+  // Poll orders from database instead of localStorage
   useEffect(() => {
-    const pollOrders = () => {
-      const stored = localStorage.getItem("dp_customer");
-      if (!stored) return;
-      const c = JSON.parse(stored);
-      const allOrders = JSON.parse(localStorage.getItem("dp_orders") || "[]");
-      const myOrders = allOrders.filter((o: any) => o.customerId === c.id && o.businessId === businessId && o.status !== "delivered" && o.status !== "cancelled");
+    if (!businessId) return;
+    const stored = localStorage.getItem("dp_customer");
+    if (!stored) return;
+    const c = JSON.parse(stored);
+    
+    const pollOrders = async () => {
+      const allOrders = await getOrders(businessId);
+      const myOrders = allOrders.filter((o: Order) => 
+        o.customerId === c.id && 
+        o.status !== "delivered" && o.status !== "cancelled" && o.status !== "paid"
+      );
       setActiveOrders(myOrders);
       if (myOrders.length > 0) setShowOrderTracker(true);
-      const allMsgs = JSON.parse(localStorage.getItem("dp_order_messages") || "[]");
-      const myMsgs = allMsgs.filter((m: any) => myOrders.some((o: any) => o.id === m.orderId));
-      setOrderMessages(myMsgs);
     };
     pollOrders();
-    const interval = setInterval(pollOrders, 3000);
+    const interval = setInterval(pollOrders, 4000);
     return () => clearInterval(interval);
   }, [businessId]);
 
@@ -78,39 +82,52 @@ const CustomerMenu = () => {
   const cartTotal = cart.reduce((sum, c) => sum + c.price * c.quantity, 0);
   const cartCount = cart.reduce((sum, c) => sum + c.quantity, 0);
 
-  const confirmOrder = () => {
-    const orderId = `ORD-${String(Math.floor(Math.random() * 999999)).padStart(6, "0")}`;
-    const order = {
-      id: orderId, items: cart, total: cartTotal, status: "pending",
-      tableId, businessId, customerId: customer?.id,
-      customerName: customer?.name || "Guest",
-      customerPhone: customer?.phone || "",
-      createdAt: new Date().toISOString()
+  const confirmOrder = async () => {
+    if (!customer || cart.length === 0) return;
+    
+    const order: Order = {
+      id: generateId("ord"),
+      businessId,
+      tableId,
+      customerId: customer.id,
+      items: cart,
+      total: cartTotal,
+      status: "pending",
+      createdAt: new Date().toISOString(),
+      orderedBy: "customer",
     };
-    const orders = JSON.parse(localStorage.getItem("dp_orders") || "[]");
-    orders.push(order);
-    localStorage.setItem("dp_orders", JSON.stringify(orders));
-    if (customer) {
-      const allCustomers = JSON.parse(localStorage.getItem("dp_customers") || "[]");
-      const updated = allCustomers.map((c: any) =>
-        c.id === customer.id
-          ? { ...c, totalOrders: (c.totalOrders || 0) + 1, totalSpent: (c.totalSpent || 0) + cartTotal, loyaltyPoints: (c.loyaltyPoints || 0) + Math.floor(cartTotal) }
-          : c
-      );
-      localStorage.setItem("dp_customers", JSON.stringify(updated));
+    // Add extra info as extended properties
+    (order as any).customerName = customer.name || "Guest";
+    (order as any).customerPhone = customer.phone || "";
+    
+    await saveOrder(order);
+    
+    // Update customer stats in database
+    const customers = await getCustomers(businessId);
+    const dbCustomer = customers.find(c => c.id === customer.id || c.phone === customer.phone);
+    if (dbCustomer) {
+      await updateCustomer(dbCustomer.id, {
+        totalOrders: (dbCustomer.totalOrders || 0) + 1,
+        totalSpent: (dbCustomer.totalSpent || 0) + cartTotal,
+        loyaltyPoints: (dbCustomer.loyaltyPoints || 0) + Math.floor(cartTotal),
+      });
     }
-    if (customer) {
-      const points = Math.floor(cartTotal);
-      customer.points = (customer.points || 0) + points;
-      customer.totalOrders = (customer.totalOrders || 0) + 1;
-      customer.totalSpent = (customer.totalSpent || 0) + cartTotal;
-      if (customer.points >= 600) customer.level = "Platinum";
-      else if (customer.points >= 300) customer.level = "Gold";
-      else if (customer.points >= 100) customer.level = "Silver";
-      else customer.level = "Bronze";
-      localStorage.setItem("dp_customer", JSON.stringify(customer));
-    }
-    navigate(`/order-tracking/${orderId}`);
+    
+    // Update local customer data
+    const points = Math.floor(cartTotal);
+    customer.points = (customer.points || 0) + points;
+    customer.totalOrders = (customer.totalOrders || 0) + 1;
+    customer.totalSpent = (customer.totalSpent || 0) + cartTotal;
+    if (customer.points >= 600) customer.level = "Platinum";
+    else if (customer.points >= 300) customer.level = "Gold";
+    else if (customer.points >= 100) customer.level = "Silver";
+    else customer.level = "Bronze";
+    localStorage.setItem("dp_customer", JSON.stringify(customer));
+    setCustomer({ ...customer });
+    
+    setCart([]);
+    setShowCart(false);
+    navigate(`/order-tracking/${order.id}`);
   };
 
   const customerLevel = customer?.level || "Bronze";
@@ -126,6 +143,23 @@ const CustomerMenu = () => {
   const levelTarget = getLevelTarget(customerLevel);
   const progressPercent = levelTarget.needed ? Math.min((customerPoints / levelTarget.needed) * 100, 100) : 100;
   const pointsToNext = levelTarget.needed - customerPoints;
+
+  // Bilingual labels
+  const searchPlaceholder = lang === "so" ? "Raadi cuntada..." : "Search food...";
+  const allLabel = lang === "so" ? "Dhammaan" : "All";
+  const noFoodMsg = lang === "so" ? "Wax cunto ah lama helin." : "No food items found.";
+  const addLabel = lang === "so" ? "Ku dar" : "Add";
+  const cartLabel = lang === "so" ? "Cart-kaaga" : "Your Cart";
+  const orderBtn = lang === "so" ? "Dalbo" : "Order";
+  const itemsLabel = (n: number) => lang === "so" ? `${n} shay${n > 1 ? "al" : ""}` : `${n} item${n > 1 ? "s" : ""}`;
+  const myOrdersLabel = lang === "so" ? "Dalabyadayda" : "My Orders";
+  const menuLabel = lang === "so" ? "Menu" : "Menu";
+  const trackLabel = lang === "so" ? "Dalabyadaada" : "Your Orders";
+  const detailLabel = lang === "so" ? "Faahfaahin" : "Details";
+  const waitingLabel = lang === "so" ? "La sugayo..." : "Waiting...";
+  const acceptedLabel = lang === "so" ? "La aqbalay ✅" : "Accepted ✅";
+  const preparingLabel = lang === "so" ? "La kariyaa 👨‍🍳" : "Preparing 👨‍🍳";
+  const readyLabel = lang === "so" ? "Diyaar! ✅" : "Ready! ✅";
 
   return (
     <div className="min-h-screen bg-hero pb-28">
@@ -157,8 +191,8 @@ const CustomerMenu = () => {
           </div>
           <div className="flex items-center gap-1">
             {[
-              { key: "menu", label: "Menu", icon: UtensilsCrossed },
-              { key: "orders", label: "My Orders", icon: ShoppingCart },
+              { key: "menu", label: menuLabel, icon: UtensilsCrossed },
+              { key: "orders", label: myOrdersLabel, icon: ShoppingCart },
             ].map(nav => (
               <motion.button
                 key={nav.key}
@@ -237,7 +271,10 @@ const CustomerMenu = () => {
             {levelTarget.next && pointsToNext > 0 && (
               <p className="text-[11px] text-primary-foreground/40 mt-2 flex items-center gap-1">
                 <Sparkles className="w-3 h-3 text-accent" />
-                {pointsToNext} points to <span className="font-semibold text-accent">{levelTarget.next}</span>
+                {lang === "so" 
+                  ? `${pointsToNext} dhibcood ayaad u baahan tahay ${levelTarget.next}`
+                  : `${pointsToNext} points to ${levelTarget.next}`
+                }
               </p>
             )}
           </motion.div>
@@ -252,7 +289,7 @@ const CustomerMenu = () => {
         >
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-foreground/30" />
           <Input
-            placeholder="Raadi cuntada..."
+            placeholder={searchPlaceholder}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="pl-10 bg-primary-foreground/5 border-primary-foreground/10 h-11 rounded-xl text-sm text-primary-foreground placeholder:text-primary-foreground/25"
@@ -277,7 +314,7 @@ const CustomerMenu = () => {
                   : "glass text-primary-foreground/50 hover:text-primary-foreground/80"
               }`}
             >
-              🍽️ All
+              🍽️ {allLabel}
             </motion.button>
             {categories.map((cat, i) => (
               <motion.button
@@ -306,7 +343,7 @@ const CustomerMenu = () => {
             <div className="col-span-2 text-center py-16">
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <span className="text-4xl block mb-3">🍽️</span>
-                <p className="text-primary-foreground/40 text-sm">Wax cunto ah lama helin.</p>
+                <p className="text-primary-foreground/40 text-sm">{noFoodMsg}</p>
               </motion.div>
             </div>
           ) : filteredItems.map((item, i) => {
@@ -373,7 +410,7 @@ const CustomerMenu = () => {
                         onClick={() => addToCart(item)}
                         className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gold-gradient text-accent-foreground text-xs font-semibold transition-all duration-200 shadow-gold hover:shadow-lg"
                       >
-                        <Plus className="w-3.5 h-3.5" /> Ku dar
+                        <Plus className="w-3.5 h-3.5" /> {addLabel}
                       </motion.button>
                     )}
                   </div>
@@ -439,7 +476,7 @@ const CustomerMenu = () => {
                 >
                   <div className="p-4 max-h-[40vh] overflow-y-auto">
                     <h3 className="font-display font-bold text-primary-foreground text-sm mb-3 flex items-center gap-2">
-                      <ShoppingCart className="w-4 h-4 text-accent" /> Cart-kaaga
+                      <ShoppingCart className="w-4 h-4 text-accent" /> {cartLabel}
                     </h3>
                     <div className="space-y-2">
                       {cart.map(item => (
@@ -485,14 +522,14 @@ const CustomerMenu = () => {
                 </motion.span>
               </div>
               <div className="flex-1">
-                <p className="text-[10px] text-accent-foreground/70">{cartCount} item{cartCount > 1 ? "s" : ""}</p>
+                <p className="text-[10px] text-accent-foreground/70">{itemsLabel(cartCount)}</p>
                 <p className="font-display font-bold text-sm text-accent-foreground">${cartTotal.toFixed(2)}</p>
               </div>
               <Button
                 onClick={(e) => { e.stopPropagation(); confirmOrder(); }}
                 className="bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 rounded-xl text-xs h-9 font-semibold"
               >
-                Order <ArrowRight className="w-3.5 h-3.5" />
+                {orderBtn} <ArrowRight className="w-3.5 h-3.5" />
               </Button>
             </motion.div>
           </motion.div>
@@ -517,7 +554,7 @@ const CustomerMenu = () => {
                     animate={{ scale: [1, 1.3, 1], opacity: [1, 0.7, 1] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   />
-                  <span className="font-display font-bold text-sm text-primary-foreground">Dalabyadaada ({activeOrders.length})</span>
+                  <span className="font-display font-bold text-sm text-primary-foreground">{trackLabel} ({activeOrders.length})</span>
                 </div>
                 <button onClick={() => setShowOrderTracker(false)} className="text-primary-foreground/30 hover:text-primary-foreground/70 transition-colors">
                   <XCircle className="w-4 h-4" />
@@ -526,14 +563,13 @@ const CustomerMenu = () => {
               <div className="max-h-[50vh] overflow-y-auto">
                 {activeOrders.map(o => {
                   const statusConfig: Record<string, { icon: any; label: string; color: string }> = {
-                    pending: { icon: Clock, label: "La sugayo...", color: "text-accent" },
-                    accepted: { icon: CheckCircle, label: "La aqbalay ✅", color: "text-accent" },
-                    preparing: { icon: ChefHat, label: "La kariyaa 👨‍🍳", color: "text-accent" },
-                    ready: { icon: Package, label: "Diyaar! ✅", color: "text-green-500" },
+                    pending: { icon: Clock, label: waitingLabel, color: "text-accent" },
+                    accepted: { icon: CheckCircle, label: acceptedLabel, color: "text-accent" },
+                    preparing: { icon: ChefHat, label: preparingLabel, color: "text-accent" },
+                    ready: { icon: Package, label: readyLabel, color: "text-green-500" },
                   };
                   const status = statusConfig[o.status] || statusConfig.pending;
                   const StatusIcon = status.icon;
-                  const msgs = orderMessages.filter((m: any) => m.orderId === o.id);
 
                   return (
                     <div key={o.id} className="p-4 border-b border-primary-foreground/5 last:border-0">
@@ -562,21 +598,11 @@ const CustomerMenu = () => {
                           />
                         ))}
                       </div>
-                      {msgs.length > 0 && (
-                        <div className="mt-2.5 space-y-1">
-                          {msgs.slice(-2).map((msg: any) => (
-                            <div key={msg.id} className="flex items-start gap-1.5 bg-accent/10 rounded-xl px-3 py-2">
-                              <MessageSquare className="w-3 h-3 text-accent mt-0.5 shrink-0" />
-                              <p className="text-[11px] text-primary-foreground/70">{msg.message}</p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
                       <button
                         onClick={() => navigate(`/order-tracking/${o.id}`)}
                         className="text-[11px] text-accent font-semibold mt-2 flex items-center gap-1 hover:gap-2 transition-all duration-200"
                       >
-                        Faahfaahin <ChevronRight className="w-3 h-3" />
+                        {detailLabel} <ChevronRight className="w-3 h-3" />
                       </button>
                     </div>
                   );

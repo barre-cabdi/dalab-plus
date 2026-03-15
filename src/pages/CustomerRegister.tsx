@@ -6,17 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { User, Phone, CheckCircle, UtensilsCrossed, Hotel, Coffee, Sparkles, Star, Shield, ArrowRight } from "lucide-react";
 import { getBusinessById, Business, saveCustomer, getCustomers, generateId, getDefaultServices, BusinessService } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
+import { useI18n } from "@/lib/i18n";
 
-const typeConfig: Record<string, { icon: any; emoji: string; welcome: string }> = {
-  restaurant: { icon: UtensilsCrossed, emoji: "🍽️", welcome: "Cuntada ugu fiican!" },
-  hotel: { icon: Hotel, emoji: "🏨", welcome: "Soo dhawoow Hotel-keena!" },
-  cafe: { icon: Coffee, emoji: "☕", welcome: "Cabitaanka ugu macaansan!" },
+const typeConfig: Record<string, { icon: any; emoji: string; welcome_so: string; welcome_en: string }> = {
+  restaurant: { icon: UtensilsCrossed, emoji: "🍽️", welcome_so: "Cuntada ugu fiican!", welcome_en: "The finest cuisine!" },
+  hotel: { icon: Hotel, emoji: "🏨", welcome_so: "Soo dhawoow Hotel-keena!", welcome_en: "Welcome to our Hotel!" },
+  cafe: { icon: Coffee, emoji: "☕", welcome_so: "Cabitaanka ugu macaansan!", welcome_en: "The finest beverages!" },
 };
 
 const floatingEmojis = ["🍛", "☕", "🥘", "🍗", "🥤", "🍰", "🫓", "🍝"];
 
 const CustomerRegister = () => {
   const navigate = useNavigate();
+  const { lang } = useI18n();
   const [searchParams] = useSearchParams();
   const tableId = searchParams.get("table") || "1";
   const businessId = searchParams.get("business") || "1001";
@@ -25,8 +28,8 @@ const CustomerRegister = () => {
   const [formData, setFormData] = useState({ name: "", phone: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [customerId] = useState(crypto.randomUUID());
   const [business, setBusiness] = useState<Business | null>(null);
+  const [customerShortId, setCustomerShortId] = useState<string>("");
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,15 +41,23 @@ const CustomerRegister = () => {
   }, [businessId]);
 
   useEffect(() => {
-    // Save branding from QR params if available
     if (qrBusinessName || qrBusinessLogo) {
       localStorage.setItem("dp_customer_branding", JSON.stringify({ businessId, businessName: qrBusinessName || businessName, businessLogo: qrBusinessLogo || businessLogo }));
     }
     const stored = localStorage.getItem("dp_customer");
     if (stored) {
       const customer = JSON.parse(stored);
-      if (customer && customer.name) {
+      // If same business, go to menu. If different business, re-register
+      if (customer && customer.name && customer.businessId === businessId) {
+        // Update table if different
+        if (customer.tableId !== tableId) {
+          customer.tableId = tableId;
+          localStorage.setItem("dp_customer", JSON.stringify(customer));
+        }
         navigate(`/menu?table=${tableId}&business=${businessId}`);
+      } else if (customer && customer.name && customer.businessId !== businessId) {
+        // Different business - need to register for this one
+        localStorage.removeItem("dp_customer");
       }
     }
   }, [navigate, tableId, businessId]);
@@ -57,28 +68,62 @@ const CustomerRegister = () => {
   const config = typeConfig[businessType] || typeConfig.restaurant;
   const TypeIcon = config.icon;
 
+  // Bilingual helpers
+  const l = (so: string, en: string) => lang === "so" ? so : en;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.phone) return;
     setIsSubmitting(true);
-    setShowSuccess(true);
-    const customer = { id: customerId, ...formData, tableId, businessId, businessName, businessLogo, points: 0, level: "Bronze", totalOrders: 0, totalSpent: 0, registeredAt: new Date().toISOString() };
-    localStorage.setItem("dp_customer", JSON.stringify(customer));
-    localStorage.setItem("dp_customer_branding", JSON.stringify({ businessId, businessName, businessLogo }));
+    
     const existing = await getCustomers(businessId);
     const alreadyExists = existing.find(c => c.phone === formData.phone);
-    if (!alreadyExists) {
+    
+    let custId: string;
+    let shortId: number | string = "";
+    
+    if (alreadyExists) {
+      custId = alreadyExists.id;
+      // Get short_id from database
+      const { data } = await supabase.from("customers").select("short_id").eq("id", custId).maybeSingle();
+      shortId = data?.short_id || custId.slice(0, 6);
+    } else {
+      custId = generateId("cust");
       await saveCustomer({
-        id: customerId, businessId, name: formData.name, phone: formData.phone, email: "",
+        id: custId, businessId, name: formData.name, phone: formData.phone, email: "",
         totalOrders: 0, totalSpent: 0, loyaltyPoints: 0, registeredAt: new Date().toISOString(),
       });
+      // Get the auto-generated short_id
+      const { data } = await supabase.from("customers").select("short_id").eq("id", custId).maybeSingle();
+      shortId = data?.short_id || custId.slice(0, 6);
     }
+    
+    setCustomerShortId(String(shortId));
+    setShowSuccess(true);
+    
+    const customer = { 
+      id: custId, ...formData, tableId, businessId, businessName, businessLogo, 
+      points: alreadyExists ? (alreadyExists.loyaltyPoints || 0) : 0, 
+      level: "Bronze", 
+      totalOrders: alreadyExists ? (alreadyExists.totalOrders || 0) : 0, 
+      totalSpent: alreadyExists ? (alreadyExists.totalSpent || 0) : 0, 
+      shortId,
+      registeredAt: new Date().toISOString() 
+    };
+    
+    // Calculate level from points
+    if (customer.points >= 600) customer.level = "Platinum";
+    else if (customer.points >= 300) customer.level = "Gold";
+    else if (customer.points >= 100) customer.level = "Silver";
+    
+    localStorage.setItem("dp_customer", JSON.stringify(customer));
+    localStorage.setItem("dp_customer_branding", JSON.stringify({ businessId, businessName, businessLogo }));
+    
     setTimeout(() => { navigate(`/menu?table=${tableId}&business=${businessId}`); }, 2200);
   };
 
   return (
     <div className="min-h-screen bg-hero relative overflow-hidden">
-      {/* Animated floating food emojis */}
       {floatingEmojis.map((emoji, i) => (
         <motion.div
           key={i}
@@ -91,7 +136,6 @@ const CustomerRegister = () => {
         </motion.div>
       ))}
 
-      {/* Glow orbs */}
       <div className="absolute top-20 -left-20 w-60 h-60 rounded-full bg-accent/10 blur-[100px] animate-float-slow" />
       <div className="absolute bottom-20 -right-20 w-80 h-80 rounded-full bg-accent/5 blur-[120px] animate-float-slow" style={{ animationDelay: "3s" }} />
 
@@ -123,7 +167,7 @@ const CustomerRegister = () => {
                   transition={{ delay: 0.3 }}
                   className="font-display font-bold text-2xl text-primary-foreground mb-2"
                 >
-                  Ku soo dhawoow! 🎉
+                  {l("Ku soo dhawoow! 🎉", "Welcome! 🎉")}
                 </motion.h2>
                 <motion.p
                   initial={{ opacity: 0, y: 10 }}
@@ -131,8 +175,18 @@ const CustomerRegister = () => {
                   transition={{ delay: 0.5 }}
                   className="text-primary-foreground/60 text-sm"
                 >
-                  {formData.name}, menu-ga ayaa kuu furmi doonaa...
+                  {formData.name}, {l("menu-ga ayaa kuu furmi doonaa...", "the menu is opening for you...")}
                 </motion.p>
+                {customerShortId && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.7 }}
+                    className="text-accent font-mono font-bold text-lg mt-2"
+                  >
+                    ID: #{customerShortId}
+                  </motion.p>
+                )}
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: "100%" }}
@@ -195,7 +249,7 @@ const CustomerRegister = () => {
               transition={{ delay: 0.35 }}
               className="text-primary-foreground/50 text-sm mt-1"
             >
-              {config.emoji} {config.welcome}
+              {config.emoji} {lang === "so" ? config.welcome_so : config.welcome_en}
             </motion.p>
           </motion.div>
 
@@ -243,25 +297,8 @@ const CustomerRegister = () => {
               </div>
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent/10 border border-accent/20">
                 <Shield className="w-3 h-3 text-accent" />
-                <span className="text-[10px] text-accent font-semibold">Secure</span>
+                <span className="text-[10px] text-accent font-semibold">{l("Ammaan", "Secure")}</span>
               </div>
-            </motion.div>
-
-            {/* Customer ID Display */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.65 }}
-              className="text-center mb-6 py-4 rounded-2xl bg-accent/5 border border-accent/15"
-            >
-              <p className="text-[10px] text-primary-foreground/40 uppercase tracking-[0.2em] mb-1.5">Your Customer ID</p>
-              <motion.p
-                className="text-xl font-mono font-bold text-accent tracking-wider"
-                animate={{ textShadow: ["0 0 10px hsl(45 100% 50% / 0)", "0 0 10px hsl(45 100% 50% / 0.3)", "0 0 10px hsl(45 100% 50% / 0)"] }}
-                transition={{ duration: 3, repeat: Infinity }}
-              >
-                {customerId}
-              </motion.p>
             </motion.div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -273,7 +310,7 @@ const CustomerRegister = () => {
                 className="space-y-2"
               >
                 <Label className="text-primary-foreground/70 text-xs font-medium flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-accent" /> Magacaaga
+                  <User className="w-3.5 h-3.5 text-accent" /> {l("Magacaaga", "Your Name")}
                 </Label>
                 <div className={`relative transition-all duration-300 ${focusedField === "name" ? "scale-[1.02]" : ""}`}>
                   <Input
@@ -305,7 +342,7 @@ const CustomerRegister = () => {
                 className="space-y-2"
               >
                 <Label className="text-primary-foreground/70 text-xs font-medium flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-accent" /> Telefoon Number
+                  <Phone className="w-3.5 h-3.5 text-accent" /> {l("Telefoon Number", "Phone Number")}
                 </Label>
                 <div className={`relative transition-all duration-300 ${focusedField === "phone" ? "scale-[1.02]" : ""}`}>
                   <Input
@@ -345,11 +382,11 @@ const CustomerRegister = () => {
                 >
                   {isSubmitting ? (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
-                      <CheckCircle className="w-5 h-5" /> Waad ku mahadsantahay!
+                      <CheckCircle className="w-5 h-5" /> {l("Waad ku mahadsantahay!", "Thank you!")}
                     </motion.div>
                   ) : (
                     <>
-                      Iska Diiwaan Geli <ArrowRight className="w-4 h-4" />
+                      {l("Iska Diiwaan Geli", "Register")} <ArrowRight className="w-4 h-4" />
                     </>
                   )}
                 </Button>
