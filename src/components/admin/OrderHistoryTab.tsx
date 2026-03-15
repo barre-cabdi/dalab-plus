@@ -129,7 +129,7 @@ const OrderHistoryTab = ({ businessId }: OrderHistoryTabProps) => {
     });
 
     doc.save(`${biz.name.replace(/\s+/g, "_")}_Order_History_${new Date().toISOString().slice(0, 10)}.pdf`);
-    toast.success("PDF soo dejiyay ✓");
+    toast.success("PDF exported ✓");
   };
 
   const exportJSON = () => {
