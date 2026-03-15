@@ -821,7 +821,7 @@ const AdminDashboard = () => {
                         size="sm"
                         variant="outline"
                         className="gap-1.5 text-xs"
-                        onClick={() => setFeedbackDialog({ orderId: o.id, customerName: (o as any).customerName || "Guest" })}
+                        onClick={() => { const parts = (o.orderedBy || "").split(":"); setFeedbackDialog({ orderId: o.id, customerName: parts.length >= 2 ? parts[1] : "Guest" }); }}
                       >
                         <MessageSquare className="w-3.5 h-3.5" /> {t.wtSendMsg || "Send Message"}
                       </Button>
