@@ -425,11 +425,11 @@ const AdminDashboard = () => {
     }
     setCatDialog(true);
   };
-  const saveCatForm = () => {
+  const saveCatForm = async () => {
     if (!catForm.name.trim()) return;
-    if (editingCat) { updateCategory(editingCat.id, { name: catForm.name, icon: catForm.icon }); toast.success("Category updated"); }
-    else { saveCategory({ id: generateId("cat"), businessId: business.id, name: catForm.name, icon: catForm.icon, order: categories.length }); toast.success("Category created"); }
-    setCatDialog(false); refreshData();
+    if (editingCat) { await updateCategory(editingCat.id, { name: catForm.name, icon: catForm.icon }); toast.success("Category updated"); }
+    else { await saveCategory({ id: generateId("cat"), businessId: business.id, name: catForm.name, icon: catForm.icon, order: categories.length }); toast.success("Category created"); }
+    setCatDialog(false); await refreshData();
   };
 
   const handleCatImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
