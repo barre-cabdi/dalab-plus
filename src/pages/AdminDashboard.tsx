@@ -801,7 +801,7 @@ const AdminDashboard = () => {
                       <Button
                         size="sm"
                         className="gap-1.5 text-xs bg-green-600 hover:bg-green-700 text-white"
-                        onClick={() => { updateOrder(o.id, { status: "ready" }); toast.success(t.csReadyBtn ? `${t.csReadyBtn} ✓` : "Ready ✓"); refreshData(); }}
+                        onClick={async () => { await updateOrder(o.id, { status: "ready" }); toast.success(t.csReadyBtn ? `${t.csReadyBtn} ✓` : "Ready ✓"); await refreshData(); }}
                       >
                         <Check className="w-3.5 h-3.5" /> {t.csReadyBtn || "Ready"}
                       </Button>
