@@ -770,8 +770,8 @@ const AdminDashboard = () => {
                         </div>
                       ))}
                     </div>
-                    <div className="border-t border-border mt-2 pt-2 flex justify-between">
-                      <span className="font-semibold text-sm">Wadarta</span>
+                     <div className="border-t border-border mt-2 pt-2 flex justify-between">
+                       <span className="font-semibold text-sm">{t.wtTotal || "Total"}</span>
                       <span className="font-display font-bold text-accent">${o.total.toFixed(2)}</span>
                     </div>
                   </div>
