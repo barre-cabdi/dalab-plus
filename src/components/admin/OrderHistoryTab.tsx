@@ -159,7 +159,7 @@ const OrderHistoryTab = ({ businessId }: OrderHistoryTabProps) => {
     a.download = `order-history-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("JSON soo dejiyay ✓");
+    toast.success("JSON exported ✓");
   };
 
   const exportCSV = () => {
