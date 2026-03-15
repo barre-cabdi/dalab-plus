@@ -1180,7 +1180,7 @@ const AdminDashboard = () => {
             )}
             <div className="relative">
               <button
-                onClick={() => { setShowNotifications(!showNotifications); setShowHelp(false); setHasNewNotification(false); }}
+                onClick={() => { setShowNotifications(!showNotifications); setShowHelp(false); setHasNewNotification(false); setNotifications(prev => showNotifications ? prev : []); }}
                 className={`w-9 h-9 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all relative ${hasNewNotification ? "animate-bounce" : ""}`}
               >
                 <Bell className={`w-4 h-4 ${hasNewNotification ? "text-accent" : ""}`} />
