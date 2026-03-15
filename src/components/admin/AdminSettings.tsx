@@ -302,6 +302,80 @@ const AdminSettings = ({ business, onUpdate }: AdminSettingsProps) => {
             />
           </div>
         </div>
+
+        {/* Notification Sound Settings */}
+        <div className="mt-6">
+          <h4 className="font-display font-bold text-sm mb-4 flex items-center gap-2 text-foreground">
+            <Volume2 className="w-4 h-4 text-accent" /> Notification Sound Settings
+          </h4>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {renderField("Notification Sound", false,
+              <Select value={form.notificationSound} onValueChange={v => setForm(f => ({ ...f, notificationSound: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="chime">🔔 Chime (Default)</SelectItem>
+                  <SelectItem value="bell">🛎️ Bell</SelectItem>
+                  <SelectItem value="ding">✨ Ding</SelectItem>
+                  <SelectItem value="alert">🚨 Alert</SelectItem>
+                  <SelectItem value="melody">🎵 Melody</SelectItem>
+                  <SelectItem value="soft">🌊 Soft</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+            {renderField("Notification Duration (seconds)", false,
+              <Select value={String(form.notificationDuration)} onValueChange={v => setForm(f => ({ ...f, notificationDuration: Number(v) }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1 second</SelectItem>
+                  <SelectItem value="2">2 seconds</SelectItem>
+                  <SelectItem value="3">3 seconds (Default)</SelectItem>
+                  <SelectItem value="5">5 seconds</SelectItem>
+                  <SelectItem value="8">8 seconds</SelectItem>
+                  <SelectItem value="10">10 seconds</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+          <div className="mt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => {
+                // Play preview sound
+                try {
+                  const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+                  const soundMap: Record<string, number[]> = {
+                    chime: [523.25, 659.25, 783.99, 1046.5],
+                    bell: [880, 1108.73, 880],
+                    ding: [1200, 1400],
+                    alert: [440, 660, 440, 660],
+                    melody: [523.25, 587.33, 659.25, 783.99, 880],
+                    soft: [392, 440, 523.25],
+                  };
+                  const notes = soundMap[form.notificationSound] || soundMap.chime;
+                  const dur = form.notificationDuration;
+                  const noteLen = Math.min(dur / notes.length, 0.5);
+                  notes.forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.type = form.notificationSound === "bell" ? "triangle" : form.notificationSound === "soft" ? "sine" : "sine";
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + i * noteLen);
+                    gain.gain.setValueAtTime(0, ctx.currentTime + i * noteLen);
+                    gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + i * noteLen + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * noteLen + noteLen);
+                    osc.start(ctx.currentTime + i * noteLen);
+                    osc.stop(ctx.currentTime + i * noteLen + noteLen);
+                  });
+                } catch {}
+              }}
+            >
+              <Volume2 className="w-3.5 h-3.5" /> Test Sound
+            </Button>
+          </div>
+        </div>
       </motion.div>
 
       {/* Password Change */}
