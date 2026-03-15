@@ -749,11 +749,11 @@ const AdminDashboard = () => {
                         o.status === "delivered" ? "bg-muted text-muted-foreground" :
                         "bg-destructive/15 text-destructive"
                       }`}>
-                        {o.status === "pending" ? "⏳ Sugaya" :
-                         o.status === "preparing" ? "👨‍🍳 Diyaarinaya" :
-                         o.status === "ready" ? "✅ Diyaar" :
-                         o.status === "delivered" ? "📦 La Geeyay" :
-                         "❌ La Joojiyay"}
+                        {o.status === "pending" ? `⏳ ${t.wtPending?.replace("⏳ ", "") || "Pending"}` :
+                         o.status === "preparing" ? `👨‍🍳 ${t.wtPreparing?.replace("👨‍🍳 ", "") || "Preparing"}` :
+                         o.status === "ready" ? `✅ ${t.wtReady?.replace("✅ ", "") || "Ready"}` :
+                         o.status === "delivered" ? `📦 ${t.wtDelivered?.replace("📦 ", "") || "Delivered"}` :
+                         `❌ ${t.wtCancelledCount || "Cancelled"}`}
                       </Badge>
                       <p className="text-[10px] text-muted-foreground mt-1">{new Date(o.createdAt).toLocaleTimeString()}</p>
                       <p className="text-[10px] text-muted-foreground font-mono">{o.id.slice(0, 12)}</p>
