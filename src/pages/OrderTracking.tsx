@@ -3,45 +3,55 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Clock, ChefHat, Truck, CheckCircle, Home, Star, Trophy, Gift, ArrowRight, Package, MessageSquare, ShoppingBag, Sparkles, Store, Hourglass } from "lucide-react";
-import { getBusinessById } from "@/lib/store";
+import { getBusinessById, getOrders, Order } from "@/lib/store";
+import { useI18n } from "@/lib/i18n";
 
 const statusSteps = [
-  { key: "pending", label: "La sugayo", sublabel: "Order-kaaga la helay", emoji: "⏳" },
-  { key: "accepted", label: "La aqbalay", sublabel: "Admin/Cashier wuu aqbalay", emoji: "✅" },
-  { key: "preparing", label: "La kariyaa", sublabel: "Kitchen-ka ku jira", emoji: "👨‍🍳" },
-  { key: "ready", label: "Diyaar", sublabel: "Cuntadaadu way diyaar tahay", emoji: "📦" },
-  { key: "on_the_way", label: "Socda", sublabel: "Waiter-ku wuu keenayaa", emoji: "🚀" },
-  { key: "delivered", label: "La keenay", sublabel: "Cunto wanaagsan!", emoji: "🎉" },
+  { key: "pending", label_so: "La sugayo", label_en: "Waiting", sublabel_so: "Order-kaaga la helay", sublabel_en: "Your order was received", emoji: "⏳" },
+  { key: "accepted", label_so: "La aqbalay", label_en: "Accepted", sublabel_so: "Admin/Cashier wuu aqbalay", sublabel_en: "Admin/Cashier accepted", emoji: "✅" },
+  { key: "preparing", label_so: "La kariyaa", label_en: "Preparing", sublabel_so: "Kitchen-ka ku jira", sublabel_en: "Being prepared in kitchen", emoji: "👨‍🍳" },
+  { key: "ready", label_so: "Diyaar", label_en: "Ready", sublabel_so: "Cuntadaadu way diyaar tahay", sublabel_en: "Your food is ready", emoji: "📦" },
+  { key: "on_the_way", label_so: "Socda", label_en: "On the way", sublabel_so: "Waiter-ku wuu keenayaa", sublabel_en: "Waiter is bringing it", emoji: "🚀" },
+  { key: "delivered", label_so: "La keenay", label_en: "Delivered", sublabel_so: "Cunto wanaagsan!", sublabel_en: "Enjoy your meal!", emoji: "🎉" },
 ];
 
 const OrderTracking = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
+  const { lang } = useI18n();
   const [order, setOrder] = useState<any>(null);
   const [customer, setCustomer] = useState<any>(null);
   const [showReward, setShowReward] = useState(false);
-  const [messages, setMessages] = useState<any[]>([]);
 
   useEffect(() => {
-    const loadData = () => {
-      const orders = JSON.parse(localStorage.getItem("dp_orders") || "[]");
-      const found = orders.find((o: any) => o.id === orderId);
-      if (found) setOrder(found);
+    const stored = localStorage.getItem("dp_customer");
+    if (stored) {
+      const c = JSON.parse(stored);
+      setCustomer(c);
+      if (c.points >= 100 && c.level === "Silver") setShowReward(true);
+    }
+  }, []);
+
+  // Poll order from database
+  useEffect(() => {
+    if (!orderId) return;
+    const loadOrder = async () => {
+      // Try to find order by looking at all businesses customer has ordered from
       const stored = localStorage.getItem("dp_customer");
-      if (stored) {
-        const c = JSON.parse(stored);
-        setCustomer(c);
-        if (c.points >= 100 && c.level === "Silver") setShowReward(true);
+      if (!stored) return;
+      const c = JSON.parse(stored);
+      const businessId = c.businessId || new URLSearchParams(window.location.search).get("business") || "";
+      if (businessId) {
+        const orders = await getOrders(businessId);
+        const found = orders.find(o => o.id === orderId);
+        if (found) setOrder(found);
       }
-      const allMessages = JSON.parse(localStorage.getItem("dp_order_messages") || "[]");
-      setMessages(allMessages.filter((m: any) => m.orderId === orderId));
     };
-    loadData();
-    const interval = setInterval(loadData, 3000);
+    loadOrder();
+    const interval = setInterval(loadOrder, 3000);
     return () => clearInterval(interval);
   }, [orderId]);
 
-  // Determine current step from actual order status (no auto-increment)
   const getCurrentStep = (status: string) => {
     const idx = statusSteps.findIndex(s => s.key === status);
     return idx >= 0 ? idx : 0;
@@ -49,8 +59,8 @@ const OrderTracking = () => {
 
   const getLevelInfo = (level: string) => {
     switch (level) {
-      case "Silver": return { next: "Gold", needed: 300, reward: "Cabbitaan bilaash ah! 🥤" };
-      case "Gold": return { next: "Platinum", needed: 600, reward: "Cunto bilaash ah! 🍽️" };
+      case "Silver": return { next: "Gold", needed: 300, reward: lang === "so" ? "Cabbitaan bilaash ah! 🥤" : "Free drink! 🥤" };
+      case "Gold": return { next: "Platinum", needed: 600, reward: lang === "so" ? "Cunto bilaash ah! 🍽️" : "Free meal! 🍽️" };
       case "Platinum": return { next: null, needed: 0, reward: "10% Discount! 💎" };
       default: return { next: "Silver", needed: 100, reward: "" };
     }
@@ -68,7 +78,7 @@ const OrderTracking = () => {
           transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
           className="w-12 h-12 border-2 border-accent/30 border-t-accent rounded-full mx-auto mb-4"
         />
-        <p className="text-primary-foreground/50 text-sm">Loading order...</p>
+        <p className="text-primary-foreground/50 text-sm">{lang === "so" ? "Dalabka la soo dejinayaa..." : "Loading order..."}</p>
       </motion.div>
     </div>
   );
@@ -80,17 +90,18 @@ const OrderTracking = () => {
   const businessLogo = businessData?.logo || branding.businessLogo || customer?.businessLogo || "";
   const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");
   const currentStep = getCurrentStep(order.status);
-  const isAccepted = currentStep >= 1; // Only show processing after accepted
+  const isAccepted = currentStep >= 1;
   const levelInfo = customer ? getLevelInfo(customer.level) : null;
   const earnedPoints = Math.floor(order.total);
 
+  // Bilingual labels
+  const l = (so: string, en: string) => lang === "so" ? so : en;
+
   return (
     <div className="min-h-screen bg-hero relative overflow-hidden">
-      {/* Background effects */}
       <div className="absolute top-1/4 left-0 w-[400px] h-[400px] rounded-full bg-accent/5 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[300px] h-[300px] rounded-full bg-accent/3 blur-[100px] pointer-events-none" />
 
-      {/* Header with Business Logo */}
       <header className="glass border-b border-border/10 px-4 py-3 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <motion.div
@@ -105,16 +116,23 @@ const OrderTracking = () => {
           </motion.div>
           <div>
             <p className="font-display font-bold text-primary-foreground text-sm">{businessName}</p>
-            <p className="text-[10px] text-primary-foreground/35 font-mono">{orderId}</p>
+            <p className="text-[10px] text-primary-foreground/35 font-mono">{orderId?.slice(0, 12)}</p>
           </div>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => navigate("/customer")} className="text-primary-foreground/40 hover:text-primary-foreground/70">
+        <Button variant="ghost" size="sm" onClick={() => {
+          const stored = localStorage.getItem("dp_customer");
+          if (stored) {
+            const c = JSON.parse(stored);
+            navigate(`/menu?table=${c.tableId || "1"}&business=${order.businessId}`);
+          } else {
+            navigate("/");
+          }
+        }} className="text-primary-foreground/40 hover:text-primary-foreground/70">
           <Home className="w-4 h-4" />
         </Button>
       </header>
 
       <div className="container mx-auto px-4 py-6 max-w-md space-y-5 relative z-10">
-        {/* Waiting for Accept Banner */}
         {!isAccepted && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -128,8 +146,12 @@ const OrderTracking = () => {
             >
               <Hourglass className="w-8 h-8 text-accent" />
             </motion.div>
-            <h3 className="font-display font-bold text-primary-foreground text-lg mb-1">Order-kaaga la diray ✨</h3>
-            <p className="text-xs text-primary-foreground/40">Admin/Cashier-ku wuu eegayaa order-kaaga. Fadlan sug...</p>
+            <h3 className="font-display font-bold text-primary-foreground text-lg mb-1">
+              {l("Order-kaaga la diray ✨", "Your order has been sent ✨")}
+            </h3>
+            <p className="text-xs text-primary-foreground/40">
+              {l("Admin/Cashier-ku wuu eegayaa order-kaaga. Fadlan sug...", "Admin/Cashier is reviewing your order. Please wait...")}
+            </p>
             <motion.div
               className="flex gap-1 mt-4 max-w-[200px] mx-auto"
               initial={{ opacity: 0 }}
@@ -148,7 +170,6 @@ const OrderTracking = () => {
           </motion.div>
         )}
 
-        {/* Points Earned Card - only after accepted */}
         {isAccepted && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
@@ -175,12 +196,13 @@ const OrderTracking = () => {
               >
                 +{earnedPoints}
               </motion.p>
-              <p className="text-[11px] text-primary-foreground/45 mt-1">Points earned from this order</p>
+              <p className="text-[11px] text-primary-foreground/45 mt-1">
+                {l("Dhibcaha aad ka heshay dalabkan", "Points earned from this order")}
+              </p>
             </div>
           </motion.div>
         )}
 
-        {/* Order Status Timeline - only after accepted */}
         {isAccepted && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -189,7 +211,7 @@ const OrderTracking = () => {
             className="glass rounded-2xl p-6"
           >
             <h3 className="font-display font-bold text-primary-foreground text-sm mb-5 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-accent" /> Xaalada Order-ka
+              <Sparkles className="w-4 h-4 text-accent" /> {l("Xaalada Order-ka", "Order Status")}
             </h3>
             <div className="space-y-0">
               {statusSteps.slice(1).map((step, i) => {
@@ -239,12 +261,12 @@ const OrderTracking = () => {
                       <p className={`text-sm font-semibold transition-colors duration-300 ${
                         isCurrent ? "text-accent" : isPast ? "text-primary-foreground/80" : "text-primary-foreground/25"
                       }`}>
-                        {step.label}
+                        {lang === "so" ? step.label_so : step.label_en}
                       </p>
                       <p className={`text-[11px] mt-0.5 transition-colors duration-300 ${
                         isCurrent ? "text-primary-foreground/50" : "text-primary-foreground/20"
                       }`}>
-                        {step.sublabel}
+                        {lang === "so" ? step.sublabel_so : step.sublabel_en}
                       </p>
                       {isCurrent && (
                         <motion.div
@@ -269,12 +291,12 @@ const OrderTracking = () => {
           className="glass rounded-2xl p-5"
         >
           <h3 className="font-display font-bold text-primary-foreground text-sm mb-4 flex items-center gap-2">
-            <ShoppingBag className="w-4 h-4 text-accent" /> Waxaad dalbatay
+            <ShoppingBag className="w-4 h-4 text-accent" /> {l("Waxaad dalbatay", "Your Order")}
           </h3>
           <div className="space-y-3">
             {order.items.map((item: any, i: number) => (
               <motion.div
-                key={item.id}
+                key={item.id || i}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.5 + i * 0.06 }}
@@ -285,7 +307,7 @@ const OrderTracking = () => {
                     whileHover={{ scale: 1.15, rotate: 5 }}
                     className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center text-lg"
                   >
-                    {item.image}
+                    {item.image || "🍽️"}
                   </motion.div>
                   <div>
                     <span className="text-xs font-medium text-primary-foreground">{item.name}</span>
@@ -296,7 +318,7 @@ const OrderTracking = () => {
               </motion.div>
             ))}
             <div className="border-t border-border/15 pt-3 mt-3 flex items-center justify-between">
-              <span className="text-sm font-display font-bold text-primary-foreground">Wadarta</span>
+              <span className="text-sm font-display font-bold text-primary-foreground">{l("Wadarta", "Total")}</span>
               <motion.span
                 className="text-base font-display font-bold text-accent"
                 initial={{ scale: 0.8 }}
@@ -308,37 +330,6 @@ const OrderTracking = () => {
             </div>
           </div>
         </motion.div>
-
-        {/* Admin Messages */}
-        <AnimatePresence>
-          {messages.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20, height: 0 }}
-              animate={{ opacity: 1, y: 0, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="glass rounded-2xl p-5"
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <MessageSquare className="w-4 h-4 text-accent" />
-                <h3 className="font-display font-bold text-primary-foreground text-sm">Fariimo</h3>
-              </div>
-              <div className="space-y-2">
-                {messages.map((msg: any, i: number) => (
-                  <motion.div
-                    key={msg.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.08 }}
-                    className="bg-accent/8 rounded-xl p-3.5 border border-accent/15"
-                  >
-                    <p className="text-xs text-primary-foreground/80">{msg.message}</p>
-                    <p className="text-[9px] text-primary-foreground/30 mt-1.5">{new Date(msg.createdAt).toLocaleTimeString()}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* Loyalty Progress */}
         {customer && levelInfo && (
@@ -367,7 +358,12 @@ const OrderTracking = () => {
                   />
                 </div>
                 <p className="text-[10px] text-primary-foreground/30 mt-2">
-                  {levelInfo.needed - customer.points > 0 ? `${levelInfo.needed - customer.points} points kale ayaad u baahan tahay ${levelInfo.next}!` : levelInfo.reward}
+                  {levelInfo.needed - customer.points > 0 
+                    ? l(
+                        `${levelInfo.needed - customer.points} dhibcood ayaad u baahan tahay ${levelInfo.next}!`,
+                        `${levelInfo.needed - customer.points} more points to reach ${levelInfo.next}!`
+                      )
+                    : levelInfo.reward}
                 </p>
               </>
             )}
@@ -382,47 +378,51 @@ const OrderTracking = () => {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              className="glass rounded-2xl p-6 border border-accent/25 text-center relative overflow-hidden"
+              className="glass rounded-2xl p-6 text-center border border-accent/30 relative overflow-hidden"
             >
-              <div className="absolute inset-0 bg-accent/5" />
-              <div className="relative">
-                <motion.div
-                  animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                >
-                  <Gift className="w-12 h-12 text-accent mx-auto mb-3" />
-                </motion.div>
-                <h3 className="font-display font-bold text-accent text-lg">Hambalyo! 🎉</h3>
-                <p className="text-xs text-primary-foreground/50 mt-2">Waxaad gaadhay level cusub! Reward-kaaga soo qaado.</p>
-                <Button variant="hero" size="sm" className="mt-4 rounded-xl">Claim Reward</Button>
-              </div>
+              <div className="absolute inset-0 bg-gold-gradient opacity-5" />
+              <Gift className="w-10 h-10 text-accent mx-auto mb-3" />
+              <h3 className="font-display font-bold text-primary-foreground text-lg mb-1">🎉 {l("Hambalyo!", "Congratulations!")}</h3>
+              <p className="text-xs text-primary-foreground/50 mb-4">
+                {l("Waxaad gaartay Silver Level! Cabbitaan bilaash ah ayaad ku heshay!", "You reached Silver Level! You earned a free drink!")}
+              </p>
+              <Button
+                variant="hero"
+                size="sm"
+                onClick={() => setShowReward(false)}
+                className="gap-1.5"
+              >
+                <Sparkles className="w-3.5 h-3.5" /> {l("Mahadsanid!", "Thank you!")}
+              </Button>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Action Buttons */}
+        {/* Back to Menu */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-          className="flex gap-3"
-        >
-          <Button variant="hero-outline" className="flex-1 rounded-xl" onClick={() => navigate("/customer")}>
-            Dashboard
-          </Button>
-          <Button variant="hero" className="flex-1 rounded-xl" onClick={() => navigate(`/menu?table=${order.tableId}&business=${order.businessId}`)}>
-            Dib u dalbo
-          </Button>
-        </motion.div>
-
-        <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
-          className="text-center text-xs text-primary-foreground/20 pb-4"
+          className="text-center pb-6"
         >
-          Powered by <span className="text-accent/40 font-bold text-sm">DALABplus+</span>
-        </motion.p>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              const stored = localStorage.getItem("dp_customer");
+              if (stored) {
+                const c = JSON.parse(stored);
+                navigate(`/menu?table=${c.tableId || "1"}&business=${order.businessId}`);
+              }
+            }}
+            className="text-primary-foreground/30 hover:text-accent gap-1.5 text-xs"
+          >
+            <ArrowRight className="w-3 h-3 rotate-180" /> {l("Dib ugu noqo Menu-ga", "Back to Menu")}
+          </Button>
+          <p className="text-[10px] text-primary-foreground/15 mt-4">
+            Powered by <span className="text-accent/30 font-bold">DALABplus+</span>
+          </p>
+        </motion.div>
       </div>
     </div>
   );
