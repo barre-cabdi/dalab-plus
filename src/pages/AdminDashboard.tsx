@@ -706,7 +706,7 @@ const AdminDashboard = () => {
             <div className="space-y-4">
               {filteredOrders.length === 0 ? (
                 <div className="bg-card border border-border rounded-xl p-12 text-center">
-                  <p className="text-muted-foreground">Dalab la helin</p>
+                  <p className="text-muted-foreground">{t.wtNoOrders || "No orders found"}</p>
                 </div>
               ) : filteredOrders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((o, i) => (
                 <motion.div
