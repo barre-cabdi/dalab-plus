@@ -723,7 +723,7 @@ const AdminDashboard = () => {
                   }`}
                 >
                   {/* Header */}
-                  <div className="flex items-start justify-between mb-4">
+                   <div className="flex items-start justify-between mb-4">
                       {(() => {
                         const parts = (o.orderedBy || "").split(":");
                         const custName = parts.length >= 2 ? parts[1] : (o as any).customerName || "Guest";
@@ -740,7 +740,6 @@ const AdminDashboard = () => {
                           </div>
                         );
                       })()}
-                    </div>
                     <div className="text-right">
                       <Badge variant="secondary" className={`text-xs ${
                         o.status === "pending" ? "bg-secondary/20 text-secondary-foreground" :
