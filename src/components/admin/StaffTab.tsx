@@ -241,12 +241,10 @@ const StaffTab = ({ businessId }: StaffTabProps) => {
             </div>
 
             {isLoginRole && (() => {
-              // Get business domain from adminUsername (e.g. salol.cafe@DALABplus+.com → salol.cafe.com)
-              const businesses = JSON.parse(localStorage.getItem("dp_businesses") || "[]");
-              const biz = businesses.find((b: any) => b.id === businessId);
-              const adminUsername = biz?.adminUsername || "";
-              const prefix = adminUsername.split("@")[0] || "business";
-              const domain = `@${prefix}.com`;
+              // Get business name for username domain
+              const activeBiz = localStorage.getItem("dp_active_business");
+              const bizName = activeBiz ? JSON.parse(activeBiz).name : "business";
+              const domain = `@${bizName.replace(/\s+/g, "").toLowerCase()}.com`;
 
               const usernamePrefix = form.username ? form.username.split("@")[0] : "";
 
