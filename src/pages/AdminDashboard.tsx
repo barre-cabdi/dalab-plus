@@ -844,8 +844,8 @@ const AdminDashboard = () => {
             <Dialog open={!!feedbackDialog} onOpenChange={() => { setFeedbackDialog(null); setFeedbackMessage(""); }}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Fariin U Dir {feedbackDialog?.customerName}</DialogTitle>
-                  <DialogDescription>Qor fariin aad u direyso macmiilka dalabka #{feedbackDialog?.orderId.slice(0, 10)}</DialogDescription>
+                  <DialogTitle>{t.wtSendMsg || "Send Message"} {feedbackDialog?.customerName}</DialogTitle>
+                  <DialogDescription>{t.wtWriteMsg || "Write your message"} #{feedbackDialog?.orderId.slice(0, 10)}</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3">
                   <div className="flex gap-2 flex-wrap">
