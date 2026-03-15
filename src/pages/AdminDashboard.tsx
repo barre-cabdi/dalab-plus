@@ -861,7 +861,7 @@ const AdminDashboard = () => {
                   />
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => { setFeedbackDialog(null); setFeedbackMessage(""); }}>Jooji</Button>
+                  <Button variant="outline" onClick={() => { setFeedbackDialog(null); setFeedbackMessage(""); }}>{t.wtCancel || "Cancel"}</Button>
                   <Button variant="hero" onClick={sendFeedback} disabled={!feedbackMessage.trim()}>
                     <MessageSquare className="w-4 h-4 mr-1.5" /> U Dir
                   </Button>
