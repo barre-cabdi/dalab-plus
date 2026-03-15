@@ -791,7 +791,7 @@ const AdminDashboard = () => {
                           size="sm"
                           variant="destructive"
                           className="gap-1.5 text-xs"
-                          onClick={() => { updateOrder(o.id, { status: "cancelled" }); toast.info(t.csReject || "Rejected"); refreshData(); }}
+                          onClick={async () => { await updateOrder(o.id, { status: "cancelled" }); toast.info(t.csReject || "Rejected"); await refreshData(); }}
                         >
                           <XCircle className="w-3.5 h-3.5" /> {t.csReject || "Reject"}
                         </Button>
