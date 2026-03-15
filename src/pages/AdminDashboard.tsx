@@ -812,9 +812,9 @@ const AdminDashboard = () => {
                         size="sm"
                         variant="outline"
                         className="gap-1.5 text-xs"
-                        onClick={() => { updateOrder(o.id, { status: "delivered" }); toast.success("Dalabka la geeyay ✓"); refreshData(); }}
+                        onClick={() => { updateOrder(o.id, { status: "delivered" }); toast.success(t.csServed ? `${t.csServed} ✓` : "Served ✓"); refreshData(); }}
                       >
-                        <Check className="w-3.5 h-3.5" /> La Geeyay
+                        <Check className="w-3.5 h-3.5" /> {t.csServed || "Served"}
                       </Button>
                     )}
                     {o.status !== "cancelled" && o.status !== "delivered" && (
