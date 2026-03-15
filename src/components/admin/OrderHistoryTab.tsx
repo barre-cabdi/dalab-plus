@@ -182,7 +182,7 @@ const OrderHistoryTab = ({ businessId }: OrderHistoryTabProps) => {
     a.download = `order-history-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("CSV soo dejiyay ✓");
+    toast.success("CSV exported ✓");
   };
 
   const handlePrintReceipt = async (order: Order) => {
