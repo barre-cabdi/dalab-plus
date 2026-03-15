@@ -129,7 +129,7 @@ const OrderHistoryTab = ({ businessId }: OrderHistoryTabProps) => {
     });
 
     doc.save(`${biz.name.replace(/\s+/g, "_")}_Order_History_${new Date().toISOString().slice(0, 10)}.pdf`);
-    toast.success("PDF soo dejiyay ✓");
+    toast.success("PDF exported ✓");
   };
 
   const exportJSON = () => {
@@ -159,7 +159,7 @@ const OrderHistoryTab = ({ businessId }: OrderHistoryTabProps) => {
     a.download = `order-history-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("JSON soo dejiyay ✓");
+    toast.success("JSON exported ✓");
   };
 
   const exportCSV = () => {
@@ -182,7 +182,7 @@ const OrderHistoryTab = ({ businessId }: OrderHistoryTabProps) => {
     a.download = `order-history-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("CSV soo dejiyay ✓");
+    toast.success("CSV exported ✓");
   };
 
   const handlePrintReceipt = async (order: Order) => {

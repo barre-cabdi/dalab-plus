@@ -374,7 +374,7 @@ const AdminDashboard = () => {
       setHasNewNotification(true);
       setFlashOrder(true);
       setTimeout(() => setFlashOrder(false), 3000);
-      toast.success(`🔔 ${newCount} dalab cusub ayaa soo galay!`, { duration: 5000 });
+      toast.success(lang === "so" ? `🔔 ${newCount} dalab cusub ayaa soo galay!` : `🔔 ${newCount} new order(s) received!`, { duration: 5000 });
     }
     prevOrderCountRef.current = currentOrders.length;
 
@@ -384,7 +384,7 @@ const AdminDashboard = () => {
     if (prevFeedbackCountRef.current > 0 && customerMessages.length > prevFeedbackCountRef.current) {
       playFeedbackSound();
       setHasNewNotification(true);
-      toast.info("💬 Macmiil cusub ayaa fariin ku soo diray!", { duration: 5000 });
+      toast.info(lang === "so" ? "💬 Macmiil cusub ayaa fariin ku soo diray!" : "💬 New customer message received!", { duration: 5000 });
     }
     prevFeedbackCountRef.current = customerMessages.length;
     
@@ -425,11 +425,11 @@ const AdminDashboard = () => {
     }
     setCatDialog(true);
   };
-  const saveCatForm = () => {
+  const saveCatForm = async () => {
     if (!catForm.name.trim()) return;
-    if (editingCat) { updateCategory(editingCat.id, { name: catForm.name, icon: catForm.icon }); toast.success("Category updated"); }
-    else { saveCategory({ id: generateId("cat"), businessId: business.id, name: catForm.name, icon: catForm.icon, order: categories.length }); toast.success("Category created"); }
-    setCatDialog(false); refreshData();
+    if (editingCat) { await updateCategory(editingCat.id, { name: catForm.name, icon: catForm.icon }); toast.success("Category updated"); }
+    else { await saveCategory({ id: generateId("cat"), businessId: business.id, name: catForm.name, icon: catForm.icon, order: categories.length }); toast.success("Category created"); }
+    setCatDialog(false); await refreshData();
   };
 
   const handleCatImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -454,11 +454,11 @@ const AdminDashboard = () => {
     }
     setMenuDialog(true);
   };
-  const saveMenuForm = () => {
+  const saveMenuForm = async () => {
     if (!menuForm.name.trim() || !menuForm.price) return;
-    if (editingMenu) { updateMenuItem(editingMenu.id, { name: menuForm.name, description: menuForm.description, price: Number(menuForm.price), categoryId: menuForm.categoryId, image: menuForm.image, available: menuForm.available }); toast.success("Menu item updated"); }
-    else { saveMenuItem({ id: generateId("item"), businessId: business.id, categoryId: menuForm.categoryId, name: menuForm.name, description: menuForm.description, price: Number(menuForm.price), image: menuForm.image, rating: 0, available: menuForm.available }); toast.success("Menu item created"); }
-    setMenuDialog(false); refreshData();
+    if (editingMenu) { await updateMenuItem(editingMenu.id, { name: menuForm.name, description: menuForm.description, price: Number(menuForm.price), categoryId: menuForm.categoryId, image: menuForm.image, available: menuForm.available }); toast.success("Menu item updated"); }
+    else { await saveMenuItem({ id: generateId("item"), businessId: business.id, categoryId: menuForm.categoryId, name: menuForm.name, description: menuForm.description, price: Number(menuForm.price), image: menuForm.image, rating: 0, available: menuForm.available }); toast.success("Menu item created"); }
+    setMenuDialog(false); await refreshData();
   };
 
   const handleMenuImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -476,20 +476,20 @@ const AdminDashboard = () => {
     else { setEditingTable(null); setTableForm({ number: String(tables.length + 1), seats: "4" }); }
     setTableDialog(true);
   };
-  const saveTableForm = () => {
+  const saveTableForm = async () => {
     if (!tableForm.number) return;
-    if (editingTable) { updateTable(editingTable.id, { number: Number(tableForm.number), seats: Number(tableForm.seats) }); toast.success("Table updated"); }
-    else { saveTable({ id: generateId("tbl"), businessId: business.id, number: Number(tableForm.number), seats: Number(tableForm.seats), status: "available" }); toast.success("Table created"); }
-    setTableDialog(false); refreshData();
+    if (editingTable) { await updateTable(editingTable.id, { number: Number(tableForm.number), seats: Number(tableForm.seats) }); toast.success("Table updated"); }
+    else { await saveTable({ id: generateId("tbl"), businessId: business.id, number: Number(tableForm.number), seats: Number(tableForm.seats), status: "available" }); toast.success("Table created"); }
+    setTableDialog(false); await refreshData();
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!deleteConfirm) return;
-    if (deleteConfirm.type === "category") deleteCategory(deleteConfirm.id);
-    else if (deleteConfirm.type === "menu") deleteMenuItem(deleteConfirm.id);
-    else if (deleteConfirm.type === "table") deleteTable(deleteConfirm.id);
+    if (deleteConfirm.type === "category") await deleteCategory(deleteConfirm.id);
+    else if (deleteConfirm.type === "menu") await deleteMenuItem(deleteConfirm.id);
+    else if (deleteConfirm.type === "table") await deleteTable(deleteConfirm.id);
     toast.success(`${deleteConfirm.name} deleted`);
-    setDeleteConfirm(null); refreshData();
+    setDeleteConfirm(null); await refreshData();
   };
 
   const getCategoryName = (id: string) => categories.find(c => c.id === id)?.name || "—";
@@ -625,7 +625,7 @@ const AdminDashboard = () => {
                   <p className="font-display font-bold">Table #{t.number}</p>
                   <p className="text-xs text-muted-foreground">{t.seats} seats</p>
                   <div className="mt-2">
-                    <Select value={t.status} onValueChange={v => { updateTable(t.id, { status: v as TableItem["status"] }); refreshData(); }}>
+                    <Select value={t.status} onValueChange={async (v) => { await updateTable(t.id, { status: v as TableItem["status"] }); await refreshData(); }}>
                       <SelectTrigger className="h-7 text-xs mx-auto w-28">
                         <SelectValue />
                       </SelectTrigger>
@@ -659,7 +659,7 @@ const AdminDashboard = () => {
             createdAt: new Date().toISOString(),
           });
           localStorage.setItem("dp_order_messages", JSON.stringify(allMessages));
-          toast.success(`Fariin loo diray ${feedbackDialog.customerName}`);
+          toast.success(lang === "so" ? `Fariin loo diray ${feedbackDialog.customerName}` : `Message sent to ${feedbackDialog.customerName}`);
           setFeedbackMessage("");
           setFeedbackDialog(null);
         };
@@ -682,12 +682,12 @@ const AdminDashboard = () => {
             {/* Status filter chips */}
             <div className="flex gap-2 flex-wrap">
               {[
-                { key: "all", label: "Dhammaan", count: orders.length },
-                { key: "pending", label: "⏳ Sugaya", count: pendingCount },
-                { key: "preparing", label: "👨‍🍳 Diyaarinaya", count: preparingCount },
-                { key: "ready", label: "✅ Diyaar", count: readyCount },
-                { key: "delivered", label: "📦 La Geeyay", count: orders.filter(o => o.status === "delivered").length },
-                { key: "cancelled", label: "❌ La Joojiyay", count: orders.filter(o => o.status === "cancelled").length },
+                { key: "all", label: lang === "so" ? "Dhammaan" : "All", count: orders.length },
+                { key: "pending", label: `⏳ ${lang === "so" ? "Sugaya" : "Pending"}`, count: pendingCount },
+                { key: "preparing", label: `👨‍🍳 ${lang === "so" ? "Diyaarinaya" : "Preparing"}`, count: preparingCount },
+                { key: "ready", label: `✅ ${lang === "so" ? "Diyaar" : "Ready"}`, count: readyCount },
+                { key: "delivered", label: `📦 ${lang === "so" ? "La Geeyay" : "Delivered"}`, count: orders.filter(o => o.status === "delivered").length },
+                { key: "cancelled", label: `❌ ${lang === "so" ? "La Joojiyay" : "Cancelled"}`, count: orders.filter(o => o.status === "cancelled").length },
               ].map(f => (
                 <Button
                   key={f.key}
@@ -783,7 +783,7 @@ const AdminDashboard = () => {
                           size="sm"
                           variant="hero"
                           className="gap-1.5 text-xs"
-                          onClick={() => { updateOrder(o.id, { status: "preparing" }); toast.success(t.csAccept ? `${t.csAccept} ✓` : "Accepted ✓"); refreshData(); }}
+                          onClick={async () => { await updateOrder(o.id, { status: "preparing" }); toast.success(t.csAccept ? `${t.csAccept} ✓` : "Accepted ✓"); await refreshData(); }}
                         >
                           <Check className="w-3.5 h-3.5" /> {t.csAccept || "Accept"}
                         </Button>
@@ -791,7 +791,7 @@ const AdminDashboard = () => {
                           size="sm"
                           variant="destructive"
                           className="gap-1.5 text-xs"
-                          onClick={() => { updateOrder(o.id, { status: "cancelled" }); toast.info(t.csReject || "Rejected"); refreshData(); }}
+                          onClick={async () => { await updateOrder(o.id, { status: "cancelled" }); toast.info(t.csReject || "Rejected"); await refreshData(); }}
                         >
                           <XCircle className="w-3.5 h-3.5" /> {t.csReject || "Reject"}
                         </Button>
@@ -801,7 +801,7 @@ const AdminDashboard = () => {
                       <Button
                         size="sm"
                         className="gap-1.5 text-xs bg-green-600 hover:bg-green-700 text-white"
-                        onClick={() => { updateOrder(o.id, { status: "ready" }); toast.success(t.csReadyBtn ? `${t.csReadyBtn} ✓` : "Ready ✓"); refreshData(); }}
+                        onClick={async () => { await updateOrder(o.id, { status: "ready" }); toast.success(t.csReadyBtn ? `${t.csReadyBtn} ✓` : "Ready ✓"); await refreshData(); }}
                       >
                         <Check className="w-3.5 h-3.5" /> {t.csReadyBtn || "Ready"}
                       </Button>
@@ -811,7 +811,7 @@ const AdminDashboard = () => {
                         size="sm"
                         variant="outline"
                         className="gap-1.5 text-xs"
-                        onClick={() => { updateOrder(o.id, { status: "delivered" }); toast.success(t.csServed ? `${t.csServed} ✓` : "Served ✓"); refreshData(); }}
+                        onClick={async () => { await updateOrder(o.id, { status: "delivered" }); toast.success(t.csServed ? `${t.csServed} ✓` : "Served ✓"); await refreshData(); }}
                       >
                         <Check className="w-3.5 h-3.5" /> {t.csServed || "Served"}
                       </Button>
@@ -865,7 +865,7 @@ const AdminDashboard = () => {
                 <DialogFooter>
                   <Button variant="outline" onClick={() => { setFeedbackDialog(null); setFeedbackMessage(""); }}>{t.wtCancel || "Cancel"}</Button>
                   <Button variant="hero" onClick={sendFeedback} disabled={!feedbackMessage.trim()}>
-                    <MessageSquare className="w-4 h-4 mr-1.5" /> U Dir
+                    <MessageSquare className="w-4 h-4 mr-1.5" /> {lang === "so" ? "U Dir" : "Send"}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -1018,7 +1018,7 @@ const AdminDashboard = () => {
               </div>
               {paidOrders.length === 0 ? (
                 <div className="py-12 text-center text-muted-foreground">
-                  <p className="text-sm">Wali lacag lama qaatin</p>
+                  <p className="text-sm">{lang === "so" ? "Wali lacag lama qaatin" : "No payments collected yet"}</p>
                 </div>
               ) : (
                 <Table>
@@ -1180,7 +1180,7 @@ const AdminDashboard = () => {
             )}
             <div className="relative">
               <button
-                onClick={() => { setShowNotifications(!showNotifications); setShowHelp(false); setHasNewNotification(false); setNotifications(prev => showNotifications ? prev : []); }}
+                onClick={() => { setShowNotifications(!showNotifications); setShowHelp(false); setHasNewNotification(false); }}
                 className={`w-9 h-9 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all relative ${hasNewNotification ? "animate-bounce" : ""}`}
               >
                 <Bell className={`w-4 h-4 ${hasNewNotification ? "text-accent" : ""}`} />
