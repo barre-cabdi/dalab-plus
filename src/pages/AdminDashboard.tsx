@@ -625,7 +625,7 @@ const AdminDashboard = () => {
                   <p className="font-display font-bold">Table #{t.number}</p>
                   <p className="text-xs text-muted-foreground">{t.seats} seats</p>
                   <div className="mt-2">
-                    <Select value={t.status} onValueChange={v => { updateTable(t.id, { status: v as TableItem["status"] }); refreshData(); }}>
+                    <Select value={t.status} onValueChange={async (v) => { await updateTable(t.id, { status: v as TableItem["status"] }); await refreshData(); }}>
                       <SelectTrigger className="h-7 text-xs mx-auto w-28">
                         <SelectValue />
                       </SelectTrigger>
