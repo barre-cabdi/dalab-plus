@@ -848,7 +848,10 @@ const AdminDashboard = () => {
                 </DialogHeader>
                 <div className="space-y-3">
                   <div className="flex gap-2 flex-wrap">
-                    {["Dalabkaaga waa la diyaarinayaa ☕", "Dalabkaaga diyaar ayuu yahay! ✅", "Fadlan sug daqiiqado yar ⏳", "Mahadsanid dalabkaaga! 🙏"].map(q => (
+                    {(lang === "so" 
+                      ? ["Dalabkaaga waa la diyaarinayaa ☕", "Dalabkaaga diyaar ayuu yahay! ✅", "Fadlan sug daqiiqado yar ⏳", "Mahadsanid dalabkaaga! 🙏"]
+                      : ["Your order is being prepared ☕", "Your order is ready! ✅", "Please wait a few minutes ⏳", "Thank you for your order! 🙏"]
+                    ).map(q => (
                       <Button key={q} variant="outline" size="sm" className="text-xs" onClick={() => setFeedbackMessage(q)}>{q}</Button>
                     ))}
                   </div>
