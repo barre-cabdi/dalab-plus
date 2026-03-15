@@ -856,7 +856,7 @@ const AdminDashboard = () => {
                     ))}
                   </div>
                   <Textarea
-                    placeholder="Qor fariintaada halkan..."
+                    placeholder={lang === "so" ? "Qor fariintaada halkan..." : "Write your message here..."}
                     value={feedbackMessage}
                     onChange={e => setFeedbackMessage(e.target.value)}
                     className="min-h-[80px]"
