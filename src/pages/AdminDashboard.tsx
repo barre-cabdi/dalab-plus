@@ -1018,7 +1018,7 @@ const AdminDashboard = () => {
               </div>
               {paidOrders.length === 0 ? (
                 <div className="py-12 text-center text-muted-foreground">
-                  <p className="text-sm">Wali lacag lama qaatin</p>
+                  <p className="text-sm">{lang === "so" ? "Wali lacag lama qaatin" : "No payments collected yet"}</p>
                 </div>
               ) : (
                 <Table>
