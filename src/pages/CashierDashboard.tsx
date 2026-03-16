@@ -187,9 +187,9 @@ const CashierDashboard = () => {
     await refresh();
   };
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
     if (!paymentDialog) return;
-    updateOrder(paymentDialog.id, {
+    await updateOrder(paymentDialog.id, {
       status: "paid",
       paymentMethod,
       paidAt: new Date().toISOString(),
@@ -206,7 +206,7 @@ const CashierDashboard = () => {
     }
     setPaymentDialog(null);
     setPaidAmount("");
-    refresh();
+    await refresh();
   };
 
   const handleRefund = () => {
