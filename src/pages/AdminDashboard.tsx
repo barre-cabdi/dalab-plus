@@ -409,6 +409,7 @@ const AdminDashboard = () => {
       id: o.id,
       text: `${(o as any).customerName || "Guest"} - ${o.status} ($${o.total.toFixed(2)})`,
       time: new Date(o.createdAt).toLocaleTimeString(),
+      read: readNotificationIds.has(o.id),
     })));
   };
 
