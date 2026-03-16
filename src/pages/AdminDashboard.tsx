@@ -505,7 +505,86 @@ const AdminDashboard = () => {
   const getCategoryName = (id: string) => categories.find(c => c.id === id)?.name || "—";
   const filteredMenuItems = menuItems.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()) || m.description.toLowerCase().includes(searchQuery.toLowerCase()));
 
-  // Export data
+  // Export data as PDF
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    let yPos = 15;
+    if (business.logo && business.logo.startsWith("data:")) {
+      try { doc.addImage(business.logo, "PNG", 14, yPos, 20, 20); } catch {}
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+      doc.text(business.name, 40, yPos + 10);
+      yPos = 42;
+    } else {
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+      doc.text(business.name, 14, yPos + 5);
+      yPos = 28;
+    }
+    doc.setFontSize(14);
+    doc.text("Business Report", 14, yPos);
+    yPos += 6;
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, yPos);
+    yPos += 5;
+    doc.text(`Total Orders: ${orders.length} | Revenue: $${orders.reduce((s, o) => s + o.total, 0).toFixed(2)} | Menu Items: ${menuItems.length} | Tables: ${tables.length}`, 14, yPos);
+    yPos += 8;
+
+    const headers = ["Order ID", "Customer", "Items", "Total", "Status", "Date"];
+    const rows = orders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(o => {
+      const parts = (o.orderedBy || "").split(":");
+      const custName = parts.length >= 2 ? parts[1] : (o as any).customerName || "Guest";
+      return [
+        o.id.slice(0, 12),
+        custName,
+        o.items.map(i => `${i.quantity}x ${i.name}`).join(", ").slice(0, 30),
+        `$${o.total.toFixed(2)}`,
+        o.status || "pending",
+        new Date(o.createdAt).toLocaleDateString(),
+      ];
+    });
+
+    (doc as any).autoTable({
+      startY: yPos,
+      head: [headers],
+      body: rows,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [41, 128, 85], textColor: 255 },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+    });
+
+    doc.save(`${business.name.replace(/\s+/g, "_")}_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
+    toast.success("PDF exported ✓");
+  };
+
+  // Export data as CSV
+  const handleExportCSV = () => {
+    const headers = ["Order ID", "Customer", "Items", "Total", "Status", "Date"];
+    const rows = orders.map(o => {
+      const parts = (o.orderedBy || "").split(":");
+      const custName = parts.length >= 2 ? parts[1] : "Guest";
+      return [
+        o.id,
+        custName,
+        `"${o.items.map(i => `${i.quantity}x ${i.name}`).join(", ")}"`,
+        o.total.toFixed(2),
+        o.status || "pending",
+        new Date(o.createdAt).toLocaleString(),
+      ];
+    });
+    const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${business.name.replace(/\s+/g, "_")}_Orders_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("CSV exported ✓");
+  };
+
+  // Export data as JSON
   const handleExport = () => {
     const data = {
       business: business.name,
@@ -524,7 +603,7 @@ const AdminDashboard = () => {
     a.download = `${business.name.replace(/\s+/g, "_")}_export_${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Data exported!");
+    toast.success("JSON exported ✓");
   };
 
   // Print QR
