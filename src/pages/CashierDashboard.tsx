@@ -165,7 +165,7 @@ const CashierDashboard = () => {
 
   const cartTotal = cart.reduce((s, c) => s + c.price * c.quantity, 0);
 
-  const placeOrder = () => {
+  const placeOrder = async () => {
     if (!business || !cashier || cart.length === 0) return;
     const order: Order = {
       id: generateId("ord"),
@@ -179,12 +179,12 @@ const CashierDashboard = () => {
       cashierId: cashier.id,
       customerName: customerName || "Walking Customer",
     } as any;
-    saveOrder(order);
+    await saveOrder(order);
     addNotification("new_order", `${t.csNewOrder}: $${cartTotal.toFixed(2)}`, order.id);
     setCart([]);
     setCustomerName("Walking Customer");
     setSelectedTable("");
-    refresh();
+    await refresh();
   };
 
   const handlePayment = () => {
