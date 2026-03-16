@@ -3,33 +3,50 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Gift, ShoppingBag, Star, Trophy, LogOut, Clock, ChevronRight, Sparkles, Crown, Zap, TrendingUp, Eye, EyeOff, Store, Flame, Award, Gem } from "lucide-react";
-import { getBusinessById } from "@/lib/store";
+import { getBusinessById, getOrdersByCustomerId, Order } from "@/lib/store";
 
 const CustomerDashboard = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const urlBusinessId = searchParams.get("business") || "";
   const [customer, setCustomer] = useState<any>(null);
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [animatePoints, setAnimatePoints] = useState(false);
   const [showSpent, setShowSpent] = useState(false);
+  const [businessData, setBusinessData] = useState<any>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("dp_customer");
     if (stored) setCustomer(JSON.parse(stored));
     else { navigate("/register?table=1&business=1001"); return; }
-    const storedOrders = JSON.parse(localStorage.getItem("dp_orders") || "[]");
-    setOrders(storedOrders);
     setTimeout(() => setAnimatePoints(true), 800);
   }, [navigate]);
 
-  if (!customer) return null;
+  const businessId = urlBusinessId || customer?.businessId || "1001";
 
-  // Get business info for branding - use persistent branding store
-  const lastOrder = orders[orders.length - 1];
-  const businessId = urlBusinessId || customer.businessId || lastOrder?.businessId || "1001";
-  const [businessData, setBusinessData] = useState<any>(null);
-  useEffect(() => { getBusinessById(businessId).then(b => setBusinessData(b || null)); }, [businessId]);
+  useEffect(() => {
+    if (businessId) getBusinessById(businessId).then(b => setBusinessData(b || null));
+  }, [businessId]);
+
+  // Fetch orders from Supabase based on customer ID
+  useEffect(() => {
+    if (!customer?.id) return;
+    const loadOrders = async () => {
+      const dbOrders = await getOrdersByCustomerId(customer.id);
+      if (dbOrders.length > 0) {
+        setOrders(dbOrders);
+      } else {
+        const storedOrders = JSON.parse(localStorage.getItem("dp_orders") || "[]");
+        setOrders(storedOrders);
+      }
+    };
+    loadOrders();
+    const interval = setInterval(loadOrders, 10000);
+    return () => clearInterval(interval);
+  }, [customer?.id]);
+
+  if (!customer) return null;
+  
   const branding = (() => { try { return JSON.parse(localStorage.getItem("dp_customer_branding") || "{}"); } catch { return {}; } })();
   const businessName = businessData?.name || branding.businessName || customer?.businessName || "DALABplus+";
   const businessLogo = businessData?.logo || branding.businessLogo || customer?.businessLogo || "";
@@ -155,7 +172,7 @@ const CustomerDashboard = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: "Orders", value: customer.totalOrders || 0, icon: Flame, delay: 0.3 },
+            { label: "Orders", value: customer.totalOrders || orders.length || 0, icon: Flame, delay: 0.3 },
             { label: "Points", value: customer.points || 0, icon: Gem, delay: 0.4 },
             { label: "Spent", value: spentDisplay, icon: Award, delay: 0.5, hasToggle: true },
           ].map((s) => (
@@ -296,7 +313,7 @@ const CustomerDashboard = () => {
           </div>
         </motion.div>
 
-        {/* Recent Orders */}
+        {/* Recent Orders - Now from Supabase */}
         {orders.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -305,10 +322,10 @@ const CustomerDashboard = () => {
             className="glass rounded-2xl p-5"
           >
             <h3 className="font-display font-bold text-primary-foreground text-sm mb-4 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-accent" /> Order-yadaadii ugu dambeeyay
+              <Clock className="w-4 h-4 text-accent" /> My Orders ({orders.length})
             </h3>
             <div className="space-y-1">
-              {orders.slice(-3).reverse().map((order, i) => (
+              {orders.slice(0, 5).map((order, i) => (
                 <motion.button
                   key={order.id}
                   initial={{ opacity: 0, x: -15 }}
@@ -326,9 +343,19 @@ const CustomerDashboard = () => {
                       <ShoppingBag className="w-4 h-4 text-accent" />
                     </motion.div>
                     <div className="text-left">
-                      <p className="text-xs font-semibold text-primary-foreground">{order.id}</p>
+                      <p className="text-xs font-semibold text-primary-foreground">{order.id.slice(0, 12)}...</p>
                       <p className="text-[10px] text-primary-foreground/35">
                         {order.items?.length || 0} items · <span className="text-accent font-medium">${order.total?.toFixed(2)}</span>
+                        {order.status && (
+                          <span className={`ml-2 px-1.5 py-0.5 rounded text-[8px] font-bold ${
+                            order.status === "delivered" || order.status === "paid" ? "bg-emerald-500/20 text-emerald-400" :
+                            order.status === "pending" ? "bg-yellow-500/20 text-yellow-400" :
+                            order.status === "preparing" ? "bg-blue-500/20 text-blue-400" :
+                            "bg-muted text-muted-foreground"
+                          }`}>
+                            {order.status}
+                          </span>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -336,6 +363,20 @@ const CustomerDashboard = () => {
                 </motion.button>
               ))}
             </div>
+          </motion.div>
+        )}
+
+        {/* Empty state for no orders */}
+        {orders.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.75 }}
+            className="glass rounded-2xl p-8 text-center"
+          >
+            <ShoppingBag className="w-10 h-10 text-primary-foreground/20 mx-auto mb-3" />
+            <h3 className="font-display font-bold text-primary-foreground text-sm mb-1">No orders yet</h3>
+            <p className="text-xs text-primary-foreground/40">Browse the menu and place your first order!</p>
           </motion.div>
         )}
 
@@ -355,7 +396,7 @@ const CustomerDashboard = () => {
           </Button>
         </motion.div>
 
-        {/* Powered by - Bigger & Bolder */}
+        {/* Powered by */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
