@@ -99,17 +99,17 @@ const MenuManagementTab = ({ businessId, onDataChange }: MenuManagementTabProps)
     setCatDialog(true);
   };
 
-  const saveCatForm = () => {
+  const saveCatForm = async () => {
     if (!catForm.name.trim()) return;
     if (editingCat) {
-      updateCategory(editingCat.id, { name: catForm.name, icon: catForm.icon });
-      toast.success("Category la cusbooneysiiyay ✓");
+      await updateCategory(editingCat.id, { name: catForm.name, icon: catForm.icon });
+      toast.success("Category updated ✓");
     } else {
-      saveCategory({ id: generateId("cat"), businessId, name: catForm.name, icon: catForm.icon, order: categories.length });
-      toast.success("Category la abuuray ✓");
+      await saveCategory({ id: generateId("cat"), businessId, name: catForm.name, icon: catForm.icon, order: categories.length });
+      toast.success("Category created ✓");
     }
     setCatDialog(false);
-    refreshData();
+    await refreshData();
   };
 
   const handleCatImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
