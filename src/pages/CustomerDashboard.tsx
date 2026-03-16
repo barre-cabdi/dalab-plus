@@ -22,6 +22,12 @@ const CustomerDashboard = () => {
     setTimeout(() => setAnimatePoints(true), 800);
   }, [navigate]);
 
+  const businessId = urlBusinessId || customer?.businessId || "1001";
+
+  useEffect(() => {
+    if (businessId) getBusinessById(businessId).then(b => setBusinessData(b || null));
+  }, [businessId]);
+
   // Fetch orders from Supabase based on customer ID
   useEffect(() => {
     if (!customer?.id) return;
@@ -30,7 +36,6 @@ const CustomerDashboard = () => {
       if (dbOrders.length > 0) {
         setOrders(dbOrders);
       } else {
-        // Fallback: try localStorage for legacy data
         const storedOrders = JSON.parse(localStorage.getItem("dp_orders") || "[]");
         setOrders(storedOrders);
       }
@@ -41,12 +46,6 @@ const CustomerDashboard = () => {
   }, [customer?.id]);
 
   if (!customer) return null;
-
-  // Get business info for branding
-  const lastOrder = orders[orders.length - 1];
-  const businessId = urlBusinessId || customer.businessId || lastOrder?.businessId || "1001";
-  
-  useEffect(() => { getBusinessById(businessId).then(b => setBusinessData(b || null)); }, [businessId]);
   
   const branding = (() => { try { return JSON.parse(localStorage.getItem("dp_customer_branding") || "{}"); } catch { return {}; } })();
   const businessName = businessData?.name || branding.businessName || customer?.businessName || "DALABplus+";
