@@ -1259,8 +1259,14 @@ const AdminDashboard = () => {
           <div className="flex items-center gap-3">
             {activeTab === "dashboard" && (
               <>
+                <Button variant="hero" size="sm" onClick={handleExportPDF}>
+                  <Download className="w-4 h-4 mr-1.5" /> PDF
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleExportCSV}>
+                  <Download className="w-4 h-4 mr-1.5" /> CSV
+                </Button>
                 <Button variant="outline" size="sm" onClick={handleExport}>
-                  <Download className="w-4 h-4 mr-1.5" /> {t.adExport}
+                  <Download className="w-4 h-4 mr-1.5" /> JSON
                 </Button>
                 <Button variant="hero" size="sm" onClick={() => setActiveTab("orders")}>
                   <Plus className="w-4 h-4 mr-1.5" /> {t.adNewOrder}
@@ -1269,13 +1275,23 @@ const AdminDashboard = () => {
             )}
             <div className="relative">
               <button
-                onClick={() => { setShowNotifications(!showNotifications); setShowHelp(false); setHasNewNotification(false); }}
+                onClick={() => {
+                  setShowNotifications(!showNotifications);
+                  setShowHelp(false);
+                  setHasNewNotification(false);
+                  // Mark all current notifications as read
+                  const newReadIds = new Set(readNotificationIds);
+                  notifications.forEach(n => newReadIds.add(n.id));
+                  setReadNotificationIds(newReadIds);
+                  localStorage.setItem("dp_read_notifications", JSON.stringify([...newReadIds]));
+                  setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+                }}
                 className={`w-9 h-9 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all relative ${hasNewNotification ? "animate-bounce" : ""}`}
               >
                 <Bell className={`w-4 h-4 ${hasNewNotification ? "text-accent" : ""}`} />
-                {notifications.length > 0 && (
+                {notifications.filter(n => !n.read).length > 0 && (
                   <span className={`absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] flex items-center justify-center font-bold ${hasNewNotification ? "animate-pulse" : ""}`}>
-                    {notifications.length}
+                    {notifications.filter(n => !n.read).length}
                   </span>
                 )}
               </button>
@@ -1289,8 +1305,22 @@ const AdminDashboard = () => {
                     {notifications.length === 0 ? (
                       <p className="text-sm text-muted-foreground text-center py-6">{t.adNoNotifications}</p>
                     ) : notifications.map(n => (
-                      <div key={n.id} className="px-4 py-3 border-b border-border/50 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => { setActiveTab("orders"); setShowNotifications(false); }}>
-                        <p className="text-xs text-foreground">{n.text}</p>
+                      <div key={n.id} className={`px-4 py-3 border-b border-border/50 hover:bg-muted/50 transition-colors cursor-pointer ${!n.read ? "bg-accent/5 border-l-2 border-l-accent" : ""}`}
+                        onClick={() => {
+                          // Mark this notification as read
+                          const newReadIds = new Set(readNotificationIds);
+                          newReadIds.add(n.id);
+                          setReadNotificationIds(newReadIds);
+                          localStorage.setItem("dp_read_notifications", JSON.stringify([...newReadIds]));
+                          setNotifications(prev => prev.map(nn => nn.id === n.id ? { ...nn, read: true } : nn));
+                          setActiveTab("orders");
+                          setShowNotifications(false);
+                        }}
+                      >
+                        <div className="flex items-center gap-2">
+                          {!n.read && <span className="w-2 h-2 rounded-full bg-accent shrink-0" />}
+                          <p className="text-xs text-foreground">{n.text}</p>
+                        </div>
                         <p className="text-[10px] text-muted-foreground mt-1">{n.time}</p>
                       </div>
                     ))}
