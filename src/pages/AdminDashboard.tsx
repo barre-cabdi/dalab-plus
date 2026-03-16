@@ -283,8 +283,14 @@ const AdminDashboard = () => {
   const [menuForm, setMenuForm] = useState({ name: "", description: "", price: "", categoryId: "", image: "🍛", available: true });
   const [tableForm, setTableForm] = useState({ number: "", seats: "4" });
   const [searchQuery, setSearchQuery] = useState("");
-  const [notifications, setNotifications] = useState<{ id: string; text: string; time: string }[]>([]);
+  const [notifications, setNotifications] = useState<{ id: string; text: string; time: string; read: boolean }[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem("dp_read_notifications");
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch { return new Set(); }
+  });
   const [showHelp, setShowHelp] = useState(false);
   const [imageMode, setImageMode] = useState<"emoji" | "upload">("emoji");
   const [catImageMode, setCatImageMode] = useState<"emoji" | "upload">("emoji");
