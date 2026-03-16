@@ -29,6 +29,9 @@ import {
 import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
 import { Textarea } from "@/components/ui/textarea";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import { format } from "date-fns";
 
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminStatsCards from "@/components/admin/AdminStatsCards";
