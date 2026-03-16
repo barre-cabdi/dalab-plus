@@ -136,17 +136,17 @@ const MenuManagementTab = ({ businessId, onDataChange }: MenuManagementTabProps)
     setShowSuggestions(false);
   };
 
-  const saveMenuForm = () => {
+  const saveMenuForm = async () => {
     if (!menuForm.name.trim() || !menuForm.price) return;
     if (editingMenu) {
-      updateMenuItem(editingMenu.id, { name: menuForm.name, description: menuForm.description, price: Number(menuForm.price), categoryId: menuForm.categoryId, image: menuForm.image, available: menuForm.available });
-      toast.success("Item la cusbooneysiiyay ✓");
+      await updateMenuItem(editingMenu.id, { name: menuForm.name, description: menuForm.description, price: Number(menuForm.price), categoryId: menuForm.categoryId, image: menuForm.image, available: menuForm.available });
+      toast.success("Item updated ✓");
     } else {
-      saveMenuItem({ id: generateId("item"), businessId, categoryId: menuForm.categoryId, name: menuForm.name, description: menuForm.description, price: Number(menuForm.price), image: menuForm.image, rating: 0, available: menuForm.available });
-      toast.success("Item la abuuray ✓");
+      await saveMenuItem({ id: generateId("item"), businessId, categoryId: menuForm.categoryId, name: menuForm.name, description: menuForm.description, price: Number(menuForm.price), image: menuForm.image, rating: 0, available: menuForm.available });
+      toast.success("Item created ✓");
     }
     setMenuDialog(false);
-    refreshData();
+    await refreshData();
   };
 
   const handleMenuImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
