@@ -29,6 +29,9 @@ import {
 import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
 import { Textarea } from "@/components/ui/textarea";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import { format } from "date-fns";
 
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminStatsCards from "@/components/admin/AdminStatsCards";
@@ -280,8 +283,14 @@ const AdminDashboard = () => {
   const [menuForm, setMenuForm] = useState({ name: "", description: "", price: "", categoryId: "", image: "🍛", available: true });
   const [tableForm, setTableForm] = useState({ number: "", seats: "4" });
   const [searchQuery, setSearchQuery] = useState("");
-  const [notifications, setNotifications] = useState<{ id: string; text: string; time: string }[]>([]);
+  const [notifications, setNotifications] = useState<{ id: string; text: string; time: string; read: boolean }[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem("dp_read_notifications");
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch { return new Set(); }
+  });
   const [showHelp, setShowHelp] = useState(false);
   const [imageMode, setImageMode] = useState<"emoji" | "upload">("emoji");
   const [catImageMode, setCatImageMode] = useState<"emoji" | "upload">("emoji");
@@ -400,6 +409,7 @@ const AdminDashboard = () => {
       id: o.id,
       text: `${(o as any).customerName || "Guest"} - ${o.status} ($${o.total.toFixed(2)})`,
       time: new Date(o.createdAt).toLocaleTimeString(),
+      read: readNotificationIds.has(o.id),
     })));
   };
 
@@ -495,7 +505,86 @@ const AdminDashboard = () => {
   const getCategoryName = (id: string) => categories.find(c => c.id === id)?.name || "—";
   const filteredMenuItems = menuItems.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()) || m.description.toLowerCase().includes(searchQuery.toLowerCase()));
 
-  // Export data
+  // Export data as PDF
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    let yPos = 15;
+    if (business.logo && business.logo.startsWith("data:")) {
+      try { doc.addImage(business.logo, "PNG", 14, yPos, 20, 20); } catch {}
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+      doc.text(business.name, 40, yPos + 10);
+      yPos = 42;
+    } else {
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+      doc.text(business.name, 14, yPos + 5);
+      yPos = 28;
+    }
+    doc.setFontSize(14);
+    doc.text("Business Report", 14, yPos);
+    yPos += 6;
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, yPos);
+    yPos += 5;
+    doc.text(`Total Orders: ${orders.length} | Revenue: $${orders.reduce((s, o) => s + o.total, 0).toFixed(2)} | Menu Items: ${menuItems.length} | Tables: ${tables.length}`, 14, yPos);
+    yPos += 8;
+
+    const headers = ["Order ID", "Customer", "Items", "Total", "Status", "Date"];
+    const rows = orders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(o => {
+      const parts = (o.orderedBy || "").split(":");
+      const custName = parts.length >= 2 ? parts[1] : (o as any).customerName || "Guest";
+      return [
+        o.id.slice(0, 12),
+        custName,
+        o.items.map(i => `${i.quantity}x ${i.name}`).join(", ").slice(0, 30),
+        `$${o.total.toFixed(2)}`,
+        o.status || "pending",
+        new Date(o.createdAt).toLocaleDateString(),
+      ];
+    });
+
+    (doc as any).autoTable({
+      startY: yPos,
+      head: [headers],
+      body: rows,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [41, 128, 85], textColor: 255 },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+    });
+
+    doc.save(`${business.name.replace(/\s+/g, "_")}_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
+    toast.success("PDF exported ✓");
+  };
+
+  // Export data as CSV
+  const handleExportCSV = () => {
+    const headers = ["Order ID", "Customer", "Items", "Total", "Status", "Date"];
+    const rows = orders.map(o => {
+      const parts = (o.orderedBy || "").split(":");
+      const custName = parts.length >= 2 ? parts[1] : "Guest";
+      return [
+        o.id,
+        custName,
+        `"${o.items.map(i => `${i.quantity}x ${i.name}`).join(", ")}"`,
+        o.total.toFixed(2),
+        o.status || "pending",
+        new Date(o.createdAt).toLocaleString(),
+      ];
+    });
+    const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${business.name.replace(/\s+/g, "_")}_Orders_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("CSV exported ✓");
+  };
+
+  // Export data as JSON
   const handleExport = () => {
     const data = {
       business: business.name,
@@ -514,7 +603,7 @@ const AdminDashboard = () => {
     a.download = `${business.name.replace(/\s+/g, "_")}_export_${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Data exported!");
+    toast.success("JSON exported ✓");
   };
 
   // Print QR
@@ -1170,8 +1259,14 @@ const AdminDashboard = () => {
           <div className="flex items-center gap-3">
             {activeTab === "dashboard" && (
               <>
+                <Button variant="hero" size="sm" onClick={handleExportPDF}>
+                  <Download className="w-4 h-4 mr-1.5" /> PDF
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleExportCSV}>
+                  <Download className="w-4 h-4 mr-1.5" /> CSV
+                </Button>
                 <Button variant="outline" size="sm" onClick={handleExport}>
-                  <Download className="w-4 h-4 mr-1.5" /> {t.adExport}
+                  <Download className="w-4 h-4 mr-1.5" /> JSON
                 </Button>
                 <Button variant="hero" size="sm" onClick={() => setActiveTab("orders")}>
                   <Plus className="w-4 h-4 mr-1.5" /> {t.adNewOrder}
@@ -1180,13 +1275,23 @@ const AdminDashboard = () => {
             )}
             <div className="relative">
               <button
-                onClick={() => { setShowNotifications(!showNotifications); setShowHelp(false); setHasNewNotification(false); }}
+                onClick={() => {
+                  setShowNotifications(!showNotifications);
+                  setShowHelp(false);
+                  setHasNewNotification(false);
+                  // Mark all current notifications as read
+                  const newReadIds = new Set(readNotificationIds);
+                  notifications.forEach(n => newReadIds.add(n.id));
+                  setReadNotificationIds(newReadIds);
+                  localStorage.setItem("dp_read_notifications", JSON.stringify([...newReadIds]));
+                  setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+                }}
                 className={`w-9 h-9 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all relative ${hasNewNotification ? "animate-bounce" : ""}`}
               >
                 <Bell className={`w-4 h-4 ${hasNewNotification ? "text-accent" : ""}`} />
-                {notifications.length > 0 && (
+                {notifications.filter(n => !n.read).length > 0 && (
                   <span className={`absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] flex items-center justify-center font-bold ${hasNewNotification ? "animate-pulse" : ""}`}>
-                    {notifications.length}
+                    {notifications.filter(n => !n.read).length}
                   </span>
                 )}
               </button>
@@ -1200,8 +1305,22 @@ const AdminDashboard = () => {
                     {notifications.length === 0 ? (
                       <p className="text-sm text-muted-foreground text-center py-6">{t.adNoNotifications}</p>
                     ) : notifications.map(n => (
-                      <div key={n.id} className="px-4 py-3 border-b border-border/50 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => { setActiveTab("orders"); setShowNotifications(false); }}>
-                        <p className="text-xs text-foreground">{n.text}</p>
+                      <div key={n.id} className={`px-4 py-3 border-b border-border/50 hover:bg-muted/50 transition-colors cursor-pointer ${!n.read ? "bg-accent/5 border-l-2 border-l-accent" : ""}`}
+                        onClick={() => {
+                          // Mark this notification as read
+                          const newReadIds = new Set(readNotificationIds);
+                          newReadIds.add(n.id);
+                          setReadNotificationIds(newReadIds);
+                          localStorage.setItem("dp_read_notifications", JSON.stringify([...newReadIds]));
+                          setNotifications(prev => prev.map(nn => nn.id === n.id ? { ...nn, read: true } : nn));
+                          setActiveTab("orders");
+                          setShowNotifications(false);
+                        }}
+                      >
+                        <div className="flex items-center gap-2">
+                          {!n.read && <span className="w-2 h-2 rounded-full bg-accent shrink-0" />}
+                          <p className="text-xs text-foreground">{n.text}</p>
+                        </div>
                         <p className="text-[10px] text-muted-foreground mt-1">{n.time}</p>
                       </div>
                     ))}
