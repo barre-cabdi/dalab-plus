@@ -158,13 +158,13 @@ const MenuManagementTab = ({ businessId, onDataChange }: MenuManagementTabProps)
     reader.readAsDataURL(file);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!deleteConfirm) return;
-    if (deleteConfirm.type === "category") deleteCategory(deleteConfirm.id);
-    else if (deleteConfirm.type === "menu") deleteMenuItem(deleteConfirm.id);
-    toast.success(`${deleteConfirm.name} la tirtiray ✓`);
+    if (deleteConfirm.type === "category") await deleteCategory(deleteConfirm.id);
+    else if (deleteConfirm.type === "menu") await deleteMenuItem(deleteConfirm.id);
+    toast.success(`${deleteConfirm.name} deleted ✓`);
     setDeleteConfirm(null);
-    refreshData();
+    await refreshData();
   };
 
   const applySuggestion = (suggestion: typeof foodSuggestions[0]) => {

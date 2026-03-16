@@ -209,12 +209,12 @@ const CashierDashboard = () => {
     await refresh();
   };
 
-  const handleRefund = () => {
+  const handleRefund = async () => {
     if (!refundDialog) return;
-    updateOrder(refundDialog.id, { status: "cancelled" });
+    await updateOrder(refundDialog.id, { status: "cancelled" });
     addNotification("cancel", `${t.csCancelOrder}: $${refundDialog.total.toFixed(2)}`, refundDialog.id);
     setRefundDialog(null);
-    refresh();
+    await refresh();
   };
 
   if (!business || !cashier) return null;
