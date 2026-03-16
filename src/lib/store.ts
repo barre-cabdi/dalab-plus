@@ -485,6 +485,12 @@ export const deleteOrder = async (id: string): Promise<void> => {
   if (error) console.error("deleteOrder error:", error);
 };
 
+export const getOrdersByCustomerId = async (customerId: string): Promise<Order[]> => {
+  const { data, error } = await supabase.from("orders").select("*").eq("customer_id", customerId).order("created_at", { ascending: false });
+  if (error) { console.error("getOrdersByCustomerId error:", error); return []; }
+  return (data || []).map(mapOrderFromDb);
+};
+
 // ============= STAFF =============
 
 const mapStaffFromDb = (row: any): StaffMember => ({
