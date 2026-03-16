@@ -99,17 +99,17 @@ const MenuManagementTab = ({ businessId, onDataChange }: MenuManagementTabProps)
     setCatDialog(true);
   };
 
-  const saveCatForm = () => {
+  const saveCatForm = async () => {
     if (!catForm.name.trim()) return;
     if (editingCat) {
-      updateCategory(editingCat.id, { name: catForm.name, icon: catForm.icon });
-      toast.success("Category la cusbooneysiiyay ✓");
+      await updateCategory(editingCat.id, { name: catForm.name, icon: catForm.icon });
+      toast.success("Category updated ✓");
     } else {
-      saveCategory({ id: generateId("cat"), businessId, name: catForm.name, icon: catForm.icon, order: categories.length });
-      toast.success("Category la abuuray ✓");
+      await saveCategory({ id: generateId("cat"), businessId, name: catForm.name, icon: catForm.icon, order: categories.length });
+      toast.success("Category created ✓");
     }
     setCatDialog(false);
-    refreshData();
+    await refreshData();
   };
 
   const handleCatImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,17 +136,17 @@ const MenuManagementTab = ({ businessId, onDataChange }: MenuManagementTabProps)
     setShowSuggestions(false);
   };
 
-  const saveMenuForm = () => {
+  const saveMenuForm = async () => {
     if (!menuForm.name.trim() || !menuForm.price) return;
     if (editingMenu) {
-      updateMenuItem(editingMenu.id, { name: menuForm.name, description: menuForm.description, price: Number(menuForm.price), categoryId: menuForm.categoryId, image: menuForm.image, available: menuForm.available });
-      toast.success("Item la cusbooneysiiyay ✓");
+      await updateMenuItem(editingMenu.id, { name: menuForm.name, description: menuForm.description, price: Number(menuForm.price), categoryId: menuForm.categoryId, image: menuForm.image, available: menuForm.available });
+      toast.success("Item updated ✓");
     } else {
-      saveMenuItem({ id: generateId("item"), businessId, categoryId: menuForm.categoryId, name: menuForm.name, description: menuForm.description, price: Number(menuForm.price), image: menuForm.image, rating: 0, available: menuForm.available });
-      toast.success("Item la abuuray ✓");
+      await saveMenuItem({ id: generateId("item"), businessId, categoryId: menuForm.categoryId, name: menuForm.name, description: menuForm.description, price: Number(menuForm.price), image: menuForm.image, rating: 0, available: menuForm.available });
+      toast.success("Item created ✓");
     }
     setMenuDialog(false);
-    refreshData();
+    await refreshData();
   };
 
   const handleMenuImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -158,13 +158,13 @@ const MenuManagementTab = ({ businessId, onDataChange }: MenuManagementTabProps)
     reader.readAsDataURL(file);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!deleteConfirm) return;
-    if (deleteConfirm.type === "category") deleteCategory(deleteConfirm.id);
-    else if (deleteConfirm.type === "menu") deleteMenuItem(deleteConfirm.id);
-    toast.success(`${deleteConfirm.name} la tirtiray ✓`);
+    if (deleteConfirm.type === "category") await deleteCategory(deleteConfirm.id);
+    else if (deleteConfirm.type === "menu") await deleteMenuItem(deleteConfirm.id);
+    toast.success(`${deleteConfirm.name} deleted ✓`);
     setDeleteConfirm(null);
-    refreshData();
+    await refreshData();
   };
 
   const applySuggestion = (suggestion: typeof foodSuggestions[0]) => {

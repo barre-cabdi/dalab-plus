@@ -18,7 +18,7 @@ import {
   CreditCard, Banknote, Smartphone, Check, XCircle, Receipt, RefreshCw,
   BarChart3, Clock, DollarSign, TrendingUp, User, ChevronLeft, ChevronRight,
   LayoutDashboard, ShoppingCart, FileText, Bell, Users, AlertCircle, Eye,
-  Phone, Mail, Award, Calendar, Filter, ArrowUpRight, Package, Globe,
+  Phone, Mail, Award, Calendar, Filter, ArrowUpRight, Package, Globe, Download,
 } from "lucide-react";
 import {
   StaffMember, Business, MenuItem, Category, Order, TableItem, Customer,
@@ -28,6 +28,8 @@ import {
 import { toast } from "sonner";
 import { printReceipt } from "@/lib/printReceipt";
 import { useI18n } from "@/lib/i18n";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 interface Notification {
   id: string;
@@ -165,7 +167,7 @@ const CashierDashboard = () => {
 
   const cartTotal = cart.reduce((s, c) => s + c.price * c.quantity, 0);
 
-  const placeOrder = () => {
+  const placeOrder = async () => {
     if (!business || !cashier || cart.length === 0) return;
     const order: Order = {
       id: generateId("ord"),
@@ -179,17 +181,17 @@ const CashierDashboard = () => {
       cashierId: cashier.id,
       customerName: customerName || "Walking Customer",
     } as any;
-    saveOrder(order);
+    await saveOrder(order);
     addNotification("new_order", `${t.csNewOrder}: $${cartTotal.toFixed(2)}`, order.id);
     setCart([]);
     setCustomerName("Walking Customer");
     setSelectedTable("");
-    refresh();
+    await refresh();
   };
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
     if (!paymentDialog) return;
-    updateOrder(paymentDialog.id, {
+    await updateOrder(paymentDialog.id, {
       status: "paid",
       paymentMethod,
       paidAt: new Date().toISOString(),
@@ -206,15 +208,15 @@ const CashierDashboard = () => {
     }
     setPaymentDialog(null);
     setPaidAmount("");
-    refresh();
+    await refresh();
   };
 
-  const handleRefund = () => {
+  const handleRefund = async () => {
     if (!refundDialog) return;
-    updateOrder(refundDialog.id, { status: "cancelled" });
+    await updateOrder(refundDialog.id, { status: "cancelled" });
     addNotification("cancel", `${t.csCancelOrder}: $${refundDialog.total.toFixed(2)}`, refundDialog.id);
     setRefundDialog(null);
-    refresh();
+    await refresh();
   };
 
   if (!business || !cashier) return null;
@@ -947,6 +949,63 @@ const CashierDashboard = () => {
           {/* ===== SHIFT REPORT ===== */}
           {activeTab === "shift-report" && (
             <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-display font-bold text-lg">{t.csShiftReport}</h3>
+                  <p className="text-xs text-muted-foreground">{cashier.name} · {new Date().toLocaleDateString()}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="hero" size="sm" onClick={() => {
+                    const doc = new jsPDF();
+                    doc.setFontSize(18);
+                    doc.setFont("helvetica", "bold");
+                    doc.text(business.name, 14, 20);
+                    doc.setFontSize(14);
+                    doc.text(`Cashier Shift Report - ${cashier.name}`, 14, 30);
+                    doc.setFontSize(10);
+                    doc.setFont("helvetica", "normal");
+                    doc.text(`Date: ${new Date().toLocaleDateString()} | Generated: ${new Date().toLocaleString()}`, 14, 38);
+                    doc.text(`Total Orders: ${myOrders.length} | Revenue: $${myRevenue.toFixed(2)}`, 14, 44);
+                    doc.text(`Cash: $${cashPayments.reduce((s, o) => s + o.total, 0).toFixed(2)} (${cashPayments.length}) | Card: $${cardPayments.reduce((s, o) => s + o.total, 0).toFixed(2)} (${cardPayments.length}) | Mobile: $${mobilePayments.reduce((s, o) => s + o.total, 0).toFixed(2)} (${mobilePayments.length})`, 14, 50);
+                    const headers = ["Time", "Customer", "Items", "Total", "Payment", "Status"];
+                    const rows = [...myOrders].reverse().map(o => [
+                      new Date(o.createdAt).toLocaleTimeString(),
+                      (o as any).customerName || "Guest",
+                      o.items.map(i => `${i.quantity}x ${i.name}`).join(", ").slice(0, 30),
+                      `$${o.total.toFixed(2)}`,
+                      o.paymentMethod || "—",
+                      o.status,
+                    ]);
+                    (doc as any).autoTable({ startY: 56, head: [headers], body: rows, styles: { fontSize: 8 }, headStyles: { fillColor: [41, 128, 85], textColor: 255 } });
+                    doc.save(`${cashier.name.replace(/\s+/g, "_")}_shift_report_${new Date().toISOString().slice(0, 10)}.pdf`);
+                    toast.success("PDF exported ✓");
+                  }}>
+                    <FileText className="w-4 h-4 mr-1.5" /> PDF
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => {
+                    const headers = ["Time", "Customer", "Items", "Total", "Payment", "Status"];
+                    const rows = [...myOrders].reverse().map(o => [
+                      new Date(o.createdAt).toLocaleTimeString(),
+                      (o as any).customerName || "Guest",
+                      `"${o.items.map(i => `${i.quantity}x ${i.name}`).join(", ")}"`,
+                      o.total.toFixed(2),
+                      o.paymentMethod || "—",
+                      o.status,
+                    ]);
+                    const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+                    const blob = new Blob([csv], { type: "text/csv" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `${cashier.name.replace(/\s+/g, "_")}_shift_${new Date().toISOString().slice(0, 10)}.csv`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast.success("CSV exported ✓");
+                  }}>
+                    <Download className="w-4 h-4 mr-1.5" /> CSV
+                  </Button>
+                </div>
+              </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
                   { label: t.csMyTotalOrders, value: myOrders.length, icon: ShoppingBag },
