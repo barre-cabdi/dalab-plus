@@ -18,7 +18,7 @@ import {
   CreditCard, Banknote, Smartphone, Check, XCircle, Receipt, RefreshCw,
   BarChart3, Clock, DollarSign, TrendingUp, User, ChevronLeft, ChevronRight,
   LayoutDashboard, ShoppingCart, FileText, Bell, Users, AlertCircle, Eye,
-  Phone, Mail, Award, Calendar, Filter, ArrowUpRight, Package, Globe,
+  Phone, Mail, Award, Calendar, Filter, ArrowUpRight, Package, Globe, Download,
 } from "lucide-react";
 import {
   StaffMember, Business, MenuItem, Category, Order, TableItem, Customer,
@@ -28,6 +28,8 @@ import {
 import { toast } from "sonner";
 import { printReceipt } from "@/lib/printReceipt";
 import { useI18n } from "@/lib/i18n";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 interface Notification {
   id: string;
