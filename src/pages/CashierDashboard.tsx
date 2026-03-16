@@ -949,6 +949,63 @@ const CashierDashboard = () => {
           {/* ===== SHIFT REPORT ===== */}
           {activeTab === "shift-report" && (
             <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-display font-bold text-lg">{t.csShiftReport}</h3>
+                  <p className="text-xs text-muted-foreground">{cashier.name} · {new Date().toLocaleDateString()}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="hero" size="sm" onClick={() => {
+                    const doc = new jsPDF();
+                    doc.setFontSize(18);
+                    doc.setFont("helvetica", "bold");
+                    doc.text(business.name, 14, 20);
+                    doc.setFontSize(14);
+                    doc.text(`Cashier Shift Report - ${cashier.name}`, 14, 30);
+                    doc.setFontSize(10);
+                    doc.setFont("helvetica", "normal");
+                    doc.text(`Date: ${new Date().toLocaleDateString()} | Generated: ${new Date().toLocaleString()}`, 14, 38);
+                    doc.text(`Total Orders: ${myOrders.length} | Revenue: $${myRevenue.toFixed(2)}`, 14, 44);
+                    doc.text(`Cash: $${cashPayments.reduce((s, o) => s + o.total, 0).toFixed(2)} (${cashPayments.length}) | Card: $${cardPayments.reduce((s, o) => s + o.total, 0).toFixed(2)} (${cardPayments.length}) | Mobile: $${mobilePayments.reduce((s, o) => s + o.total, 0).toFixed(2)} (${mobilePayments.length})`, 14, 50);
+                    const headers = ["Time", "Customer", "Items", "Total", "Payment", "Status"];
+                    const rows = [...myOrders].reverse().map(o => [
+                      new Date(o.createdAt).toLocaleTimeString(),
+                      (o as any).customerName || "Guest",
+                      o.items.map(i => `${i.quantity}x ${i.name}`).join(", ").slice(0, 30),
+                      `$${o.total.toFixed(2)}`,
+                      o.paymentMethod || "—",
+                      o.status,
+                    ]);
+                    (doc as any).autoTable({ startY: 56, head: [headers], body: rows, styles: { fontSize: 8 }, headStyles: { fillColor: [41, 128, 85], textColor: 255 } });
+                    doc.save(`${cashier.name.replace(/\s+/g, "_")}_shift_report_${new Date().toISOString().slice(0, 10)}.pdf`);
+                    toast.success("PDF exported ✓");
+                  }}>
+                    <FileText className="w-4 h-4 mr-1.5" /> PDF
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => {
+                    const headers = ["Time", "Customer", "Items", "Total", "Payment", "Status"];
+                    const rows = [...myOrders].reverse().map(o => [
+                      new Date(o.createdAt).toLocaleTimeString(),
+                      (o as any).customerName || "Guest",
+                      `"${o.items.map(i => `${i.quantity}x ${i.name}`).join(", ")}"`,
+                      o.total.toFixed(2),
+                      o.paymentMethod || "—",
+                      o.status,
+                    ]);
+                    const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+                    const blob = new Blob([csv], { type: "text/csv" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `${cashier.name.replace(/\s+/g, "_")}_shift_${new Date().toISOString().slice(0, 10)}.csv`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast.success("CSV exported ✓");
+                  }}>
+                    <Download className="w-4 h-4 mr-1.5" /> CSV
+                  </Button>
+                </div>
+              </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
                   { label: t.csMyTotalOrders, value: myOrders.length, icon: ShoppingBag },
