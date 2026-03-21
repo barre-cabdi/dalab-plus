@@ -292,7 +292,7 @@ const translations = {
     heroTitle1: "Menu Digital Casri ah",
     heroTitle2: "ee Hoteellada & Makhaayadaha",
     heroDesc: "QR dalbasho, abaalmarin daacadnimo, raadraac toos ah, iyo falanqayn xooggan — dhamaan hal platform qurux badan oo loo dhisay martida casriga ah.",
-    requestDemo: "Dalbo Demo",
+    requestDemo: "7 Maalmood Bilaash",
     businesses: "Meherado",
     ordersDay: "Dalbo/Maalin",
     uptime: "Shaqaynta",

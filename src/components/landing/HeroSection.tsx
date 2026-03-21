@@ -84,10 +84,12 @@ const HeroSection = () => {
                   <ArrowRight className="ml-1 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <Button variant="hero-outline" size="xl" className="group">
-                <Play className="mr-1 group-hover:scale-110 transition-transform" />
-                {t.requestDemo}
-              </Button>
+              <Link to="/login">
+                <Button variant="hero-outline" size="xl" className="group">
+                  <Play className="mr-1 group-hover:scale-110 transition-transform" />
+                  {t.requestDemo}
+                </Button>
+              </Link>
             </motion.div>
 
             <motion.div
