@@ -224,6 +224,7 @@ export interface StaffMember {
 
 export interface Customer {
   id: string;
+  shortId: number;
   businessId: string;
   name: string;
   phone: string;
