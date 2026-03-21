@@ -16,7 +16,7 @@ const translations = {
     heroTitle1: "Smart Digital Menu",
     heroTitle2: "for Hotels & Restaurants",
     heroDesc: "QR ordering, loyalty rewards, real-time tracking, and powerful analytics — all in one beautiful platform built for modern hospitality.",
-    requestDemo: "Request Demo",
+    requestDemo: "7 Days Free Trial",
     businesses: "Businesses",
     ordersDay: "Orders/Day",
     uptime: "Uptime",
