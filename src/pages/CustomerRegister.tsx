@@ -90,7 +90,7 @@ const CustomerRegister = () => {
     } else {
       custId = generateId("cust");
       await saveCustomer({
-        id: custId, businessId, name: formData.name, phone: formData.phone, email: "",
+        id: custId, shortId: 0, businessId, name: formData.name, phone: formData.phone, email: "",
         totalOrders: 0, totalSpent: 0, loyaltyPoints: 0, registeredAt: new Date().toISOString(),
       });
       // Get the auto-generated short_id

@@ -224,6 +224,7 @@ export interface StaffMember {
 
 export interface Customer {
   id: string;
+  shortId: number;
   businessId: string;
   name: string;
   phone: string;
@@ -558,6 +559,7 @@ export const getStaffByUsername = async (username: string): Promise<StaffMember 
 
 const mapCustomerFromDb = (row: any): Customer => ({
   id: row.id,
+  shortId: row.short_id || 0,
   businessId: row.business_id,
   name: row.name,
   phone: row.phone || "",
