@@ -75,9 +75,9 @@ const ContactSection = () => {
               className="space-y-8"
             >
               {[
-                { icon: Phone, label: t.phone, value: "+252 61 XXX XXXX" },
+                { icon: Phone, label: t.phone, value: "+252 090 6448087" },
                 { icon: Mail, label: t.email, value: "info@dalabplus.com" },
-                { icon: MapPin, label: t.location, value: "Mogadishu, Somalia" },
+                { icon: MapPin, label: t.location, value: "Garoowe, Somalia" },
               ].map((c, i) => (
                 <motion.div
                   key={c.label}
