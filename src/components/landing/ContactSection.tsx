@@ -75,7 +75,7 @@ const ContactSection = () => {
               className="space-y-8"
             >
               {[
-                { icon: Phone, label: t.phone, value: "+252 090 6448087" },
+                { icon: Phone, label: t.phone, value: "+252 090 6448087, +252 090 5816269" },
                 { icon: Mail, label: t.email, value: "info@dalabplus.com" },
                 { icon: MapPin, label: t.location, value: "Garoowe, Somalia" },
               ].map((c, i) => (
