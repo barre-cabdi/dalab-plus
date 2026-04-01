@@ -291,6 +291,8 @@ const AdminDashboard = () => {
       return stored ? new Set(JSON.parse(stored)) : new Set();
     } catch { return new Set(); }
   });
+  const readNotificationIdsRef = useRef(readNotificationIds);
+  useEffect(() => { readNotificationIdsRef.current = readNotificationIds; }, [readNotificationIds]);
   const [showHelp, setShowHelp] = useState(false);
   const [imageMode, setImageMode] = useState<"emoji" | "upload">("emoji");
   const [catImageMode, setCatImageMode] = useState<"emoji" | "upload">("emoji");
