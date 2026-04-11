@@ -160,28 +160,6 @@ const Login = () => {
 
         {/* Center illustration area */}
         <div className="flex-1 flex flex-col items-center justify-center relative z-10">
-          {/* Decorative dashboard mockup */}
-          <motion.div
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="w-64 h-44 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 p-4 mb-8 shadow-2xl"
-          >
-            <div className="flex gap-1.5 mb-3">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-400/60" />
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/60" />
-              <div className="w-2.5 h-2.5 rounded-full bg-green-400/60" />
-            </div>
-            <div className="space-y-2">
-              <div className="h-2.5 bg-white/20 rounded w-3/4" />
-              <div className="h-2.5 bg-white/15 rounded w-1/2" />
-              <div className="flex gap-2 mt-3">
-                <div className="h-16 w-1/3 bg-white/10 rounded" />
-                <div className="h-16 w-1/3 bg-white/15 rounded" />
-                <div className="h-16 w-1/3 bg-white/10 rounded" />
-              </div>
-            </div>
-          </motion.div>
-
           {/* Slide content */}
           <AnimatePresence mode="wait">
             <motion.div
@@ -192,10 +170,15 @@ const Login = () => {
               transition={{ duration: 0.5 }}
               className="text-center"
             >
-              <h2 className="text-3xl font-display font-extrabold text-white mb-3">
+              <img
+                src={slide.image}
+                alt={slideContent.title}
+                className="w-64 h-44 object-cover rounded-xl shadow-2xl border border-white/20 mb-8 mx-auto"
+              />
+              <h2 className="text-3xl font-display font-extrabold text-white mb-3" style={{ fontSize: '21px' }}>
                 {slideContent.title}
               </h2>
-              <p className="text-white/70 text-sm max-w-xs mx-auto leading-relaxed">
+              <p className="text-white/70 max-w-xs mx-auto leading-relaxed" style={{ fontSize: '18px' }}>
                 {slideContent.desc}
               </p>
             </motion.div>
