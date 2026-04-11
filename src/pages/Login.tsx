@@ -15,18 +15,22 @@ import slideAnalytics from "@/assets/slide-analytics.jpg";
 
 const slides = [
   {
+    image: slideWelcome,
     en: { title: "Welcome!", desc: "Smart digital menu & ordering system for hotels and restaurants." },
     so: { title: "Ku soo dhawoow!", desc: "Menu digital casri ah & nidaamka dalashada ee hoteellada iyo makhaayadaha." },
   },
   {
+    image: slideQR,
     en: { title: "QR Ordering", desc: "Customers scan, browse, and order — no app download needed." },
     so: { title: "QR Dalbasho", desc: "Macaamiishu waa scan-gareyaan, daawadaan, oo dalban karaan — app la'aan." },
   },
   {
+    image: slideLoyalty,
     en: { title: "Loyalty Rewards", desc: "Bronze to Platinum tiers with automatic reward unlocks for customers." },
     so: { title: "Abaalmarin Daacadnimo", desc: "Bronze ilaa Platinum oo leh abaalmarin toos ah macaamiisha." },
   },
   {
+    image: slideAnalytics,
     en: { title: "Real-time Analytics", desc: "Track orders, revenue, and customer insights with powerful dashboards." },
     so: { title: "Falanqayn Toos ah", desc: "Raadraac dalabka, dakhliga, iyo macluumaadka macaamiisha." },
   },
