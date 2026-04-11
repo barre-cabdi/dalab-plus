@@ -1,14 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, ArrowLeft, Globe } from "lucide-react";
+import { Eye, EyeOff, Globe, User, Lock } from "lucide-react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { getBusinessByAdmin, getStaffByUsername, getBusinesses } from "@/lib/store";
 import { useI18n } from "@/lib/i18n";
 import dalabLogo from "@/assets/dalabplus-logo.png";
+
+const slides = [
+  {
+    en: { title: "Welcome!", desc: "Smart digital menu & ordering system for hotels and restaurants." },
+    so: { title: "Ku soo dhawoow!", desc: "Menu digital casri ah & nidaamka dalashada ee hoteellada iyo makhaayadaha." },
+  },
+  {
+    en: { title: "QR Ordering", desc: "Customers scan, browse, and order — no app download needed." },
+    so: { title: "QR Dalbasho", desc: "Macaamiishu waa scan-gareyaan, daawadaan, oo dalban karaan — app la'aan." },
+  },
+  {
+    en: { title: "Loyalty Rewards", desc: "Bronze to Platinum tiers with automatic reward unlocks for customers." },
+    so: { title: "Abaalmarin Daacadnimo", desc: "Bronze ilaa Platinum oo leh abaalmarin toos ah macaamiisha." },
+  },
+  {
+    en: { title: "Real-time Analytics", desc: "Track orders, revenue, and customer insights with powerful dashboards." },
+    so: { title: "Falanqayn Toos ah", desc: "Raadraac dalabka, dakhliga, iyo macluumaadka macaamiisha." },
+  },
+];
 
 const Login = () => {
   const navigate = useNavigate();
@@ -17,6 +35,14 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +75,6 @@ const Login = () => {
         return;
       }
 
-      // Check waiter / hotel manager login
       const waiter = await getStaffByUsername(username);
       if (waiter) {
         if (waiter.password !== password) {
@@ -94,76 +119,180 @@ const Login = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-hero flex items-center justify-center px-4 relative">
-      <motion.div
-        animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
-        transition={{ duration: 8, repeat: Infinity }}
-        className="absolute top-20 right-20 w-72 h-72 rounded-full bg-accent/10 blur-3xl"
-      />
-      <motion.div
-        animate={{ scale: [1, 1.3, 1], opacity: [0.05, 0.1, 0.05] }}
-        transition={{ duration: 10, repeat: Infinity }}
-        className="absolute bottom-20 left-20 w-96 h-96 rounded-full bg-accent/5 blur-3xl"
-      />
+  const slide = slides[currentSlide];
+  const slideContent = lang === "so" ? slide.so : slide.en;
 
-      <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+  return (
+    <div className="min-h-screen flex bg-background">
+      {/* Language toggle */}
+      <div className="absolute top-4 right-4 z-20">
         <button
           onClick={() => setLang(lang === "en" ? "so" : "en")}
-          className="flex items-center gap-1 text-xs font-semibold text-primary-foreground/60 hover:text-accent transition-colors px-3 py-2 rounded-full glass"
+          className="flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-accent transition-colors px-3 py-2 rounded-full border border-border bg-card shadow-sm"
         >
           <Globe className="w-3.5 h-3.5" />
           {lang === "en" ? "SO" : "EN"}
         </button>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 30, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-md relative z-10"
-      >
-        <Link to="/" className="inline-flex items-center gap-2 text-sm text-primary-foreground/60 hover:text-accent transition-colors mb-8">
-          <ArrowLeft className="w-4 h-4" /> {t.backHome}
-        </Link>
+      {/* Left Panel - Blue branded side */}
+      <div className="hidden lg:flex lg:w-[45%] relative bg-gradient-to-br from-[hsl(var(--accent))] via-[hsl(220,80%,50%)] to-[hsl(220,90%,35%)] flex-col justify-between p-10 overflow-hidden">
+        {/* Decorative shapes */}
+        <div className="absolute top-10 right-10 w-3 h-3 rounded-full bg-white/20" />
+        <div className="absolute top-20 right-32 w-2 h-2 rounded-full bg-white/15" />
+        <div className="absolute top-40 left-20 w-4 h-4 rounded-full bg-white/10" />
+        <div className="absolute bottom-40 right-20 w-2 h-2 rounded-full bg-white/15" />
+        <div className="absolute top-16 left-1/2 w-1.5 h-1.5 rounded-full bg-white/20" />
 
-        <div className="glass rounded-2xl p-8">
-          <div className="flex items-center gap-3 mb-8">
-            <img src={dalabLogo} alt="DALABplus+" className="w-10 h-10 rounded-lg" />
-            <div>
-              <h1 className="font-display font-bold text-xl text-primary-foreground">DALABplus+</h1>
-              <p className="text-xs text-primary-foreground/50">{t.signIn}</p>
+        {/* Logo */}
+        <div className="flex items-center gap-3 relative z-10">
+          <img src={dalabLogo} alt="DALABplus+" className="w-10 h-10 rounded-lg" />
+          <span className="font-display font-bold text-xl text-white">DALABplus+</span>
+        </div>
+
+        {/* Center illustration area */}
+        <div className="flex-1 flex flex-col items-center justify-center relative z-10">
+          {/* Decorative dashboard mockup */}
+          <motion.div
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="w-64 h-44 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 p-4 mb-8 shadow-2xl"
+          >
+            <div className="flex gap-1.5 mb-3">
+              <div className="w-2.5 h-2.5 rounded-full bg-red-400/60" />
+              <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/60" />
+              <div className="w-2.5 h-2.5 rounded-full bg-green-400/60" />
             </div>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
-              <Label className="text-primary-foreground/70 text-sm">{t.username}</Label>
-              <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder={t.enterUsername} required className="h-12 bg-primary/30 border-primary-foreground/10 text-primary-foreground placeholder:text-primary-foreground/30 focus:border-accent" />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-primary-foreground/70 text-sm">{t.password}</Label>
-              <div className="relative">
-                <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t.enterPassword} required className="h-12 bg-primary/30 border-primary-foreground/10 text-primary-foreground placeholder:text-primary-foreground/30 focus:border-accent pr-12" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-primary-foreground/40 hover:text-accent transition-colors">
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
+              <div className="h-2.5 bg-white/20 rounded w-3/4" />
+              <div className="h-2.5 bg-white/15 rounded w-1/2" />
+              <div className="flex gap-2 mt-3">
+                <div className="h-16 w-1/3 bg-white/10 rounded" />
+                <div className="h-16 w-1/3 bg-white/15 rounded" />
+                <div className="h-16 w-1/3 bg-white/10 rounded" />
               </div>
             </div>
+          </motion.div>
 
-            <Button variant="hero" size="lg" type="submit" className="w-full" disabled={loading}>
-              {loading ? t.signingIn : t.signInBtn}
-            </Button>
+          {/* Slide content */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentSlide}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+              className="text-center"
+            >
+              <h2 className="text-3xl font-display font-extrabold text-white mb-3">
+                {slideContent.title}
+              </h2>
+              <p className="text-white/70 text-sm max-w-xs mx-auto leading-relaxed">
+                {slideContent.desc}
+              </p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Slide dots */}
+        <div className="flex items-center gap-2 relative z-10">
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentSlide(i)}
+              className={`rounded-full transition-all duration-300 ${
+                i === currentSlide
+                  ? "w-8 h-3 bg-white"
+                  : "w-3 h-3 bg-white/30 hover:bg-white/50"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Right Panel - Login form */}
+      <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full max-w-md"
+        >
+          {/* Mobile logo */}
+          <div className="flex items-center gap-3 mb-8 lg:hidden">
+            <img src={dalabLogo} alt="DALABplus+" className="w-10 h-10 rounded-lg" />
+            <span className="font-display font-bold text-xl">DALABplus+</span>
+          </div>
+
+          <h1 className="text-3xl font-display font-bold text-foreground mb-2">
+            {lang === "so" ? "Gal" : "Log In"}
+          </h1>
+          <p className="text-sm text-muted-foreground mb-1">
+            {lang === "so" ? "Ma lihid akoon?" : "Don't have an account?"}{" "}
+            <Link to="/#contact" className="text-accent font-semibold hover:underline">
+              {lang === "so" ? "La xiriir SuperAdmin (Maamulayaasha)" : "Contact SuperAdmin (Managers)"}
+            </Link>
+          </p>
+          <p className="text-xs text-muted-foreground mb-8">
+            {lang === "so" ? "Wax yar ayay qaadataa." : "It will take less than a minute."}
+          </p>
+
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div className="relative">
+              <Input
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder={t.username}
+                required
+                className="h-12 pl-4 pr-10 border-border bg-background"
+              />
+              <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground/50" />
+            </div>
+
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={t.password}
+                required
+                className="h-12 pl-4 pr-10 border-border bg-background"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-accent transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Lock className="w-4.5 h-4.5" />}
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <Button
+                variant="default"
+                size="lg"
+                type="submit"
+                disabled={loading}
+                className="px-8 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
+              >
+                {loading ? t.signingIn : t.signInBtn}
+              </Button>
+            </div>
           </form>
 
-          <div className="mt-6 p-3 rounded-lg bg-primary/20 border border-primary-foreground/10">
-            <p className="text-[10px] text-primary-foreground/50 font-semibold mb-1.5">{t.demoCredentials}</p>
-            <p className="text-[10px] text-primary-foreground/40"><strong>{t.superAdmin}:</strong> superadmin / super123</p>
-            <p className="text-[10px] text-primary-foreground/40"><strong>{t.businessAdmin}:</strong> {t.businessAdmin}</p>
+          {/* Demo credentials */}
+          <div className="mt-8 p-3 rounded-lg bg-muted/50 border border-border">
+            <p className="text-[10px] text-muted-foreground font-semibold mb-1.5">{t.demoCredentials}</p>
+            <p className="text-[10px] text-muted-foreground"><strong>{t.superAdmin}:</strong> superadmin / super123</p>
+            <p className="text-[10px] text-muted-foreground"><strong>{t.businessAdmin}:</strong> {t.businessAdmin}</p>
           </div>
-        </div>
-      </motion.div>
+
+          {/* Back to home */}
+          <Link to="/" className="inline-block mt-4 text-xs text-muted-foreground hover:text-accent transition-colors">
+            ← {t.backHome}
+          </Link>
+        </motion.div>
+      </div>
     </div>
   );
 };
