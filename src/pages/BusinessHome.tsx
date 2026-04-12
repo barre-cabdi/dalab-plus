@@ -448,7 +448,9 @@ const BusinessHome = () => {
                 >
                   <div className="aspect-[4/3] overflow-hidden bg-muted flex items-center justify-center">
                     {isImageUrl(item.image) ? (
-                      <img src={item.image} alt={item.name} loading="lazy" width={640} height={640} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <img src={item.image} alt={item.name} loading="lazy" width={640} height={512} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    ) : foodImageMap[item.image] ? (
+                      <img src={foodImageMap[item.image]} alt={item.name} loading="lazy" width={640} height={512} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
                       <span className="text-6xl">{item.image || "🍽️"}</span>
                     )}
