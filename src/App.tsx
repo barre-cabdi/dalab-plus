@@ -15,6 +15,7 @@ import OrderTracking from "./pages/OrderTracking";
 import WaiterDashboard from "./pages/WaiterDashboard";
 import HotelManagerDashboard from "./pages/HotelManagerDashboard";
 import CashierDashboard from "./pages/CashierDashboard";
+import BusinessHome from "./pages/BusinessHome";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/business-home" element={<BusinessHome />} />
             <Route path="/super-admin" element={<SuperAdminDashboard />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/customer" element={<CustomerDashboard />} />
