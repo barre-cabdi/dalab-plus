@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   UtensilsCrossed, Hotel, Coffee, Phone, Mail, MapPin,
-  Clock, ArrowRight, Sparkles, Star, LayoutDashboard,
+  Clock, ArrowRight, Star, LayoutDashboard,
   Home, Menu as MenuIcon, PhoneCall, Globe, ChevronRight,
-  Shield, Zap, Heart, Award, Users, CheckCircle2,
-  Send, MessageCircle, Gift, TrendingUp, Crown,
+  Shield, Zap, Heart, Award, Users, Gift,
+  Send, Crown, Quote, Truck, UserCheck, Utensils,
+  BedDouble, CalendarCheck, Gem, Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Business, getDefaultServices, BusinessService } from "@/lib/store";
 import { useI18n } from "@/lib/i18n";
 import dalabLogo from "@/assets/dalabplus-logo.png";
+
+// Hero & testimonial images
+import heroCafeInterior from "@/assets/hero-cafe-interior.jpg";
+import testimonialCafe from "@/assets/testimonial-cafe.jpg";
 
 // Menu images
 import foodRiceMeat from "@/assets/menu/food-rice-meat.jpg";
@@ -26,110 +31,85 @@ import teaShaah from "@/assets/menu/tea-shaah.jpg";
 import teaCappuccino from "@/assets/menu/tea-cappuccino.jpg";
 import teaMint from "@/assets/menu/tea-mint.jpg";
 
-/* ─── Type-specific theming ─── */
+/* ─── Type themes ─── */
 const typeThemes = {
   restaurant: {
-    icon: UtensilsCrossed,
-    emoji: "🍽️",
-    label: "Restaurant",
-    heroGradient: "from-[hsl(15,80%,12%)] via-[hsl(20,60%,18%)] to-[hsl(25,50%,14%)]",
-    accentGlow: "hsl(30,90%,55%)",
-    heroTagline: { en: "Exceptional Dining Experience", so: "Waayo-aragnimo Cunto Gaari Ah" },
-    heroSubtitle: { en: "Savor every bite in an atmosphere of warmth, flavor, and unforgettable moments.", so: "Ku raaxayso cunto macaan oo lagu darbay jawi diiran iyo xasuus aan la illaawin." },
-    aboutText: { en: "We are passionate about creating memorable dining experiences. Every dish is prepared with the freshest ingredients and served with love in a vibrant, welcoming atmosphere.", so: "Waxaan ku dadaalnaa inaan abuurno waayo-aragnimo cunto oo aan la illaawin. Cunto kasta waxaa lagu diyaariyaa walxaha ugu cusub." },
-    ctaPrimary: { en: "View Our Menu", so: "Eeg Menu-kayaga" },
-    ctaSecondary: { en: "Reserve a Table", so: "Miis Qabo" },
-    testimonials: [
-      { name: "Ahmed Hassan", text: "Best restaurant in town! The food is always fresh and delicious.", rating: 5 },
-      { name: "Fatima Ali", text: "Amazing service and beautiful atmosphere. Our family's favorite place.", rating: 5 },
-      { name: "Mohamed Yusuf", text: "The loyalty program is great. I've earned so many rewards!", rating: 4 },
+    icon: UtensilsCrossed, emoji: "🍽️", label: "Restaurant",
+    tagline: { en: "Your Daily Dining Experience", so: "Waayo-aragnimo Cuntadaada Maalinlaha" },
+    highlight: { en: "Restaurant", so: "Maqaayadda" },
+    subtitle: { en: "Experience the perfect blend of flavor and modern elegance. Our fresh ingredients and cozy corners are designed for your moments of joy.", so: "Ku raaxayso isku-darka dhadhanka iyo quruxda casriga ah. Walxaheena cusub iyo geesahayaga waxaa loo nashqadeeyay xilliyada farxadaada." },
+    aboutText: { en: "We are passionate about creating memorable dining experiences. Every dish is prepared with the freshest ingredients and served with love.", so: "Waxaan ku dadaalnaa inaan abuurno waayo-aragnimo cunto oo aan la illaawin." },
+    services: [
+      { icon: Utensils, title: { en: "Dine-In", so: "Ku cun Gudaha" }, desc: { en: "Artisan tables and ambient music for your comfort.", so: "Miisas xirfad leh iyo muusig jawi leh." } },
+      { icon: Truck, title: { en: "Takeaway", so: "Qaadashada" }, desc: { en: "Quick service without compromising quality.", so: "Adeeg degdeg ah oo tayada dhimanayn." } },
+      { icon: Send, title: { en: "Delivery", so: "Gaarsiinta" }, desc: { en: "We bring the experience to your doorstep.", so: "Waan kuu keenaa gurigaaga." } },
+      { icon: Gift, title: { en: "Loyalty", so: "Daacadnimo" }, desc: { en: "Earn points for every sip and every bite.", so: "Dhibco ku kasbado dalbo kasta." } },
+      { icon: Users, title: { en: "Group Dining", so: "Cunto Kooxeed" }, desc: { en: "Spacious areas for meetings and social gatherings.", so: "Meelo ballaaran kulan iyo xafladaha." } },
     ],
-    whyChooseUs: [
-      { icon: UtensilsCrossed, title: { en: "Fresh Ingredients", so: "Walxo Cusub" }, desc: { en: "Sourced daily from local markets", so: "Maalin kasta laga keeno suuqyada" } },
-      { icon: Zap, title: { en: "Fast Service", so: "Adeeg Degdeg ah" }, desc: { en: "Quick ordering with QR technology", so: "Dalbo degdeg ah oo QR ah" } },
-      { icon: Heart, title: { en: "Cozy Atmosphere", so: "Jawi Raaxo leh" }, desc: { en: "Designed for comfort and warmth", so: "Loo nashqadeeyay raaxo iyo diirannimo" } },
-      { icon: Award, title: { en: "Loyalty Rewards", so: "Abaalmarin" }, desc: { en: "Earn points with every order", so: "Dhibco ku kasbado dalbo kasta" } },
-    ],
+    testimonial: { name: "Sarah Jenkins", title: { en: "Loyal Member since 2022", so: "Xubin Daacad ah 2022-kii" }, text: { en: "The ambiance at DalabPlus+ is unmatched. It's my go-to spot for both deep work and meeting friends. The signature dishes are a masterpiece.", so: "Jawiga DalabPlus+ waa mid aan la barbar dhigi karin. Waa meesha aan ku tago shaqada iyo saaxiibadayda." } },
   },
   cafe: {
-    icon: Coffee,
-    emoji: "☕",
-    label: "Cafeteria",
-    heroGradient: "from-[hsl(28,40%,14%)] via-[hsl(30,35%,20%)] to-[hsl(25,30%,12%)]",
-    accentGlow: "hsl(35,80%,55%)",
-    heroTagline: { en: "Crafted Coffee, Cozy Vibes", so: "Qahawo La Sameeyay, Jawi Raaxo leh" },
-    heroSubtitle: { en: "Start your day with artisan coffee, freshly baked pastries, and a warm, inviting atmosphere.", so: "Maalintaada ku bilow qahawo macaan, doolshe cusub, iyo jawi diiran." },
-    aboutText: { en: "Our café is more than just a coffee shop — it's a community hub where people come together over perfectly crafted beverages and freshly baked delights.", so: "Cafékeenu waa ka badan meel qahawo — waa goob bulsheed oo dadku ku kulanto qahawo macaan iyo wax la dubay oo cusub." },
-    ctaPrimary: { en: "See Our Menu", so: "Eeg Menu-ka" },
-    ctaSecondary: { en: "Order Takeaway", so: "U Dalbo Qaadashada" },
-    testimonials: [
-      { name: "Amina Omar", text: "The best cappuccino in the city! Love the cozy atmosphere.", rating: 5 },
-      { name: "Ibrahim Jama", text: "Perfect spot for meetings. Great WiFi and amazing pastries.", rating: 5 },
-      { name: "Hawa Abdi", text: "My daily coffee fix. The staff knows my order by heart!", rating: 4 },
+    icon: Coffee, emoji: "☕", label: "Cafeteria",
+    tagline: { en: "Your Daily Coffee Haven", so: "Goobta Qahawadaada Maalinlaha" },
+    highlight: { en: "Coffee", so: "Qahawo" },
+    subtitle: { en: "Experience the perfect blend of warmth and modern elegance. Our artisan roasts and cozy corners are designed for your moments of pause.", so: "Ku raaxayso isku-darka diirannimada iyo quruxda casriga ah. Qahawooyinkeena xirfadda ah waxaa loo nashqadeeyay xilliyada nasashadaada." },
+    aboutText: { en: "Our café is more than just a coffee shop — it's a community hub where people come together over perfectly crafted beverages.", so: "Cafékeenu waa ka badan meel qahawo — waa goob bulsheed." },
+    services: [
+      { icon: Coffee, title: { en: "Dine-In", so: "Ku cun Gudaha" }, desc: { en: "Artisan tables and ambient music for your comfort.", so: "Miisas iyo muusig jawi leh." } },
+      { icon: Truck, title: { en: "Takeaway", so: "Qaadashada" }, desc: { en: "Quick service without compromising quality.", so: "Adeeg degdeg ah." } },
+      { icon: Send, title: { en: "Delivery", so: "Gaarsiinta" }, desc: { en: "We bring the café experience to your doorstep.", so: "Waan kuu keenaa gurigaaga." } },
+      { icon: Gift, title: { en: "Loyalty", so: "Daacadnimo" }, desc: { en: "Earn points for every sip and every bite.", so: "Dhibco ku kasbado." } },
+      { icon: Users, title: { en: "Group Dining", so: "Koox" }, desc: { en: "Spacious areas for meetings and social gatherings.", so: "Meelo ballaaran." } },
     ],
-    whyChooseUs: [
-      { icon: Coffee, title: { en: "Artisan Coffee", so: "Qahawo Gaar ah" }, desc: { en: "Premium beans, expertly brewed", so: "Bun heerka sare ah, si xirfad leh loo kariyay" } },
-      { icon: Zap, title: { en: "Quick Service", so: "Adeeg Degdeg ah" }, desc: { en: "Ready in minutes, every time", so: "Daqiiqado gudahood diyaar" } },
-      { icon: Heart, title: { en: "Warm & Cozy", so: "Diiran & Raaxo" }, desc: { en: "Your home away from home", so: "Gurigaaga labaad" } },
-      { icon: Award, title: { en: "Stamp Rewards", so: "Abaalmarin Shahaado" }, desc: { en: "Free coffee with every 10 stamps", so: "Qahawo bilaash ah 10 shahaadood ka dib" } },
-    ],
+    testimonial: { name: "Sarah Jenkins", title: { en: "Loyal Member since 2022", so: "Xubin Daacad ah 2022-kii" }, text: { en: "The ambiance at DalabPlus+ is unmatched. It's my go-to spot for both deep work and meeting friends. The signature latte is a masterpiece.", so: "Jawiga DalabPlus+ waa mid aan la barbar dhigi karin. Qahawo macaan." } },
   },
   hotel: {
-    icon: Hotel,
-    emoji: "🏨",
-    label: "Hotel",
-    heroGradient: "from-[hsl(220,50%,10%)] via-[hsl(215,45%,16%)] to-[hsl(210,40%,12%)]",
-    accentGlow: "hsl(45,100%,55%)",
-    heroTagline: { en: "Luxury Stay, Timeless Comfort", so: "Hoy Raaxo leh, Raaxo Waligeed ah" },
-    heroSubtitle: { en: "Experience world-class hospitality with premium amenities, elegant rooms, and exceptional service.", so: "Ku soo dhawoow marti-gelinta heerka caalamiga ah oo leh adeegyo heer sare ah." },
-    aboutText: { en: "Our hotel combines elegant luxury with modern comfort. From spacious suites to world-class dining, every detail is crafted to exceed your expectations.", so: "Hudheelikeenu wuxuu isku daraa qurux iyo raaxo casri ah. Qolal ballaaran ilaa cunto heerka caalamiga ah." },
-    ctaPrimary: { en: "Book a Room", so: "Qol Qabo" },
-    ctaSecondary: { en: "View Rooms", so: "Eeg Qolalka" },
-    testimonials: [
-      { name: "Sarah Johnson", text: "Absolutely stunning hotel. The VIP suite was beyond expectations.", rating: 5 },
-      { name: "Ali Farah", text: "World-class service. The staff made our anniversary truly special.", rating: 5 },
-      { name: "Maryam Ahmed", text: "The conference facilities are excellent. Perfect for business events.", rating: 4 },
+    icon: Hotel, emoji: "🏨", label: "Hotel",
+    tagline: { en: "Your Luxury Stay Destination", so: "Goobta Hoyga Raaxada" },
+    highlight: { en: "Hotel", so: "Hudheel" },
+    subtitle: { en: "Experience world-class hospitality with premium amenities, elegant rooms, and exceptional service tailored for you.", so: "Ku soo dhawoow marti-gelinta heerka caalamiga ah oo leh adeegyo heer sare ah." },
+    aboutText: { en: "Our hotel combines elegant luxury with modern comfort. From spacious suites to world-class dining.", so: "Hudheelikeenu wuxuu isku daraa qurux iyo raaxo casri ah." },
+    services: [
+      { icon: BedDouble, title: { en: "Room Booking", so: "Qol Qabashada" }, desc: { en: "Premium rooms with stunning views.", so: "Qolal heer sare ah." } },
+      { icon: CalendarCheck, title: { en: "Check-in/out", so: "Galitaan/Bixid" }, desc: { en: "Seamless check-in and check-out process.", so: "Nidaam sahlan." } },
+      { icon: Gem, title: { en: "VIP Rooms", so: "Qolal VIP" }, desc: { en: "Exclusive luxury suites for special guests.", so: "Qolal raaxo leh marti gaar ah." } },
+      { icon: Building2, title: { en: "Events", so: "Xafladaha" }, desc: { en: "Conference & event hosting facilities.", so: "Goobaha shirarka." } },
+      { icon: Utensils, title: { en: "Restaurant", so: "Maqaayadda" }, desc: { en: "Fine dining within the hotel.", so: "Cunto fiican oo hotelka gudaha." } },
     ],
-    whyChooseUs: [
-      { icon: Crown, title: { en: "Premium Rooms", so: "Qolal Heerka Sare" }, desc: { en: "Luxurious suites and amenities", so: "Qolal raaxo leh oo leh adeegyo" } },
-      { icon: Shield, title: { en: "24/7 Security", so: "Amniga 24/7" }, desc: { en: "Your safety is our priority", so: "Amnigaagu waa muhiim" } },
-      { icon: Heart, title: { en: "Exceptional Service", so: "Adeeg Gaar ah" }, desc: { en: "Dedicated staff at your service", so: "Shaqaale ku adag adeegaaga" } },
-      { icon: Award, title: { en: "VIP Experience", so: "Waayo-aragnimo VIP" }, desc: { en: "Exclusive perks for our guests", so: "Faa'iidooyin gaar ah martideena" } },
-    ],
+    testimonial: { name: "Sarah Johnson", title: { en: "VIP Guest since 2023", so: "Marti VIP 2023-kii" }, text: { en: "The luxury and service at this hotel is truly world-class. Every detail is perfect.", so: "Raaxada iyo adeegga hudheelan waa heerka caalamiga." } },
   },
 };
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: (i: number = 0) => ({ opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] } }),
+  hidden: { opacity: 0, y: 24 },
+  visible: (i: number = 0) => ({
+    opacity: 1, y: 0,
+    transition: { delay: i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+  }),
 };
 
 const BusinessHome = () => {
   const navigate = useNavigate();
   const { lang, setLang } = useI18n();
   const [business, setBusiness] = useState<Business | null>(null);
-  const [activeSection, setActiveSection] = useState("home");
+  const [scrolled, setScrolled] = useState(false);
+  const [menuTab, setMenuTab] = useState("food");
 
   useEffect(() => {
     const stored = localStorage.getItem("dp_active_business");
-    if (stored) {
-      setBusiness(JSON.parse(stored));
-    } else {
-      navigate("/login");
-    }
+    if (stored) setBusiness(JSON.parse(stored));
+    else navigate("/login");
   }, [navigate]);
 
-  // Track scroll for header bg
-  const { scrollY } = useScroll();
-  const headerBg = useTransform(scrollY, [0, 100], [0, 1]);
-  const [headerSolid, setHeaderSolid] = useState(false);
   useEffect(() => {
-    return headerBg.on("change", (v) => setHeaderSolid(v > 0.5));
-  }, [headerBg]);
+    const handler = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", handler, { passive: true });
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
 
   if (!business) return null;
 
-  const theme = typeThemes[business.type] || typeThemes.restaurant;
+  const theme = typeThemes[business.type as keyof typeof typeThemes] || typeThemes.restaurant;
   const TypeIcon = theme.icon;
   const services: BusinessService[] = business.services?.length ? business.services : getDefaultServices(business.type);
   const l = (obj: { en: string; so: string }) => obj[lang] || obj.en;
@@ -142,46 +122,60 @@ const BusinessHome = () => {
   ].filter(c => c.value);
 
   const navItems = [
-    { key: "home", label: l({ en: "Home", so: "Guriga" }), icon: Home },
-    { key: "services", label: l({ en: "Services", so: "Adeegyada" }), icon: Star },
-    { key: "menu", label: l({ en: "Menu", so: "Menu" }), icon: MenuIcon },
-    { key: "contact", label: l({ en: "Contact", so: "La xiriir" }), icon: PhoneCall },
+    { key: "about", label: l({ en: "About Us", so: "Naga Ogow" }) },
+    { key: "why", label: l({ en: "Why Choose Us", so: "Maxaa Naloo Doortaa" }) },
+    { key: "services", label: l({ en: "Services", so: "Adeegyada" }) },
+    { key: "contact", label: l({ en: "Contact", so: "La xiriir" }) },
   ];
 
   const scrollTo = (id: string) => {
-    if (id === "dashboard") { navigate("/admin"); return; }
-    setActiveSection(id);
     document.getElementById(`bh-${id}`)?.scrollIntoView({ behavior: "smooth" });
   };
 
   const stats = [
-    { label: l({ en: "Total Orders", so: "Dalabyo Guud" }), value: business.totalOrders.toLocaleString(), icon: "📦", color: "from-blue-500/20 to-blue-600/10" },
-    { label: l({ en: "Revenue", so: "Dakhli" }), value: `$${business.totalRevenue.toLocaleString()}`, icon: "💰", color: "from-green-500/20 to-green-600/10" },
-    { label: l({ en: "Services", so: "Adeegyo" }), value: services.length.toString(), icon: "⭐", color: "from-amber-500/20 to-amber-600/10" },
-    { label: l({ en: "Status", so: "Xaalad" }), value: business.status === "active" ? l({ en: "Active", so: "Firfircoon" }) : l({ en: "Inactive", so: "Aan shaqaynayn" }), icon: business.status === "active" ? "🟢" : "🔴", color: "from-emerald-500/20 to-emerald-600/10" },
+    { label: l({ en: "Total Orders", so: "Dalabyo Guud" }), value: business.totalOrders?.toLocaleString() || "0", sub: l({ en: "7 day increment", so: "7 maalmood" }) },
+    { label: l({ en: "Revenue Metrics", so: "Dakhliga" }), value: `$${business.totalRevenue?.toLocaleString() || "0"}`, sub: l({ en: "Annual growth tracking at record highs", so: "Korriinka sanadlaha ah" }), highlighted: true },
+    { label: l({ en: "System Status", so: "Xaaladda" }), value: business.status === "active" ? l({ en: "Active & Online", so: "Firfircoon" }) : l({ en: "Inactive", so: "Aan shaqaynayn" }), sub: l({ en: "All systems connected", so: "Dhammaan nidaamyadu way xirnaahay" }), dot: business.status === "active" },
+  ];
+
+  const menuItems: Record<string, { name: string; price: string; desc: string; img: string }[]> = {
+    food: [
+      { name: l({ en: "Bariis & Hilib", so: "Bariis & Hilib" }), price: "$12.00", desc: l({ en: "Fragrant rice with tender meat, Somali style", so: "Bariis udgoon iyo hilib jilicsan" }), img: foodRiceMeat },
+      { name: l({ en: "Suqaar", so: "Suqaar" }), price: "$10.00", desc: l({ en: "Grilled chicken with fresh vegetables", so: "Digaag la dubay oo khudaar cusub ah" }), img: foodSuqaar },
+      { name: l({ en: "Pasta Alfredo", so: "Baasto" }), price: "$9.00", desc: l({ en: "Creamy Italian pasta with herbs", so: "Baasto kriimiyo leh" }), img: foodPasta },
+    ],
+    drinks: [
+      { name: l({ en: "Mango Smoothie", so: "Cambe Smoothie" }), price: "$5.00", desc: l({ en: "Fresh tropical mango blended smooth", so: "Cambe cusub oo la shiday" }), img: drinkSmoothie },
+      { name: l({ en: "Fresh Orange Juice", so: "Casiirka Liin" }), price: "$4.00", desc: l({ en: "Freshly squeezed premium oranges", so: "Liin cusub oo la masiray" }), img: drinkJuice },
+      { name: l({ en: "Canjeero Special", so: "Canjeero Gaar ah" }), price: "$6.00", desc: l({ en: "Traditional flatbread with sugo sauce", so: "Canjeero suugo leh" }), img: foodCanjeero },
+    ],
+    teas: [
+      { name: l({ en: "Somali Shaah", so: "Shaah Soomaaliyeed" }), price: "$2.50", desc: l({ en: "Traditional milk tea with cardamom & cinnamon", so: "Shaah caano ah oo heyl leh" }), img: teaShaah },
+      { name: l({ en: "Cappuccino", so: "Kabuchiino" }), price: "$4.50", desc: l({ en: "Premium Arabica espresso with silky foam", so: "Qahawo xirfad leh" }), img: teaCappuccino },
+      { name: l({ en: "Mint Tea", so: "Shaah Nafnaf" }), price: "$3.00", desc: l({ en: "Refreshing green mint tea, naturally sweet", so: "Shaah nafnaf oo qabowjiye ah" }), img: teaMint },
+    ],
+  };
+
+  const menuTabs = [
+    { key: "food", label: l({ en: "Food", so: "Cunto" }) },
+    { key: "drinks", label: l({ en: "Drinks", so: "Cabbitaano" }) },
+    { key: "teas", label: l({ en: "Teas & Coffee", so: "Shaah" }) },
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* ─── STICKY HEADER ─── */}
-      <motion.header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          headerSolid ? "bg-card/95 backdrop-blur-xl shadow-lg border-b border-border" : "bg-transparent"
-        }`}
-      >
+    <div className="min-h-screen bg-[hsl(30,20%,97%)]">
+      {/* ─── HEADER ─── */}
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-white/95 backdrop-blur-xl shadow-sm border-b border-border/50" : "bg-white/80 backdrop-blur-md"}`}>
         <div className="container mx-auto flex items-center justify-between h-16 px-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             {business.logo ? (
-              <img src={business.logo} alt={business.name} className="w-10 h-10 rounded-xl object-cover border-2 border-accent/20 shadow-md" />
+              <img src={business.logo} alt={business.name} className="w-9 h-9 rounded-xl object-cover" />
             ) : (
-              <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center border border-accent/20">
-                <TypeIcon className="w-5 h-5 text-accent" />
+              <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
+                <TypeIcon className="w-4.5 h-4.5 text-accent" />
               </div>
             )}
-            <div className="hidden sm:block">
-              <p className={`font-display font-bold text-sm leading-tight ${headerSolid ? "text-foreground" : "text-white"}`}>{business.name}</p>
-              <p className={`text-[10px] ${headerSolid ? "text-muted-foreground" : "text-white/60"}`}>{theme.emoji} {theme.label}</p>
-            </div>
+            <span className="font-display font-bold text-foreground text-sm">{business.name}</span>
           </div>
 
           <nav className="hidden md:flex items-center gap-1">
@@ -189,15 +183,8 @@ const BusinessHome = () => {
               <button
                 key={item.key}
                 onClick={() => scrollTo(item.key)}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                  activeSection === item.key
-                    ? "bg-accent/20 text-accent"
-                    : headerSolid
-                    ? "text-muted-foreground hover:text-foreground hover:bg-muted"
-                    : "text-white/70 hover:text-white hover:bg-white/10"
-                }`}
+                className="px-3.5 py-2 text-sm text-muted-foreground hover:text-foreground font-medium transition-colors rounded-lg hover:bg-muted/50"
               >
-                <item.icon className="w-4 h-4" />
                 {item.label}
               </button>
             ))}
@@ -206,11 +193,7 @@ const BusinessHome = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setLang(lang === "en" ? "so" : "en")}
-              className={`flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full border transition-all ${
-                headerSolid
-                  ? "text-muted-foreground border-border hover:border-accent hover:text-accent"
-                  : "text-white/70 border-white/20 hover:border-white/50 hover:text-white"
-              }`}
+              className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:border-accent hover:text-accent transition-all"
             >
               <Globe className="w-3.5 h-3.5" />
               {lang === "en" ? "SO" : "EN"}
@@ -218,182 +201,329 @@ const BusinessHome = () => {
             <Button
               size="sm"
               onClick={() => navigate("/admin")}
-              className="hidden md:flex bg-accent hover:bg-accent/90 text-accent-foreground gap-1.5 rounded-full font-semibold shadow-gold"
+              className="hidden sm:flex bg-foreground hover:bg-foreground/90 text-background gap-1.5 rounded-full font-semibold text-xs px-5"
             >
               <LayoutDashboard className="w-3.5 h-3.5" />
               Dashboard
             </Button>
           </div>
         </div>
-
-        {/* Mobile Bottom Nav */}
-        <div className="md:hidden flex items-center justify-around border-t border-white/10 py-1.5 px-2 bg-card/90 backdrop-blur-xl">
-          {[...navItems, { key: "dashboard", label: "Dashboard", icon: LayoutDashboard }].map((item) => (
-            <button
-              key={item.key}
-              onClick={() => scrollTo(item.key)}
-              className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-[10px] font-medium transition-all ${
-                activeSection === item.key ? "text-accent" : "text-muted-foreground"
-              }`}
-            >
-              <item.icon className="w-4 h-4" />
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </motion.header>
+      </header>
 
       {/* ─── HERO SECTION ─── */}
-      <section id="bh-home" className={`relative overflow-hidden pt-16 pb-20 md:pt-0 md:pb-28 min-h-[85vh] flex items-center bg-gradient-to-br ${theme.heroGradient}`}>
-        {/* Decorative Elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full opacity-20" style={{ background: `radial-gradient(circle, ${theme.accentGlow}, transparent 70%)` }} />
-          <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full opacity-10" style={{ background: `radial-gradient(circle, ${theme.accentGlow}, transparent 70%)` }} />
-          <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djJoLTJ2LTJoMnptMC00djJoLTJ2LTJoMnptLTQgMHYyaC0ydi0yaDJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-50" />
-        </div>
-
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Logo */}
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
-              className="relative inline-block mb-8"
-            >
-              {business.logo ? (
-                <div className="w-28 h-28 rounded-3xl overflow-hidden border-2 border-white/20 shadow-2xl mx-auto ring-4 ring-white/5">
-                  <img src={business.logo} alt={business.name} className="w-full h-full object-cover" />
-                </div>
-              ) : (
-                <div className="w-28 h-28 rounded-3xl bg-white/10 backdrop-blur-sm border-2 border-white/20 flex items-center justify-center mx-auto">
-                  <TypeIcon className="w-14 h-14 text-accent" />
-                </div>
-              )}
+      <section className="pt-24 pb-8 md:pt-28 md:pb-12">
+        <div className="container mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-10 items-center">
+            <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7 }}>
               <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.4, type: "spring" }}
-                className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-accent flex items-center justify-center shadow-gold"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/10 border border-accent/20 mb-6"
               >
-                <Sparkles className="w-5 h-5 text-accent-foreground" />
+                <span className="text-xs font-bold text-accent uppercase tracking-widest">
+                  {l({ en: `Premium ${theme.label} Experience`, so: `Waayo-aragnimo ${theme.label} Heerka Sare` })}
+                </span>
+              </motion.div>
+
+              <motion.h1
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+                className="font-display font-extrabold text-4xl sm:text-5xl lg:text-[3.5rem] leading-[1.1] text-foreground mb-5"
+              >
+                {l(theme.tagline).replace(l(theme.highlight), "").trim()}{" "}
+                <span className="text-accent italic">{l(theme.highlight)}</span>
+                <br />{l({ en: "Haven", so: "Goobta" })}
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="text-muted-foreground text-base leading-relaxed max-w-md mb-8"
+              >
+                {business.description || l(theme.subtitle)}
+              </motion.p>
+
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="flex flex-wrap gap-3"
+              >
+                <Button
+                  onClick={() => scrollTo("menu")}
+                  className="bg-foreground hover:bg-foreground/90 text-background gap-2 rounded-full font-semibold px-6"
+                >
+                  {l({ en: "Explore Menu", so: "Eeg Menu-ka" })}
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => scrollTo("about")}
+                  className="rounded-full font-semibold px-6 border-border"
+                >
+                  {l({ en: "Our Story", so: "Sheekadeena" })}
+                </Button>
               </motion.div>
             </motion.div>
 
-            {/* Type badge */}
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 mb-6"
+              initial={{ opacity: 0, y: 30, rotate: 2 }}
+              animate={{ opacity: 1, y: 0, rotate: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="relative"
             >
-              <span className="text-sm">{theme.emoji}</span>
-              <span className="text-xs font-semibold text-white/80 uppercase tracking-widest">{theme.label}</span>
-            </motion.div>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="font-display font-extrabold text-4xl sm:text-5xl md:text-6xl text-white mb-4 leading-tight"
-            >
-              {business.name}
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="text-xl md:text-2xl text-accent font-display font-semibold mb-3"
-            >
-              {l(theme.heroTagline)}
-            </motion.p>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="text-white/60 text-base md:text-lg max-w-2xl mx-auto leading-relaxed mb-10"
-            >
-              {business.description || l(theme.heroSubtitle)}
-            </motion.p>
-
-            {/* CTA Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              className="flex flex-wrap items-center justify-center gap-4"
-            >
-              <Button
-                size="xl"
-                onClick={() => scrollTo("menu")}
-                className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 rounded-full font-bold shadow-gold hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
+              <div className="rounded-3xl overflow-hidden shadow-2xl">
+                <img src={heroCafeInterior} alt={business.name} width={800} height={600} className="w-full h-auto object-cover" />
+              </div>
+              {/* Floating card */}
+              <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -bottom-5 -right-2 md:right-4 bg-white rounded-2xl shadow-xl p-4 flex items-center gap-3"
               >
-                <MenuIcon className="w-5 h-5" />
-                {l(theme.ctaPrimary)}
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-              <Button
-                size="xl"
-                onClick={() => scrollTo("contact")}
-                className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white border border-white/20 gap-2 rounded-full font-semibold transition-all"
-              >
-                <PhoneCall className="w-5 h-5" />
-                {l(theme.ctaSecondary)}
-              </Button>
-              <Button
-                size="xl"
-                onClick={() => navigate("/admin")}
-                className="bg-white/5 backdrop-blur-sm hover:bg-white/15 text-white/80 border border-white/10 gap-2 rounded-full font-semibold transition-all"
-              >
-                <LayoutDashboard className="w-5 h-5" />
-                Dashboard
-              </Button>
+                <div className="w-12 h-12 rounded-xl overflow-hidden">
+                  <img src={teaCappuccino} alt="Featured" className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-foreground">{l({ en: "Today's Special", so: "Maanta Gaar ah" })}</p>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    {[1,2,3,4,5].map(i => <Star key={i} className="w-3 h-3 text-accent fill-accent" />)}
+                  </div>
+                </div>
+              </motion.div>
             </motion.div>
           </div>
 
-          {/* Stats Cards */}
-          <div className="mt-16 max-w-4xl mx-auto">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {stats.map((stat, i) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7 + i * 0.1 }}
-                  className="relative overflow-hidden rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 p-5 text-center group hover:bg-white/15 transition-all duration-300"
-                >
-                  <span className="text-3xl mb-2 block">{stat.icon}</span>
-                  <p className="font-display font-extrabold text-2xl text-white">{stat.value}</p>
-                  <p className="text-xs text-white/50 mt-1 font-medium">{stat.label}</p>
-                </motion.div>
-              ))}
-            </div>
+          {/* Stats Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-14 max-w-4xl">
+            {stats.map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial="hidden" whileInView="visible" viewport={{ once: true }}
+                variants={fadeUp} custom={i}
+                className={`rounded-2xl p-5 border transition-all ${stat.highlighted
+                  ? "bg-accent/10 border-accent/20"
+                  : "bg-white border-border/50"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs text-muted-foreground font-medium">{stat.label}</p>
+                  {stat.highlighted && <span className="text-[10px] font-bold text-accent bg-accent/15 px-2 py-0.5 rounded-full">↑</span>}
+                  {stat.dot && <span className="w-2.5 h-2.5 rounded-full bg-green-500" />}
+                </div>
+                <p className="font-display font-extrabold text-2xl text-foreground">{stat.value}</p>
+                <p className="text-[11px] text-muted-foreground mt-1">{stat.sub}</p>
+              </motion.div>
+            ))}
           </div>
-        </div>
-
-        {/* Bottom wave */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 80" fill="none" className="w-full">
-            <path d="M0 40C240 80 480 0 720 40C960 80 1200 0 1440 40V80H0V40Z" fill="hsl(var(--background))" />
-          </svg>
         </div>
       </section>
 
-      {/* ─── ABOUT SECTION ─── */}
-      <section id="bh-about" className="py-20">
+      {/* ─── SERVICES (Tailored Experiences) ─── */}
+      <section id="bh-services" className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-12">
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+              <h2 className="font-display font-extrabold text-3xl md:text-4xl text-foreground mb-2">
+                {l({ en: "Tailored Experiences", so: "Waayo-aragnimo La Habeeyay" })}
+              </h2>
+              <p className="text-muted-foreground max-w-md">
+                {l({ en: "From your morning ritual to grand celebrations, we provide the perfect setting and service.", so: "Subaxdaada ilaa xafladaha waaweyn, waxaan bixinaa jawi iyo adeeg fiican." })}
+              </p>
+            </motion.div>
+            <Button
+              variant="ghost"
+              onClick={() => scrollTo("services")}
+              className="text-accent hover:text-accent font-semibold gap-1 self-start md:self-auto"
+            >
+              {l({ en: "View All Services", so: "Eeg Adeegyada" })}
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {theme.services.map((service, i) => (
+              <motion.div
+                key={i}
+                initial="hidden" whileInView="visible" viewport={{ once: true }}
+                variants={fadeUp} custom={i}
+                className="bg-white rounded-2xl border border-border/50 p-5 hover:shadow-lg hover:border-accent/20 transition-all duration-300 group text-center"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-accent/8 flex items-center justify-center mx-auto mb-4 group-hover:bg-accent/15 transition-colors">
+                  <service.icon className="w-5 h-5 text-accent" />
+                </div>
+                <h4 className="font-display font-bold text-sm text-foreground mb-1.5">{l(service.title)}</h4>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">{l(service.desc)}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── CURATED MENU ─── */}
+      <section id="bh-menu" className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-10">
+            <h2 className="font-display font-extrabold text-3xl md:text-4xl text-foreground mb-4">
+              {business.type === "hotel"
+                ? l({ en: "Our Premium Rooms", so: "Qolalkeena" })
+                : l({ en: "Curated Menu", so: "Menu-ga La Doorbiday" })}
+            </h2>
+            {business.type !== "hotel" && (
+              <div className="flex items-center justify-center gap-1 bg-muted/50 rounded-full p-1 w-fit mx-auto">
+                {menuTabs.map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setMenuTab(tab.key)}
+                    className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${menuTab === tab.key
+                      ? "bg-white text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </motion.div>
+
+          {business.type === "hotel" ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {[
+                { name: l({ en: "Single Room", so: "Qol Keli ah" }), price: "$80", icon: "🛏️", desc: l({ en: "Cozy room for solo travelers", so: "Qol raaxo ah" }) },
+                { name: l({ en: "Double Room", so: "Qol Labo" }), price: "$120", icon: "🛏️🛏️", desc: l({ en: "Spacious room for couples", so: "Qol ballaaran" }) },
+                { name: l({ en: "VIP Suite", so: "Qol VIP" }), price: "$250", icon: "👑", desc: l({ en: "Luxury suite with premium amenities", so: "Qol raaxo leh" }) },
+              ].map((room, i) => (
+                <motion.div
+                  key={room.name}
+                  initial="hidden" whileInView="visible" viewport={{ once: true }}
+                  variants={fadeUp} custom={i}
+                  className="p-6 rounded-2xl bg-[hsl(30,20%,97%)] border border-border/50 hover:shadow-lg transition-all group text-center"
+                >
+                  <span className="text-4xl block mb-4">{room.icon}</span>
+                  <h3 className="font-display font-bold text-lg text-foreground mb-1">{room.name}</h3>
+                  <p className="text-xs text-muted-foreground mb-3">{room.desc}</p>
+                  <p className="font-display font-extrabold text-2xl text-accent mb-4">{room.price}<span className="text-xs text-muted-foreground font-normal">/{l({ en: "night", so: "habeennimo" })}</span></p>
+                  <Button size="sm" className="bg-foreground hover:bg-foreground/90 text-background rounded-full gap-1.5 w-full font-semibold">
+                    {l({ en: "Book Now", so: "Hadda Qabo" })} <ArrowRight className="w-3.5 h-3.5" />
+                  </Button>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {(menuItems[menuTab] || []).map((item, i) => (
+                <motion.div
+                  key={item.name + menuTab}
+                  initial="hidden" whileInView="visible" viewport={{ once: true }}
+                  variants={fadeUp} custom={i}
+                  className="bg-[hsl(30,20%,97%)] rounded-2xl border border-border/50 overflow-hidden hover:shadow-lg transition-all duration-300 group"
+                >
+                  <div className="aspect-[4/3] overflow-hidden">
+                    <img src={item.img} alt={item.name} loading="lazy" width={640} height={640} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  </div>
+                  <div className="p-5">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <h4 className="font-display font-bold text-foreground">{item.name}</h4>
+                      <span className="font-display font-extrabold text-accent whitespace-nowrap">{item.price}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-3">{item.desc}</p>
+                    <button className="text-xs text-accent font-semibold flex items-center gap-1 hover:underline">
+                      {l({ en: "Customize", so: "Habee" })} <ChevronRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={4} className="text-center mt-10">
+            <Button
+              size="lg"
+              onClick={() => navigate(`/menu?business=${business.id}`)}
+              className="bg-foreground hover:bg-foreground/90 text-background rounded-full gap-2 font-bold px-8"
+            >
+              <MenuIcon className="w-4 h-4" />
+              {business.type === "hotel"
+                ? l({ en: "View All Rooms", so: "Eeg Qolalka" })
+                : l({ en: "View Full Menu", so: "Eeg Menu-ka Oo Dhan" })}
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── TESTIMONIAL (Large immersive) ─── */}
+      <section className="py-0">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+            className="rounded-3xl overflow-hidden bg-[hsl(25,30%,14%)] relative"
+          >
+            <div className="grid md:grid-cols-2 min-h-[400px]">
+              <div className="p-10 md:p-14 flex flex-col justify-center relative z-10">
+                <Quote className="w-10 h-10 text-accent/40 mb-6" />
+                <p className="text-white text-xl md:text-2xl font-display font-semibold leading-relaxed mb-8 italic">
+                  "{l(theme.testimonial.text)}"
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center text-lg font-bold text-accent">
+                    {theme.testimonial.name.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="font-bold text-white text-sm">{theme.testimonial.name}</p>
+                    <p className="text-white/50 text-xs">{l(theme.testimonial.title)}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="hidden md:block">
+                <img src={testimonialCafe} alt="Customer experience" loading="lazy" width={640} height={640} className="w-full h-full object-cover" />
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── LOYALTY REWARDS BANNER ─── */}
+      <section className="py-14">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+            className="rounded-2xl bg-white border border-border/50 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                <Crown className="w-6 h-6 text-accent" />
+              </div>
+              <div>
+                <h3 className="font-display font-bold text-lg text-foreground">
+                  {l({ en: `Join ${business.name} Rewards`, so: `Ku biir Abaalmarin ${business.name}` })}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {l({ en: "Get a free drink on your first 100 points! Limited-time offer.", so: "Cabbitaan bilaash ah 100 dhibcood! Wakhti xaddidan." })}
+                </p>
+              </div>
+            </div>
+            <Button className="bg-foreground hover:bg-foreground/90 text-background rounded-full font-semibold px-6 gap-2 whitespace-nowrap">
+              <Gift className="w-4 h-4" />
+              {l({ en: "Claim My Reward", so: "Abaalmariintayda Qaado" })}
+            </Button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── ABOUT US ─── */}
+      <section id="bh-about" className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial="hidden" whileInView="visible" viewport={{ once: true }}
-              variants={fadeUp}
-            >
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-bold uppercase tracking-widest mb-4">
-                <Sparkles className="w-3 h-3" />
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+              <span className="text-xs font-bold text-accent uppercase tracking-widest mb-3 block">
                 {l({ en: "About Us", so: "Naga Ogow" })}
               </span>
-              <h2 className="font-display font-extrabold text-3xl md:text-4xl text-foreground mb-6 leading-tight">
+              <h2 className="font-display font-extrabold text-3xl md:text-4xl text-foreground mb-5 leading-tight">
                 {l({ en: `Welcome to ${business.name}`, so: `Ku soo dhawoow ${business.name}` })}
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-6">
@@ -402,7 +532,7 @@ const BusinessHome = () => {
               <div className="flex items-center gap-3">
                 <div className="flex -space-x-2">
                   {["👨‍🍳", "👩‍💼", "👨‍💻"].map((e, i) => (
-                    <div key={i} className="w-10 h-10 rounded-full bg-accent/10 border-2 border-background flex items-center justify-center text-lg">{e}</div>
+                    <div key={i} className="w-10 h-10 rounded-full bg-accent/10 border-2 border-white flex items-center justify-center text-lg">{e}</div>
                   ))}
                 </div>
                 <div>
@@ -411,322 +541,41 @@ const BusinessHome = () => {
                 </div>
               </div>
             </motion.div>
-            <motion.div
-              initial="hidden" whileInView="visible" viewport={{ once: true }}
-              variants={fadeUp}
-              custom={2}
-              className="grid grid-cols-2 gap-4"
-            >
-              {theme.whyChooseUs.map((item, i) => (
-                <div
-                  key={i}
-                  className="p-5 rounded-2xl bg-card border border-border hover:border-accent/20 hover:shadow-lg transition-all duration-300 group"
-                >
-                  <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center mb-3 group-hover:bg-accent/20 transition-colors">
-                    <item.icon className="w-5 h-5 text-accent" />
-                  </div>
-                  <h4 className="font-bold text-sm text-foreground mb-1">{l(item.title)}</h4>
-                  <p className="text-xs text-muted-foreground">{l(item.desc)}</p>
-                </div>
-              ))}
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={2}>
+              <div className="rounded-2xl overflow-hidden shadow-lg">
+                <img src={heroCafeInterior} alt={business.name} loading="lazy" width={800} height={600} className="w-full h-auto object-cover" />
+              </div>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* ─── SERVICES SECTION ─── */}
-      <section id="bh-services" className="py-20 bg-muted/30 border-y border-border">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial="hidden" whileInView="visible" viewport={{ once: true }}
-            variants={fadeUp}
-            className="text-center mb-14"
-          >
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-bold uppercase tracking-widest mb-4">
-              <Star className="w-3 h-3" />
-              {l({ en: "Our Services", so: "Adeegyadeena" })}
-            </span>
-            <h2 className="font-display font-extrabold text-3xl md:text-4xl text-foreground mb-3">
-              {l({ en: "What We Offer", so: "Waxaan Bixinaa" })}
-            </h2>
-            <p className="text-muted-foreground max-w-lg mx-auto">
-              {l({ en: "Explore our premium services designed for your comfort and satisfaction.", so: "Baadhitaan adeegyadeena heerka sare ah ee loo nashqadeeyay raaxadaada." })}
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
-            {services.map((service, i) => (
-              <motion.div
-                key={service.id}
-                initial="hidden" whileInView="visible" viewport={{ once: true }}
-                variants={fadeUp}
-                custom={i}
-                className="relative overflow-hidden p-6 rounded-2xl bg-card border border-border hover:border-accent/30 hover:shadow-xl transition-all duration-300 group cursor-default"
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-accent/10 transition-colors" />
-                <div className="relative">
-                  <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/15 group-hover:scale-110 transition-all duration-300">
-                    <span className="text-2xl">{service.icon}</span>
-                  </div>
-                  <h3 className="font-display font-bold text-foreground mb-2">{service.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{service.description}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── MENU / BOOKING PREVIEW ─── */}
-      <section id="bh-menu" className="py-20">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial="hidden" whileInView="visible" viewport={{ once: true }}
-            variants={fadeUp}
-            className="text-center mb-14"
-          >
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-bold uppercase tracking-widest mb-4">
-              <MenuIcon className="w-3 h-3" />
-              {business.type === "hotel"
-                ? l({ en: "Our Rooms", so: "Qolalkeena" })
-                : l({ en: "Our Menu", so: "Menu-kayaga" })}
-            </span>
-            <h2 className="font-display font-extrabold text-3xl md:text-4xl text-foreground mb-3">
-              {business.type === "hotel"
-                ? l({ en: "Elegant Rooms & Suites", so: "Qolal Qurux badan" })
-                : l({ en: "Taste Our Favorites", so: "Dhadhan Kuweena Ugu Fiican" })}
-            </h2>
-            <p className="text-muted-foreground max-w-lg mx-auto">
-              {business.type === "hotel"
-                ? l({ en: "Choose from our selection of premium rooms for a perfect stay.", so: "Ka dooro qolalkeena heerka sare ah hoyga wanaagsan." })
-                : l({ en: "Explore our delicious categories — freshly prepared food, refreshing drinks, and aromatic teas.", so: "Baadhitaan qaybahayaga macaan — cunto cusub, cabbitaano qabowjiye, iyo shaah udgoon." })}
-            </p>
-          </motion.div>
-
-          {business.type === "hotel" ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-              {[
-                { name: l({ en: "Single Room", so: "Qol Keli ah" }), price: "$80", icon: "🛏️", desc: l({ en: "Cozy room for solo travelers", so: "Qol raaxo ah safar keli ah" }) },
-                { name: l({ en: "Double Room", so: "Qol Labo" }), price: "$120", icon: "🛏️🛏️", desc: l({ en: "Spacious room for couples or friends", so: "Qol ballaaran labo qof" }) },
-                { name: l({ en: "VIP Suite", so: "Qol VIP" }), price: "$250", icon: "👑", desc: l({ en: "Luxury suite with premium amenities", so: "Qol raaxo leh adeegyo heer sare" }) },
-              ].map((room, i) => (
-                <motion.div
-                  key={room.name}
-                  initial="hidden" whileInView="visible" viewport={{ once: true }}
-                  variants={fadeUp}
-                  custom={i}
-                  className="p-6 rounded-2xl bg-card border border-border hover:border-accent/30 hover:shadow-xl transition-all duration-300 group text-center"
-                >
-                  <span className="text-4xl block mb-4">{room.icon}</span>
-                  <h3 className="font-display font-bold text-lg text-foreground mb-1">{room.name}</h3>
-                  <p className="text-xs text-muted-foreground mb-3">{room.desc}</p>
-                  <p className="font-display font-extrabold text-2xl text-accent mb-4">{room.price}<span className="text-xs text-muted-foreground font-normal">/{l({ en: "night", so: "habeennimo" })}</span></p>
-                  <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground rounded-full gap-1.5 w-full font-semibold">
-                    {l({ en: "Book Now", so: "Hadda Qabo" })}
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Button>
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-12 max-w-6xl mx-auto">
-              {/* ── Food Category ── */}
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                      <span className="text-xl">🍽️</span>
-                    </div>
-                    <div>
-                      <h3 className="font-display font-bold text-lg text-foreground">{l({ en: "Food", so: "Cunto" })}</h3>
-                      <p className="text-xs text-muted-foreground">{l({ en: "Fresh & delicious meals", so: "Cunto cusub & macaan" })}</p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(`/menu?business=${business.id}&category=food`)}
-                    className="rounded-full gap-1.5 text-xs font-semibold border-accent/20 text-accent hover:bg-accent/10"
-                  >
-                    {l({ en: "View All", so: "Dhammaan" })}
-                    <ArrowRight className="w-3 h-3" />
-                  </Button>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[
-                    { name: l({ en: "Bariis & Hilib", so: "Bariis & Hilib" }), price: "$12.00", img: foodRiceMeat },
-                    { name: l({ en: "Suqaar", so: "Suqaar" }), price: "$10.00", img: foodSuqaar },
-                    { name: l({ en: "Pasta", so: "Baasto" }), price: "$9.00", img: foodPasta },
-                    { name: l({ en: "Canjeero", so: "Canjeero" }), price: "$6.00", img: foodCanjeero },
-                  ].map((item, i) => (
-                    <motion.div
-                      key={item.name}
-                      initial="hidden" whileInView="visible" viewport={{ once: true }}
-                      variants={fadeUp}
-                      custom={i}
-                      className="rounded-2xl bg-card border border-border hover:border-accent/30 hover:shadow-xl transition-all duration-300 group overflow-hidden"
-                    >
-                      <div className="aspect-square overflow-hidden">
-                        <img src={item.img} alt={item.name} loading="lazy" width={640} height={640} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                      </div>
-                      <div className="p-4">
-                        <h4 className="font-display font-bold text-sm text-foreground truncate">{item.name}</h4>
-                        <p className="font-display font-extrabold text-accent mt-1">{item.price}</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-
-              {/* ── Drinks Category ── */}
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                      <span className="text-xl">🥤</span>
-                    </div>
-                    <div>
-                      <h3 className="font-display font-bold text-lg text-foreground">{l({ en: "Drinks", so: "Cabbitaano" })}</h3>
-                      <p className="text-xs text-muted-foreground">{l({ en: "Refreshing beverages", so: "Cabbitaano qabowjiye" })}</p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(`/menu?business=${business.id}&category=drinks`)}
-                    className="rounded-full gap-1.5 text-xs font-semibold border-accent/20 text-accent hover:bg-accent/10"
-                  >
-                    {l({ en: "View All", so: "Dhammaan" })}
-                    <ArrowRight className="w-3 h-3" />
-                  </Button>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[
-                    { name: l({ en: "Mango Smoothie", so: "Cambe Smoothie" }), price: "$5.00", img: drinkSmoothie },
-                    { name: l({ en: "Fresh Orange Juice", so: "Casiirka Liin" }), price: "$4.00", img: drinkJuice },
-                  ].map((item, i) => (
-                    <motion.div
-                      key={item.name}
-                      initial="hidden" whileInView="visible" viewport={{ once: true }}
-                      variants={fadeUp}
-                      custom={i}
-                      className="rounded-2xl bg-card border border-border hover:border-accent/30 hover:shadow-xl transition-all duration-300 group overflow-hidden"
-                    >
-                      <div className="aspect-square overflow-hidden">
-                        <img src={item.img} alt={item.name} loading="lazy" width={640} height={640} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                      </div>
-                      <div className="p-4">
-                        <h4 className="font-display font-bold text-sm text-foreground truncate">{item.name}</h4>
-                        <p className="font-display font-extrabold text-accent mt-1">{item.price}</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-
-              {/* ── Teas & Coffee Category ── */}
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                      <span className="text-xl">☕</span>
-                    </div>
-                    <div>
-                      <h3 className="font-display font-bold text-lg text-foreground">{l({ en: "Teas & Coffee", so: "Shaah & Qahawo" })}</h3>
-                      <p className="text-xs text-muted-foreground">{l({ en: "Warm & aromatic", so: "Diiran & udgoon" })}</p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(`/menu?business=${business.id}&category=teas`)}
-                    className="rounded-full gap-1.5 text-xs font-semibold border-accent/20 text-accent hover:bg-accent/10"
-                  >
-                    {l({ en: "View All", so: "Dhammaan" })}
-                    <ArrowRight className="w-3 h-3" />
-                  </Button>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[
-                    { name: l({ en: "Somali Shaah", so: "Shaah Soomaaliyeed" }), price: "$2.50", img: teaShaah },
-                    { name: l({ en: "Cappuccino", so: "Kabuchiino" }), price: "$4.50", img: teaCappuccino },
-                    { name: l({ en: "Mint Tea", so: "Shaah Nafnaf" }), price: "$3.00", img: teaMint },
-                  ].map((item, i) => (
-                    <motion.div
-                      key={item.name}
-                      initial="hidden" whileInView="visible" viewport={{ once: true }}
-                      variants={fadeUp}
-                      custom={i}
-                      className="rounded-2xl bg-card border border-border hover:border-accent/30 hover:shadow-xl transition-all duration-300 group overflow-hidden"
-                    >
-                      <div className="aspect-square overflow-hidden">
-                        <img src={item.img} alt={item.name} loading="lazy" width={640} height={640} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                      </div>
-                      <div className="p-4">
-                        <h4 className="font-display font-bold text-sm text-foreground truncate">{item.name}</h4>
-                        <p className="font-display font-extrabold text-accent mt-1">{item.price}</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* View Full Menu Button */}
-          <motion.div
-            initial="hidden" whileInView="visible" viewport={{ once: true }}
-            variants={fadeUp}
-            custom={4}
-            className="text-center mt-14"
-          >
-            <Button
-              size="lg"
-              onClick={() => navigate(`/menu?business=${business.id}`)}
-              className="bg-accent hover:bg-accent/90 text-accent-foreground rounded-full gap-2 font-bold shadow-gold hover:scale-[1.02] active:scale-[0.98] transition-all"
-            >
-              <MenuIcon className="w-4 h-4" />
-              {business.type === "hotel"
-                ? l({ en: "View All Rooms", so: "Eeg Qolalka Oo Dhan" })
-                : l({ en: "View Full Menu", so: "Eeg Menu-ka Oo Dhan" })}
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </motion.div>
-        </div>
-      </section>
-
       {/* ─── WHY CHOOSE US ─── */}
-      <section className="py-20 bg-muted/30 border-y border-border">
+      <section id="bh-why" className="py-20">
         <div className="container mx-auto px-4">
-          <motion.div
-            initial="hidden" whileInView="visible" viewport={{ once: true }}
-            variants={fadeUp}
-            className="text-center mb-14"
-          >
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-bold uppercase tracking-widest mb-4">
-              <Shield className="w-3 h-3" />
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-14">
+            <h2 className="font-display font-extrabold text-3xl md:text-4xl text-foreground mb-3">
               {l({ en: "Why Choose Us", so: "Maxaa Naloo Doortaa" })}
-            </span>
-            <h2 className="font-display font-extrabold text-3xl md:text-4xl text-foreground">
-              {l({ en: "What Makes Us Special", so: "Waxa Na Gaar ka dhiga" })}
             </h2>
+            <p className="text-muted-foreground max-w-lg mx-auto">
+              {l({ en: "We go above and beyond to deliver an exceptional experience.", so: "Waxaan ka baxnaa sidii caadiga ahayd si aan uga bixino waayo-aragnimo." })}
+            </p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto">
             {[
-              { icon: CheckCircle2, title: l({ en: "Premium Quality", so: "Tayada Sare" }), desc: l({ en: "Only the best for our customers", so: "Waxaan bixinaa oo kaliya kuwa ugu fiican" }) },
-              { icon: Zap, title: l({ en: "Fast & Efficient", so: "Degdeg & Waxtar" }), desc: l({ en: "Quick service with modern technology", so: "Adeeg degdeg ah oo tignoolojiyo casri ah" }) },
-              { icon: Users, title: l({ en: "Expert Team", so: "Koox Xirfad leh" }), desc: l({ en: "Trained professionals at your service", so: "Xirfadleyaal tababaran oo adeegaaga ah" }) },
-              { icon: Gift, title: l({ en: "Loyalty Rewards", so: "Abaalmarin" }), desc: l({ en: "Earn points and unlock rewards", so: "Dhibcaha ku kasbado oo abaalmariyo fur" }) },
+              { icon: Shield, title: l({ en: "Premium Quality", so: "Tayada Sare" }), desc: l({ en: "Only the best for our customers", so: "Kuwa ugu fiican macaamiisheena" }) },
+              { icon: Zap, title: l({ en: "Fast & Efficient", so: "Degdeg & Waxtar" }), desc: l({ en: "Quick service with modern technology", so: "Adeeg degdeg ah" }) },
+              { icon: Heart, title: l({ en: "Warm Atmosphere", so: "Jawi Diiran" }), desc: l({ en: "Designed for your comfort", so: "Loo nashqadeeyay raaxadaada" }) },
+              { icon: Award, title: l({ en: "Loyalty Rewards", so: "Abaalmarin" }), desc: l({ en: "Earn points with every visit", so: "Dhibco ku kasbado" }) },
             ].map((item, i) => (
               <motion.div
                 key={i}
                 initial="hidden" whileInView="visible" viewport={{ once: true }}
-                variants={fadeUp}
-                custom={i}
-                className="text-center p-6 rounded-2xl bg-card border border-border hover:border-accent/20 hover:shadow-lg transition-all duration-300 group"
+                variants={fadeUp} custom={i}
+                className="text-center p-6 rounded-2xl bg-white border border-border/50 hover:shadow-lg hover:border-accent/20 transition-all duration-300 group"
               >
-                <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-accent/20 group-hover:scale-110 transition-all duration-300">
+                <div className="w-14 h-14 rounded-2xl bg-accent/8 flex items-center justify-center mx-auto mb-4 group-hover:bg-accent/15 transition-colors">
                   <item.icon className="w-6 h-6 text-accent" />
                 </div>
                 <h4 className="font-display font-bold text-foreground mb-2">{item.title}</h4>
@@ -737,294 +586,143 @@ const BusinessHome = () => {
         </div>
       </section>
 
-      {/* ─── TESTIMONIALS ─── */}
-      <section className="py-20">
+      {/* ─── CONTACT / VISIT US ─── */}
+      <section id="bh-contact" className="py-20 bg-white">
         <div className="container mx-auto px-4">
-          <motion.div
-            initial="hidden" whileInView="visible" viewport={{ once: true }}
-            variants={fadeUp}
-            className="text-center mb-14"
-          >
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-bold uppercase tracking-widest mb-4">
-              <MessageCircle className="w-3 h-3" />
-              {l({ en: "Testimonials", so: "Marag-furka" })}
-            </span>
-            <h2 className="font-display font-extrabold text-3xl md:text-4xl text-foreground">
-              {l({ en: "What Our Customers Say", so: "Waxaa Macaamiishayadu Yidhaahdaan" })}
-            </h2>
-          </motion.div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {theme.testimonials.map((t, i) => (
-              <motion.div
-                key={i}
-                initial="hidden" whileInView="visible" viewport={{ once: true }}
-                variants={fadeUp}
-                custom={i}
-                className="p-6 rounded-2xl bg-card border border-border hover:border-accent/20 hover:shadow-lg transition-all duration-300"
-              >
-                <div className="flex gap-1 mb-4">
-                  {Array.from({ length: 5 }).map((_, si) => (
-                    <Star key={si} className={`w-4 h-4 ${si < t.rating ? "text-accent fill-accent" : "text-muted"}`} />
-                  ))}
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed mb-4 italic">"{t.text}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-sm font-bold text-accent">
-                    {t.name.charAt(0)}
-                  </div>
-                  <p className="text-sm font-bold text-foreground">{t.name}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── LOYALTY HIGHLIGHT ─── */}
-      <section className={`py-16 bg-gradient-to-br ${theme.heroGradient} relative overflow-hidden`}>
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/2 left-1/4 w-[400px] h-[400px] rounded-full opacity-15" style={{ background: `radial-gradient(circle, ${theme.accentGlow}, transparent 70%)` }} />
-        </div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-3xl mx-auto text-center">
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/10 mb-6">
-                <Crown className="w-4 h-4 text-accent" />
-                <span className="text-xs font-bold text-white/80 uppercase tracking-widest">{l({ en: "Loyalty Program", so: "Barnaamijka Daacadnimada" })}</span>
-              </div>
-              <h2 className="font-display font-extrabold text-3xl md:text-4xl text-white mb-4">
-                {l({ en: "Earn Rewards Every Visit", so: "Ku Kasbado Abaalmarino Soo-booqasho Kasta" })}
-              </h2>
-              <p className="text-white/60 max-w-lg mx-auto mb-8 leading-relaxed">
-                {l({ en: "Join our loyalty program and unlock exclusive rewards, discounts, and VIP perks. Every order brings you closer to amazing benefits.", so: "Ku biir barnaamijkeena oo fur abaalmariyo gaar ah, qiimo-dhimis, iyo faa'iidooyin VIP." })}
-              </p>
-              <div className="flex flex-wrap items-center justify-center gap-6 mb-8">
-                {[
-                  { icon: "🥉", label: l({ en: "Bronze", so: "Bronze" }), points: "0-100" },
-                  { icon: "🥈", label: l({ en: "Silver", so: "Silver" }), points: "100-500" },
-                  { icon: "🥇", label: l({ en: "Gold", so: "Gold" }), points: "500-1000" },
-                  { icon: "💎", label: l({ en: "Platinum", so: "Platinum" }), points: "1000+" },
-                ].map((tier) => (
-                  <div key={tier.label} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/10">
-                    <span className="text-xl">{tier.icon}</span>
-                    <div className="text-left">
-                      <p className="text-xs font-bold text-white">{tier.label}</p>
-                      <p className="text-[10px] text-white/50">{tier.points} pts</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <Button
-                size="lg"
-                className="bg-accent hover:bg-accent/90 text-accent-foreground rounded-full font-bold gap-2 shadow-gold"
-              >
-                <Gift className="w-4 h-4" />
-                {l({ en: "Join Now", so: "Hadda Ku Biir" })}
-              </Button>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── CONTACT SECTION ─── */}
-      <section id="bh-contact" className="py-20">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial="hidden" whileInView="visible" viewport={{ once: true }}
-            variants={fadeUp}
-            className="text-center mb-14"
-          >
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-bold uppercase tracking-widest mb-4">
-              <PhoneCall className="w-3 h-3" />
-              {l({ en: "Contact Us", so: "Nala Soo Xiriir" })}
-            </span>
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="mb-12">
             <h2 className="font-display font-extrabold text-3xl md:text-4xl text-foreground mb-3">
-              {l({ en: "Get In Touch", so: "Nala Soo Xiriir" })}
+              {l({ en: "Visit Us Today", so: "Maanta Noo Kaalay" })}
             </h2>
-            <p className="text-muted-foreground max-w-lg mx-auto">
-              {l({ en: "We'd love to hear from you. Reach out to us anytime.", so: "Waan jeclaan lahayn inaan kaa maqalno. Wakhti kasta nala soo xiriir." })}
-            </p>
           </motion.div>
 
-          <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10">
-            {/* Contact Info Cards */}
-            <motion.div
-              initial="hidden" whileInView="visible" viewport={{ once: true }}
-              variants={fadeUp}
-              className="space-y-4"
-            >
+          <div className="max-w-5xl grid md:grid-cols-2 gap-10">
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="space-y-5">
               {contactInfo.map((info, i) => (
-                <motion.div
-                  key={info.label}
-                  variants={fadeUp}
-                  custom={i}
-                  className="flex items-center gap-4 p-5 rounded-2xl bg-card border border-border hover:border-accent/20 hover:shadow-md transition-all duration-300 group"
-                >
-                  <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0 group-hover:bg-accent/20 transition-colors">
-                    <info.icon className="w-5 h-5 text-accent" />
+                <div key={info.label} className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-accent/8 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <info.icon className="w-4.5 h-4.5 text-accent" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">{info.label}</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-bold mb-0.5">{info.label}</p>
                     <p className="text-sm font-medium text-foreground">{info.value}</p>
                   </div>
-                </motion.div>
+                </div>
               ))}
 
-              {/* Payment Methods */}
               {business.paymentMethods && (
-                <div className="p-5 rounded-2xl bg-card border border-border">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mb-3">{l({ en: "Accepted Payments", so: "Lacag-bixinta" })}</p>
+                <div className="pt-2">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-bold mb-2">{l({ en: "Accepted Payments", so: "Lacag-bixinta" })}</p>
                   <div className="flex flex-wrap gap-2">
                     {business.paymentMethods.cashEnabled && <span className="text-xs px-3 py-1.5 rounded-full bg-accent/10 text-accent font-semibold">💵 Cash</span>}
                     {business.paymentMethods.cardEnabled && <span className="text-xs px-3 py-1.5 rounded-full bg-accent/10 text-accent font-semibold">💳 Card</span>}
                     {business.paymentMethods.mobileEnabled && <span className="text-xs px-3 py-1.5 rounded-full bg-accent/10 text-accent font-semibold">📱 Mobile</span>}
-                    {business.paymentMethods.mobileEnabled && business.paymentMethods.mobileProviders.map(p => (
-                      <span key={p.id} className="text-xs px-3 py-1.5 rounded-full bg-muted border border-border font-medium">{p.name}</span>
-                    ))}
                   </div>
                 </div>
               )}
             </motion.div>
 
-            {/* Contact Form */}
-            <motion.div
-              initial="hidden" whileInView="visible" viewport={{ once: true }}
-              variants={fadeUp}
-              custom={2}
-              className="p-6 rounded-2xl bg-card border border-border"
-            >
-              <h3 className="font-display font-bold text-lg text-foreground mb-5">{l({ en: "Send Us a Message", so: "Fariin Noo Dir" })}</h3>
-              <div className="space-y-4">
-                <Input placeholder={l({ en: "Your Name", so: "Magacaaga" })} className="rounded-xl" />
-                <Input placeholder={l({ en: "Your Email", so: "Email-kaaga" })} type="email" className="rounded-xl" />
-                <Input placeholder={l({ en: "Subject", so: "Mawduuca" })} className="rounded-xl" />
-                <Textarea placeholder={l({ en: "Your Message...", so: "Fariintaada..." })} className="rounded-xl min-h-[100px]" />
-                <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground rounded-xl font-bold gap-2 shadow-gold">
-                  <Send className="w-4 h-4" />
-                  {l({ en: "Send Message", so: "Dir Fariinta" })}
-                </Button>
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={2}>
+              <div className="p-6 rounded-2xl bg-[hsl(30,20%,97%)] border border-border/50">
+                <h3 className="font-display font-bold text-lg text-foreground mb-5">{l({ en: "Send Us a Message", so: "Fariin Noo Dir" })}</h3>
+                <div className="space-y-3">
+                  <Input placeholder={l({ en: "Your Name", so: "Magacaaga" })} className="rounded-xl bg-white" />
+                  <Input placeholder={l({ en: "Your Email", so: "Email-kaaga" })} type="email" className="rounded-xl bg-white" />
+                  <Textarea placeholder={l({ en: "Your Message...", so: "Fariintaada..." })} className="rounded-xl bg-white min-h-[100px]" />
+                  <Button className="w-full bg-foreground hover:bg-foreground/90 text-background rounded-xl font-bold gap-2">
+                    <Send className="w-4 h-4" />
+                    {l({ en: "Send Message", so: "Dir Fariinta" })}
+                  </Button>
+                </div>
               </div>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* ─── CTA BANNER ─── */}
-      <section className="py-16 bg-muted/30 border-t border-border">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial="hidden" whileInView="visible" viewport={{ once: true }}
-            variants={fadeUp}
-            className="max-w-3xl mx-auto text-center"
-          >
-            <h2 className="font-display font-extrabold text-2xl md:text-3xl text-foreground mb-4">
-              {l({ en: "Ready to Experience the Best?", so: "Diyaar u tahay inaad soo dhawaaqdo?" })}
-            </h2>
-            <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
-              {l({ en: `Visit ${business.name} today and discover why we're the top choice.`, so: `Booqo ${business.name} maanta oo ogaada sababta doorashadayada.` })}
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-4">
-              <Button
-                size="lg"
-                onClick={() => navigate("/admin")}
-                className="bg-accent hover:bg-accent/90 text-accent-foreground rounded-full gap-2 font-bold shadow-gold"
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                {l({ en: "Go to Dashboard", so: "Aad Dashboard-ka" })}
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => scrollTo("contact")}
-                className="rounded-full gap-2 font-semibold"
-              >
-                <PhoneCall className="w-4 h-4" />
-                {l({ en: "Contact Us", so: "Nala Soo Xiriir" })}
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
       {/* ─── FOOTER ─── */}
-      <footer className={`bg-gradient-to-br ${theme.heroGradient} pt-12 pb-6 relative overflow-hidden`}>
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute bottom-0 left-1/2 w-[500px] h-[300px] rounded-full opacity-10" style={{ background: `radial-gradient(circle, ${theme.accentGlow}, transparent 70%)` }} />
-        </div>
-        <div className="container mx-auto px-4 relative z-10">
+      <footer className="bg-[hsl(30,20%,97%)] border-t border-border/50 pt-14 pb-6">
+        <div className="container mx-auto px-4">
           <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8 mb-10">
-            {/* Brand */}
             <div>
               <div className="flex items-center gap-2 mb-4">
                 {business.logo ? (
-                  <img src={business.logo} alt={business.name} className="w-10 h-10 rounded-xl object-cover border border-white/20" />
+                  <img src={business.logo} alt={business.name} className="w-9 h-9 rounded-xl object-cover" />
                 ) : (
-                  <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                    <TypeIcon className="w-5 h-5 text-accent" />
+                  <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
+                    <TypeIcon className="w-4 h-4 text-accent" />
                   </div>
                 )}
-                <div>
-                  <p className="font-display font-bold text-white text-sm">{business.name}</p>
-                  <p className="text-[10px] text-white/50">{theme.emoji} {theme.label}</p>
-                </div>
+                <span className="font-display font-bold text-foreground text-sm">{business.name}</span>
               </div>
-              <p className="text-xs text-white/40 leading-relaxed">{(business.description || l(theme.aboutText)).slice(0, 120)}...</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {(business.description || l(theme.aboutText)).slice(0, 120)}...
+              </p>
             </div>
 
-            {/* Quick Links */}
             <div>
-              <h4 className="font-display font-bold text-white text-sm mb-4">{l({ en: "Quick Links", so: "Links-ka Degdegga" })}</h4>
-              <div className="space-y-2">
+              <h4 className="font-display font-bold text-foreground text-sm mb-4">{l({ en: "Company", so: "Shirkadda" })}</h4>
+              <div className="space-y-2.5">
                 {navItems.map((item) => (
-                  <button key={item.key} onClick={() => scrollTo(item.key)} className="flex items-center gap-2 text-xs text-white/50 hover:text-accent transition-colors">
-                    <ChevronRight className="w-3 h-3" />
+                  <button key={item.key} onClick={() => scrollTo(item.key)} className="block text-xs text-muted-foreground hover:text-accent transition-colors">
                     {item.label}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Services */}
             <div>
-              <h4 className="font-display font-bold text-white text-sm mb-4">{l({ en: "Services", so: "Adeegyada" })}</h4>
-              <div className="space-y-2">
-                {services.slice(0, 4).map((s) => (
-                  <p key={s.id} className="flex items-center gap-2 text-xs text-white/50">
-                    <span>{s.icon}</span> {s.title}
-                  </p>
-                ))}
+              <h4 className="font-display font-bold text-foreground text-sm mb-4">{l({ en: "Help", so: "Caawimo" })}</h4>
+              <div className="space-y-2.5 text-xs text-muted-foreground">
+                <p>{l({ en: "Support Center", so: "Xarunta Taageerada" })}</p>
+                <p>{l({ en: "Privacy Policy", so: "Siyaasadda" })}</p>
+                <p>{l({ en: "Terms of Service", so: "Shuruudaha" })}</p>
               </div>
             </div>
 
-            {/* Contact */}
             <div>
-              <h4 className="font-display font-bold text-white text-sm mb-4">{l({ en: "Contact", so: "Xiriirka" })}</h4>
-              <div className="space-y-2">
-                {contactInfo.slice(0, 3).map((info) => (
-                  <div key={info.label} className="flex items-start gap-2 text-xs text-white/50">
-                    <info.icon className="w-3.5 h-3.5 mt-0.5 text-accent flex-shrink-0" />
-                    <span className="line-clamp-2">{info.value}</span>
-                  </div>
-                ))}
+              <h4 className="font-display font-bold text-foreground text-sm mb-4">{l({ en: "Join the Newsletter", so: "Ku biir Warqadda" })}</h4>
+              <div className="flex gap-2">
+                <Input placeholder="email@address.com" className="rounded-full text-xs bg-white h-9" />
+                <Button size="icon" className="rounded-full bg-accent hover:bg-accent/90 text-accent-foreground h-9 w-9 flex-shrink-0">
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
               </div>
             </div>
           </div>
 
-          {/* Bottom */}
-          <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-[11px] text-white/30">
+          <div className="border-t border-border/50 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-[11px] text-muted-foreground">
               © 2026 {business.name} · {l({ en: "All rights reserved", so: "Dhammaan xuquuqda way dhowran tahay" })}
             </p>
             <div className="flex items-center gap-2">
               <img src={dalabLogo} alt="DALABplus+" className="w-5 h-5 rounded" />
-              <span className="text-[11px] text-white/40">
+              <span className="text-[11px] text-muted-foreground">
                 Powered by <span className="text-accent font-bold">DALABplus+</span>
               </span>
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Mobile Bottom Nav */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-border/50 flex items-center justify-around py-2 px-2">
+        {[
+          { key: "home", label: l({ en: "Home", so: "Guriga" }), icon: Home },
+          { key: "menu", label: "Menu", icon: MenuIcon },
+          { key: "services", label: l({ en: "Services", so: "Adeeg" }), icon: Star },
+          { key: "contact", label: l({ en: "Contact", so: "Xiriir" }), icon: PhoneCall },
+          { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+        ].map((item) => (
+          <button
+            key={item.key}
+            onClick={() => item.key === "dashboard" ? navigate("/admin") : scrollTo(item.key === "home" ? "about" : item.key)}
+            className="flex flex-col items-center gap-0.5 px-2 py-1 text-[10px] font-medium text-muted-foreground hover:text-accent transition-colors"
+          >
+            <item.icon className="w-4 h-4" />
+            {item.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };
