@@ -20,6 +20,23 @@ import dalabLogo from "@/assets/dalabplus-logo.png";
 import heroCafeInterior from "@/assets/hero-cafe-interior.jpg";
 import testimonialCafe from "@/assets/testimonial-cafe.jpg";
 
+// Real food images for menu fallback
+import foodBariis from "@/assets/food-bariis-hilib.jpg";
+import foodBaasto from "@/assets/food-baasto.jpg";
+import foodCanjeero from "@/assets/food-canjeero.jpg";
+import foodSuqaar from "@/assets/food-suqaar.jpg";
+import foodShaah from "@/assets/food-shaah.jpg";
+import foodJuice from "@/assets/food-juice.jpg";
+
+// Map common food emoji/names to real images
+const foodImageMap: Record<string, string> = {
+  "🍛": foodBariis, "🍚": foodBariis, "🥘": foodSuqaar,
+  "🍝": foodBaasto, "🫕": foodBaasto,
+  "🫓": foodCanjeero, "🍳": foodCanjeero,
+  "☕": foodShaah, "🍵": foodShaah,
+  "🥭": foodJuice, "🫐": foodJuice, "🥑": foodJuice,
+};
+
 
 /* ─── Type themes ─── */
 const typeThemes = {
