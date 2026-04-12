@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Gift, ShoppingBag, Star, Trophy, LogOut, Clock, ChevronRight, Sparkles, Crown, Zap, TrendingUp, Eye, EyeOff, Store, Flame, Award, Gem } from "lucide-react";
+import { Gift, ShoppingBag, Star, Trophy, LogOut, Clock, ChevronRight, Sparkles, Crown, Zap, TrendingUp, Eye, EyeOff, Store, Flame, Award, Gem, Home } from "lucide-react";
 import { getBusinessById, getOrdersByCustomerId, Order } from "@/lib/store";
 
 const CustomerDashboard = () => {
@@ -100,11 +100,24 @@ const CustomerDashboard = () => {
             <span className="text-[10px] text-primary-foreground/40">Member Dashboard</span>
           </div>
         </div>
-        <Link to="/login">
-          <Button variant="ghost" size="sm" className="text-primary-foreground/40 hover:text-primary-foreground/70">
+        <div className="flex items-center gap-1">
+          <Link to={`/customer-home?business=${businessId}`}>
+            <Button variant="ghost" size="sm" className="text-primary-foreground/40 hover:text-primary-foreground/70 hover:text-accent transition-colors">
+              <Home className="w-4 h-4" />
+            </Button>
+          </Link>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-primary-foreground/40 hover:text-primary-foreground/70 hover:text-destructive transition-colors"
+            onClick={() => {
+              localStorage.removeItem("dp_customer");
+              navigate(`/register?table=${customer?.tableId || "1"}&business=${businessId}`);
+            }}
+          >
             <LogOut className="w-4 h-4" />
           </Button>
-        </Link>
+        </div>
       </header>
 
       <div className="container mx-auto px-4 py-6 max-w-lg space-y-5 relative z-10">

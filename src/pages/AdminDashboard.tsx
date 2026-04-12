@@ -17,7 +17,7 @@ import {
 import {
   Plus, Pencil, Trash2, Search, QrCode, Download, Bell, HelpCircle,
   Upload, ImageIcon, Printer, ExternalLink, Copy, X, MessageSquare, Check, XCircle, Volume2, Receipt, Minus, Lock,
-  LayoutDashboard, UtensilsCrossed, Package, Grid3X3, ClipboardList, History, UserCog, Users, Heart, Wallet, Settings,
+  LayoutDashboard, UtensilsCrossed, Package, Grid3X3, ClipboardList, History, UserCog, Users, Heart, Wallet, Settings, ArrowLeft,
 } from "lucide-react";
 import {
   Business, Category, MenuItem, TableItem, Order,
@@ -1254,6 +1254,15 @@ const AdminDashboard = () => {
       <main className={`flex-1 transition-all duration-300 ${collapsed ? "ml-[72px]" : "ml-[240px]"}`}>
         <header className="border-b border-border bg-card/80 backdrop-blur-xl px-8 py-5 flex items-center justify-between sticky top-0 z-30">
           <div className="flex items-center gap-4">
+            <motion.button
+              whileHover={{ scale: 1.1, x: -2 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => navigate("/business-home")}
+              className="w-9 h-9 rounded-xl bg-muted/80 hover:bg-accent/15 flex items-center justify-center text-muted-foreground hover:text-accent transition-all duration-300 border border-border/50 hover:border-accent/20 shadow-sm hover:shadow-accent/10"
+              title="Back to Business Home"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </motion.button>
             <motion.div 
               key={activeTab}
               initial={{ scale: 0.5, rotate: -180, opacity: 0 }}
