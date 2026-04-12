@@ -159,6 +159,10 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
       toast.error("Please fill all required fields");
       return;
     }
+    if (!form.phone.trim()) {
+      toast.error("Phone number is required for OTP verification");
+      return;
+    }
     try {
       if (!editBusiness) {
         const allBiz = await getBusinesses();
