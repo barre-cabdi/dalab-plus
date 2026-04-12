@@ -15,6 +15,17 @@ import { Business, getDefaultServices, BusinessService } from "@/lib/store";
 import { useI18n } from "@/lib/i18n";
 import dalabLogo from "@/assets/dalabplus-logo.png";
 
+// Menu images
+import foodRiceMeat from "@/assets/menu/food-rice-meat.jpg";
+import foodSuqaar from "@/assets/menu/food-suqaar.jpg";
+import foodPasta from "@/assets/menu/food-pasta.jpg";
+import foodCanjeero from "@/assets/menu/food-canjeero.jpg";
+import drinkSmoothie from "@/assets/menu/drink-smoothie.jpg";
+import drinkJuice from "@/assets/menu/drink-juice.jpg";
+import teaShaah from "@/assets/menu/tea-shaah.jpg";
+import teaCappuccino from "@/assets/menu/tea-cappuccino.jpg";
+import teaMint from "@/assets/menu/tea-mint.jpg";
+
 /* ─── Type-specific theming ─── */
 const typeThemes = {
   restaurant: {
