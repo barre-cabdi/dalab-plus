@@ -17,6 +17,7 @@ import {
 import {
   Plus, Pencil, Trash2, Search, QrCode, Download, Bell, HelpCircle,
   Upload, ImageIcon, Printer, ExternalLink, Copy, X, MessageSquare, Check, XCircle, Volume2, Receipt, Minus, Lock,
+  LayoutDashboard, UtensilsCrossed, Package, Grid3X3, ClipboardList, History, UserCog, Users, Heart, Wallet, Settings,
 } from "lucide-react";
 import {
   Business, Category, MenuItem, TableItem, Order,
