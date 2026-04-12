@@ -168,12 +168,7 @@ const BusinessHome = () => {
         { key: "teas", label: l({ en: "Teas & Coffee", so: "Shaah" }) },
       ];
 
-  // Set default active tab to first category
-  useEffect(() => {
-    if (dbCategories.length > 0 && !dbCategories.find(c => c.id === menuTab)) {
-      setMenuTab(dbCategories[0].id);
-    }
-  }, [dbCategories]);
+
 
   // Filter menu items by active category tab
   const currentMenuItems = dbMenuItems.filter(item => item.categoryId === menuTab).slice(0, 3);
