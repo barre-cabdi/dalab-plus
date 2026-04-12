@@ -12,6 +12,7 @@ import CustomerDashboard from "./pages/CustomerDashboard";
 import CustomerRegister from "./pages/CustomerRegister";
 import CustomerMenu from "./pages/CustomerMenu";
 import OrderTracking from "./pages/OrderTracking";
+import CustomerHome from "./pages/CustomerHome";
 import WaiterDashboard from "./pages/WaiterDashboard";
 import HotelManagerDashboard from "./pages/HotelManagerDashboard";
 import CashierDashboard from "./pages/CashierDashboard";
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/register" element={<CustomerRegister />} />
             <Route path="/menu" element={<CustomerMenu />} />
             <Route path="/order-tracking/:orderId" element={<OrderTracking />} />
+            <Route path="/customer-home" element={<CustomerHome />} />
             <Route path="/waiter" element={<WaiterDashboard />} />
             <Route path="/hotel-manager" element={<HotelManagerDashboard />} />
             <Route path="/cashier" element={<CashierDashboard />} />
