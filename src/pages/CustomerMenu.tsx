@@ -416,6 +416,8 @@ const CustomerMenu = () => {
                 <div className="w-28 h-full min-h-[120px] flex-shrink-0 bg-primary/30 flex items-center justify-center overflow-hidden relative">
                   {isImageUrl(item.image) ? (
                     <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  ) : foodImageMap[item.image] ? (
+                    <img src={foodImageMap[item.image]} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                   ) : (
                     <motion.span
                       className="text-4xl"

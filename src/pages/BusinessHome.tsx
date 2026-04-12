@@ -27,6 +27,14 @@ import foodCanjeero from "@/assets/food-canjeero.jpg";
 import foodSuqaar from "@/assets/food-suqaar.jpg";
 import foodShaah from "@/assets/food-shaah.jpg";
 import foodJuice from "@/assets/food-juice.jpg";
+import foodSambusa from "@/assets/food-sambusa.jpg";
+import foodMishkaki from "@/assets/food-mishkaki.jpg";
+import foodBurger from "@/assets/food-burger.jpg";
+import foodLasagna from "@/assets/food-lasagna.jpg";
+import foodKalluun from "@/assets/food-kalluun.jpg";
+import foodHalwo from "@/assets/food-halwo.jpg";
+import foodChicken from "@/assets/food-chicken.jpg";
+import foodAvocado from "@/assets/food-avocado-juice.jpg";
 
 // Map common food emoji/names to real images
 const foodImageMap: Record<string, string> = {
@@ -34,7 +42,14 @@ const foodImageMap: Record<string, string> = {
   "🍝": foodBaasto, "🫕": foodBaasto,
   "🫓": foodCanjeero, "🍳": foodCanjeero,
   "☕": foodShaah, "🍵": foodShaah,
-  "🥭": foodJuice, "🫐": foodJuice, "🥑": foodJuice,
+  "🥭": foodJuice, "🫐": foodJuice,
+  "🥑": foodAvocado,
+  "🥟": foodSambusa,
+  "🥩": foodMishkaki,
+  "🍔": foodBurger,
+  "🍗": foodChicken,
+  "🐟": foodKalluun, "🦑": foodKalluun,
+  "🍮": foodHalwo, "🍪": foodHalwo,
 };
 
 
