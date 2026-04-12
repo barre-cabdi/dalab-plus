@@ -494,12 +494,12 @@ const BusinessHome = () => {
             <h2 className="font-display font-extrabold text-3xl md:text-4xl text-foreground mb-3">
               {business.type === "hotel"
                 ? l({ en: "Elegant Rooms & Suites", so: "Qolal Qurux badan" })
-                : l({ en: "Taste Our Favorites", so: "Dhadhan Kuweena" })}
+                : l({ en: "Taste Our Favorites", so: "Dhadhan Kuweena Ugu Fiican" })}
             </h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
               {business.type === "hotel"
                 ? l({ en: "Choose from our selection of premium rooms for a perfect stay.", so: "Ka dooro qolalkeena heerka sare ah hoyga wanaagsan." })
-                : l({ en: "Discover our most popular dishes crafted with fresh ingredients.", so: "Baro cuntooyinkeena caanka ah ee lagu sameeyay walxo cusub." })}
+                : l({ en: "Explore our delicious categories — freshly prepared food, refreshing drinks, and aromatic teas.", so: "Baadhitaan qaybahayaga macaan — cunto cusub, cabbitaano qabowjiye, iyo shaah udgoon." })}
             </p>
           </motion.div>
 
@@ -529,41 +529,163 @@ const BusinessHome = () => {
               ))}
             </div>
           ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-              {[
-                { name: business.type === "cafe" ? l({ en: "Cappuccino", so: "Kabuchiino" }) : l({ en: "Grilled Steak", so: "Hilib la dubay" }), price: business.type === "cafe" ? "$4.50" : "$18.00", icon: business.type === "cafe" ? "☕" : "🥩", category: business.type === "cafe" ? l({ en: "Coffee", so: "Qahawo" }) : l({ en: "Main Course", so: "Cunto Weyn" }) },
-                { name: business.type === "cafe" ? l({ en: "Croissant", so: "Doolshe" }) : l({ en: "Pasta Alfredo", so: "Baasto" }), price: business.type === "cafe" ? "$3.00" : "$14.00", icon: business.type === "cafe" ? "🥐" : "🍝", category: business.type === "cafe" ? l({ en: "Pastry", so: "Doolshe" }) : l({ en: "Pasta", so: "Baasto" }) },
-                { name: business.type === "cafe" ? l({ en: "Smoothie Bowl", so: "Casiir" }) : l({ en: "Tiramisu", so: "Tiramisu" }), price: business.type === "cafe" ? "$6.00" : "$8.00", icon: business.type === "cafe" ? "🥤" : "🍰", category: business.type === "cafe" ? l({ en: "Drinks", so: "Cabbitaano" }) : l({ en: "Dessert", so: "Macmacaan" }) },
-              ].map((item, i) => (
-                <motion.div
-                  key={item.name}
-                  initial="hidden" whileInView="visible" viewport={{ once: true }}
-                  variants={fadeUp}
-                  custom={i}
-                  className="p-6 rounded-2xl bg-card border border-border hover:border-accent/30 hover:shadow-xl transition-all duration-300 group"
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-4xl">{item.icon}</span>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-accent bg-accent/10 px-2.5 py-1 rounded-full">{item.category}</span>
+            <div className="space-y-12 max-w-6xl mx-auto">
+              {/* ── Food Category ── */}
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                      <span className="text-xl">🍽️</span>
+                    </div>
+                    <div>
+                      <h3 className="font-display font-bold text-lg text-foreground">{l({ en: "Food", so: "Cunto" })}</h3>
+                      <p className="text-xs text-muted-foreground">{l({ en: "Fresh & delicious meals", so: "Cunto cusub & macaan" })}</p>
+                    </div>
                   </div>
-                  <h3 className="font-display font-bold text-lg text-foreground mb-1">{item.name}</h3>
-                  <p className="font-display font-extrabold text-xl text-accent">{item.price}</p>
-                </motion.div>
-              ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/menu?business=${business.id}&category=food`)}
+                    className="rounded-full gap-1.5 text-xs font-semibold border-accent/20 text-accent hover:bg-accent/10"
+                  >
+                    {l({ en: "View All", so: "Dhammaan" })}
+                    <ArrowRight className="w-3 h-3" />
+                  </Button>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[
+                    { name: l({ en: "Bariis & Hilib", so: "Bariis & Hilib" }), price: "$12.00", img: foodRiceMeat },
+                    { name: l({ en: "Suqaar", so: "Suqaar" }), price: "$10.00", img: foodSuqaar },
+                    { name: l({ en: "Pasta", so: "Baasto" }), price: "$9.00", img: foodPasta },
+                    { name: l({ en: "Canjeero", so: "Canjeero" }), price: "$6.00", img: foodCanjeero },
+                  ].map((item, i) => (
+                    <motion.div
+                      key={item.name}
+                      initial="hidden" whileInView="visible" viewport={{ once: true }}
+                      variants={fadeUp}
+                      custom={i}
+                      className="rounded-2xl bg-card border border-border hover:border-accent/30 hover:shadow-xl transition-all duration-300 group overflow-hidden"
+                    >
+                      <div className="aspect-square overflow-hidden">
+                        <img src={item.img} alt={item.name} loading="lazy" width={640} height={640} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      </div>
+                      <div className="p-4">
+                        <h4 className="font-display font-bold text-sm text-foreground truncate">{item.name}</h4>
+                        <p className="font-display font-extrabold text-accent mt-1">{item.price}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── Drinks Category ── */}
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                      <span className="text-xl">🥤</span>
+                    </div>
+                    <div>
+                      <h3 className="font-display font-bold text-lg text-foreground">{l({ en: "Drinks", so: "Cabbitaano" })}</h3>
+                      <p className="text-xs text-muted-foreground">{l({ en: "Refreshing beverages", so: "Cabbitaano qabowjiye" })}</p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/menu?business=${business.id}&category=drinks`)}
+                    className="rounded-full gap-1.5 text-xs font-semibold border-accent/20 text-accent hover:bg-accent/10"
+                  >
+                    {l({ en: "View All", so: "Dhammaan" })}
+                    <ArrowRight className="w-3 h-3" />
+                  </Button>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[
+                    { name: l({ en: "Mango Smoothie", so: "Cambe Smoothie" }), price: "$5.00", img: drinkSmoothie },
+                    { name: l({ en: "Fresh Orange Juice", so: "Casiirka Liin" }), price: "$4.00", img: drinkJuice },
+                  ].map((item, i) => (
+                    <motion.div
+                      key={item.name}
+                      initial="hidden" whileInView="visible" viewport={{ once: true }}
+                      variants={fadeUp}
+                      custom={i}
+                      className="rounded-2xl bg-card border border-border hover:border-accent/30 hover:shadow-xl transition-all duration-300 group overflow-hidden"
+                    >
+                      <div className="aspect-square overflow-hidden">
+                        <img src={item.img} alt={item.name} loading="lazy" width={640} height={640} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      </div>
+                      <div className="p-4">
+                        <h4 className="font-display font-bold text-sm text-foreground truncate">{item.name}</h4>
+                        <p className="font-display font-extrabold text-accent mt-1">{item.price}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── Teas & Coffee Category ── */}
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                      <span className="text-xl">☕</span>
+                    </div>
+                    <div>
+                      <h3 className="font-display font-bold text-lg text-foreground">{l({ en: "Teas & Coffee", so: "Shaah & Qahawo" })}</h3>
+                      <p className="text-xs text-muted-foreground">{l({ en: "Warm & aromatic", so: "Diiran & udgoon" })}</p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/menu?business=${business.id}&category=teas`)}
+                    className="rounded-full gap-1.5 text-xs font-semibold border-accent/20 text-accent hover:bg-accent/10"
+                  >
+                    {l({ en: "View All", so: "Dhammaan" })}
+                    <ArrowRight className="w-3 h-3" />
+                  </Button>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[
+                    { name: l({ en: "Somali Shaah", so: "Shaah Soomaaliyeed" }), price: "$2.50", img: teaShaah },
+                    { name: l({ en: "Cappuccino", so: "Kabuchiino" }), price: "$4.50", img: teaCappuccino },
+                    { name: l({ en: "Mint Tea", so: "Shaah Nafnaf" }), price: "$3.00", img: teaMint },
+                  ].map((item, i) => (
+                    <motion.div
+                      key={item.name}
+                      initial="hidden" whileInView="visible" viewport={{ once: true }}
+                      variants={fadeUp}
+                      custom={i}
+                      className="rounded-2xl bg-card border border-border hover:border-accent/30 hover:shadow-xl transition-all duration-300 group overflow-hidden"
+                    >
+                      <div className="aspect-square overflow-hidden">
+                        <img src={item.img} alt={item.name} loading="lazy" width={640} height={640} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      </div>
+                      <div className="p-4">
+                        <h4 className="font-display font-bold text-sm text-foreground truncate">{item.name}</h4>
+                        <p className="font-display font-extrabold text-accent mt-1">{item.price}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
+          {/* View Full Menu Button */}
           <motion.div
             initial="hidden" whileInView="visible" viewport={{ once: true }}
             variants={fadeUp}
             custom={4}
-            className="text-center mt-10"
+            className="text-center mt-14"
           >
             <Button
               size="lg"
-              onClick={() => navigate(`/customer-menu?business=${business.id}`)}
-              className="bg-accent hover:bg-accent/90 text-accent-foreground rounded-full gap-2 font-bold shadow-gold"
+              onClick={() => navigate(`/menu?business=${business.id}`)}
+              className="bg-accent hover:bg-accent/90 text-accent-foreground rounded-full gap-2 font-bold shadow-gold hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
+              <MenuIcon className="w-4 h-4" />
               {business.type === "hotel"
                 ? l({ en: "View All Rooms", so: "Eeg Qolalka Oo Dhan" })
                 : l({ en: "View Full Menu", so: "Eeg Menu-ka Oo Dhan" })}
