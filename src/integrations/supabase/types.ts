@@ -480,6 +480,36 @@ export type Database = {
           },
         ]
       }
+      otp_codes: {
+        Row: {
+          business_id: string
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          phone: string
+          verified: boolean
+        }
+        Insert: {
+          business_id: string
+          code: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          phone: string
+          verified?: boolean
+        }
+        Update: {
+          business_id?: string
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          phone?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
       password_logs: {
         Row: {
           business_id: string
