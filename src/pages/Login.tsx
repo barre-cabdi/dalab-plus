@@ -173,12 +173,12 @@ const Login = () => {
               <img
                 src={slide.image}
                 alt={slideContent.title}
-                className="w-80 h-64 object-contain mb-6 mx-auto drop-shadow-2xl"
+                className="w-[28rem] h-[22rem] object-contain mb-6 mx-auto drop-shadow-2xl"
               />
-              <h2 className="text-3xl font-display font-extrabold text-white mb-3" style={{ fontSize: '21px' }}>
+              <h2 className="text-3xl font-display font-extrabold text-white mb-3" style={{ fontSize: '28px' }}>
                 {slideContent.title}
               </h2>
-              <p className="text-white/70 max-w-xs mx-auto leading-relaxed" style={{ fontSize: '18px' }}>
+              <p className="text-white/70 max-w-sm mx-auto leading-relaxed" style={{ fontSize: '20px' }}>
                 {slideContent.desc}
               </p>
             </motion.div>
@@ -215,16 +215,16 @@ const Login = () => {
             <span className="font-display font-bold text-xl">DALABplus+</span>
           </div>
 
-          <h1 className="text-3xl font-display font-bold text-foreground mb-2">
+          <h1 className="text-4xl font-display font-bold text-foreground mb-2">
             {lang === "so" ? "Gal" : "Log In"}
           </h1>
-          <p className="text-sm text-muted-foreground mb-1">
+          <p className="text-base text-muted-foreground mb-1">
             {lang === "so" ? "Ma lihid akoon?" : "Don't have an account?"}{" "}
             <Link to="/#contact" className="text-accent font-semibold hover:underline">
               {lang === "so" ? "La xiriir SuperAdmin (Maamulayaasha)" : "Contact SuperAdmin (Managers)"}
             </Link>
           </p>
-          <p className="text-xs text-muted-foreground mb-8">
+          <p className="text-sm text-muted-foreground mb-8">
             {lang === "so" ? "Wax yar ayay qaadataa." : "It will take less than a minute."}
           </p>
 
@@ -273,9 +273,9 @@ const Login = () => {
 
           {/* Demo credentials */}
           <div className="mt-8 p-3 rounded-lg bg-muted/50 border border-border">
-            <p className="text-[10px] text-muted-foreground font-semibold mb-1.5">{t.demoCredentials}</p>
-            <p className="text-[10px] text-muted-foreground"><strong>{t.superAdmin}:</strong> superadmin / super123</p>
-            <p className="text-[10px] text-muted-foreground"><strong>{t.businessAdmin}:</strong> {t.businessAdmin}</p>
+            <p className="text-xs text-muted-foreground font-semibold mb-1.5">{t.demoCredentials}</p>
+            <p className="text-xs text-muted-foreground"><strong>{t.superAdmin}:</strong> superadmin / super123</p>
+            <p className="text-xs text-muted-foreground"><strong>{t.businessAdmin}:</strong> {t.businessAdmin}</p>
           </div>
 
           {/* Back to home */}
