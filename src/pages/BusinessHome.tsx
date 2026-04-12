@@ -652,18 +652,18 @@ const BusinessHome = () => {
                     <TypeIcon className="w-4 h-4 text-accent" />
                   </div>
                 )}
-                <span className="font-display font-bold text-foreground text-sm">{business.name}</span>
+                <span className="font-display font-bold text-foreground text-2xl">{business.name}</span>
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
+              <p className="text-base text-muted-foreground leading-relaxed">
                 {(business.description || l(theme.aboutText)).slice(0, 120)}...
               </p>
             </div>
 
             <div>
-              <h4 className="font-display font-bold text-foreground text-sm mb-4">{l({ en: "Company", so: "Shirkadda" })}</h4>
+              <h4 className="font-display font-bold text-foreground text-xl mb-4">{l({ en: "Company", so: "Shirkadda" })}</h4>
               <div className="space-y-2.5">
                 {navItems.map((item) => (
-                  <button key={item.key} onClick={() => scrollTo(item.key)} className="block text-xs text-muted-foreground hover:text-accent transition-colors">
+                  <button key={item.key} onClick={() => scrollTo(item.key)} className="block text-base text-muted-foreground hover:text-accent transition-colors">
                     {item.label}
                   </button>
                 ))}
@@ -671,8 +671,8 @@ const BusinessHome = () => {
             </div>
 
             <div>
-              <h4 className="font-display font-bold text-foreground text-sm mb-4">{l({ en: "Help", so: "Caawimo" })}</h4>
-              <div className="space-y-2.5 text-xs text-muted-foreground">
+              <h4 className="font-display font-bold text-foreground text-xl mb-4">{l({ en: "Help", so: "Caawimo" })}</h4>
+              <div className="space-y-2.5 text-base text-muted-foreground">
                 <p>{l({ en: "Support Center", so: "Xarunta Taageerada" })}</p>
                 <p>{l({ en: "Privacy Policy", so: "Siyaasadda" })}</p>
                 <p>{l({ en: "Terms of Service", so: "Shuruudaha" })}</p>
@@ -680,9 +680,9 @@ const BusinessHome = () => {
             </div>
 
             <div>
-              <h4 className="font-display font-bold text-foreground text-sm mb-4">{l({ en: "Join the Newsletter", so: "Ku biir Warqadda" })}</h4>
+              <h4 className="font-display font-bold text-foreground text-xl mb-4">{l({ en: "Join the Newsletter", so: "Ku biir Warqadda" })}</h4>
               <div className="flex gap-2">
-                <Input placeholder="email@address.com" className="rounded-full text-xs bg-white h-9" />
+                <Input placeholder="email@address.com" className="rounded-full text-base bg-white h-11" />
                 <Button size="icon" className="rounded-full bg-accent hover:bg-accent/90 text-accent-foreground h-9 w-9 flex-shrink-0">
                   <ArrowRight className="w-4 h-4" />
                 </Button>
@@ -691,12 +691,12 @@ const BusinessHome = () => {
           </div>
 
           <div className="border-t border-border/50 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               © 2026 {business.name} · {l({ en: "All rights reserved", so: "Dhammaan xuquuqda way dhowran tahay" })}
             </p>
             <div className="flex items-center gap-2">
               <img src={dalabLogo} alt="DALABplus+" className="w-5 h-5 rounded" />
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-sm text-muted-foreground">
                 Powered by <span className="text-accent font-bold">DALABplus+</span>
               </span>
             </div>
