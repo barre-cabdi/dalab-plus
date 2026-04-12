@@ -94,7 +94,8 @@ const Login = () => {
         }
 
         // Check if business has a phone number for OTP
-        const fullPhone = (biz.phonePrefix || "") + (biz.phone || "");
+        let fullPhone = ((biz.phonePrefix || "") + (biz.phone || "")).replace(/\s+/g, "");
+        if (fullPhone && !fullPhone.startsWith("+")) fullPhone = "+" + fullPhone;
         if (fullPhone) {
           try {
             await sendOTP(fullPhone, biz.id);
