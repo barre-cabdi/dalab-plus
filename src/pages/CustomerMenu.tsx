@@ -90,7 +90,7 @@ const CustomerMenu = () => {
   const branding = (() => { try { return JSON.parse(localStorage.getItem("dp_customer_branding") || "{}"); } catch { return {}; } })();
   const businessName = businessData?.name || branding.businessName || customer?.businessName || "DALABplus+";
   const businessLogo = businessData?.logo || branding.businessLogo || customer?.businessLogo || "";
-  const isImageUrl = (img: string) => img.startsWith("data:") || img.startsWith("http");
+  // isImageUrl defined at module level
 
   const filteredItems = menuItems.filter(item => {
     const matchCat = activeCategory === "all" || item.categoryId === activeCategory;
