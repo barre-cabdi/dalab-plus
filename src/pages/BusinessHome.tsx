@@ -121,6 +121,13 @@ const BusinessHome = () => {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
+  // Set default active tab to first category
+  useEffect(() => {
+    if (dbCategories.length > 0 && !dbCategories.find(c => c.id === menuTab)) {
+      setMenuTab(dbCategories[0].id);
+    }
+  }, [dbCategories]);
+
   if (!business) return <div className="min-h-screen bg-background" />;
 
   const theme = typeThemes[business.type as keyof typeof typeThemes] || typeThemes.restaurant;
