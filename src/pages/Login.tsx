@@ -273,9 +273,9 @@ const Login = () => {
 
           {/* Demo credentials */}
           <div className="mt-8 p-3 rounded-lg bg-muted/50 border border-border">
-            <p className="text-[10px] text-muted-foreground font-semibold mb-1.5">{t.demoCredentials}</p>
-            <p className="text-[10px] text-muted-foreground"><strong>{t.superAdmin}:</strong> superadmin / super123</p>
-            <p className="text-[10px] text-muted-foreground"><strong>{t.businessAdmin}:</strong> {t.businessAdmin}</p>
+            <p className="text-xs text-muted-foreground font-semibold mb-1.5">{t.demoCredentials}</p>
+            <p className="text-xs text-muted-foreground"><strong>{t.superAdmin}:</strong> superadmin / super123</p>
+            <p className="text-xs text-muted-foreground"><strong>{t.businessAdmin}:</strong> {t.businessAdmin}</p>
           </div>
 
           {/* Back to home */}
