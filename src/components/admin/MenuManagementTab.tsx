@@ -62,6 +62,7 @@ const MenuManagementTab = ({ businessId, onDataChange }: MenuManagementTabProps)
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [activeSubTab, setActiveSubTab] = useState("items");
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterCategoryId, setFilterCategoryId] = useState("all");
   const [catDialog, setCatDialog] = useState(false);
   const [menuDialog, setMenuDialog] = useState(false);
   const [editingCat, setEditingCat] = useState<Category | null>(null);
