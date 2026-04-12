@@ -307,6 +307,8 @@ const BusinessHome = () => {
                 <div className="w-12 h-12 rounded-xl overflow-hidden bg-accent/10 flex items-center justify-center">
                   {dbMenuItems.length > 0 && isImageUrl(dbMenuItems[0].image) ? (
                     <img src={dbMenuItems[0].image} alt="Featured" className="w-full h-full object-cover" />
+                  ) : dbMenuItems.length > 0 && foodImageMap[dbMenuItems[0]?.image] ? (
+                    <img src={foodImageMap[dbMenuItems[0].image]} alt="Featured" className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-2xl">{dbMenuItems[0]?.image || "☕"}</span>
                   )}
