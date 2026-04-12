@@ -200,48 +200,69 @@ const BusinessHome = () => {
   return (
     <div className="min-h-screen bg-[hsl(30,20%,97%)]">
       {/* ─── HEADER ─── */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-white/95 backdrop-blur-xl shadow-sm border-b border-border/50" : "bg-white/80 backdrop-blur-md"}`}>
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? "bg-white/95 backdrop-blur-xl shadow-lg shadow-black/5 border-b border-border/50" : "bg-white/80 backdrop-blur-md"}`}>
         <div className="container mx-auto flex items-center justify-between h-16 px-4">
-          <div className="flex items-center gap-2.5">
+          <motion.div 
+            className="flex items-center gap-2.5 group cursor-pointer"
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
             {business.logo ? (
-              <img src={business.logo} alt={business.name} className="w-9 h-9 rounded-xl object-cover" />
+              <motion.img 
+                src={business.logo} alt={business.name} 
+                className="w-9 h-9 rounded-xl object-cover shadow-md shadow-accent/10 ring-2 ring-accent/10 group-hover:ring-accent/30 transition-all duration-300"
+                whileHover={{ rotate: [0, -5, 5, 0] }}
+                transition={{ duration: 0.5 }}
+              />
             ) : (
-              <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
+              <motion.div 
+                className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent/20 via-accent/10 to-accent/5 flex items-center justify-center shadow-md shadow-accent/10 border border-accent/10 group-hover:border-accent/30 transition-all duration-300"
+                whileHover={{ rotate: [0, -5, 5, 0] }}
+                transition={{ duration: 0.5 }}
+              >
                 <TypeIcon className="w-4.5 h-4.5 text-accent" />
-              </div>
+              </motion.div>
             )}
-            <span className="font-display font-bold text-foreground text-sm">{business.name}</span>
-          </div>
+            <span className="font-display font-bold text-foreground text-sm group-hover:text-accent transition-colors duration-300">{business.name}</span>
+          </motion.div>
 
           <nav className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => (
-              <button
+            {navItems.map((item, i) => (
+              <motion.button
                 key={item.key}
                 onClick={() => scrollTo(item.key)}
-                className="px-3.5 py-2 text-sm text-muted-foreground hover:text-foreground font-medium transition-colors rounded-lg hover:bg-muted/50"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="relative px-3.5 py-2 text-sm text-muted-foreground hover:text-accent font-medium transition-all duration-300 rounded-lg hover:bg-accent/5 group"
               >
                 {item.label}
-              </button>
+                <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-accent rounded-full group-hover:w-3/4 transition-all duration-300" />
+              </motion.button>
             ))}
           </nav>
 
           <div className="flex items-center gap-2">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setLang(lang === "en" ? "so" : "en")}
-              className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:border-accent hover:text-accent transition-all"
+              className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:border-accent hover:text-accent hover:bg-accent/5 hover:shadow-md hover:shadow-accent/10 transition-all duration-300"
             >
-              <Globe className="w-3.5 h-3.5" />
+              <Globe className="w-3.5 h-3.5 transition-transform duration-300 hover:rotate-180" />
               {lang === "en" ? "SO" : "EN"}
-            </button>
-            <Button
-              size="sm"
-              onClick={() => navigate("/admin")}
-              className="hidden sm:flex bg-foreground hover:bg-foreground/90 text-background gap-2 rounded-full font-semibold text-xs px-5 group"
-            >
-              <LayoutDashboard className="w-3.5 h-3.5" />
-              Dashboard
-              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-            </Button>
+            </motion.button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+              <Button
+                size="sm"
+                onClick={() => navigate("/admin")}
+                className="hidden sm:flex bg-foreground hover:bg-foreground/90 text-background gap-2 rounded-full font-semibold text-xs px-5 group shadow-lg shadow-foreground/10 hover:shadow-xl hover:shadow-foreground/20 transition-all duration-300"
+              >
+                <LayoutDashboard className="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-12" />
+                Dashboard
+                <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+              </Button>
+            </motion.div>
           </div>
         </div>
       </header>
