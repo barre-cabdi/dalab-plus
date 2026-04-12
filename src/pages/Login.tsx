@@ -215,16 +215,16 @@ const Login = () => {
             <span className="font-display font-bold text-xl">DALABplus+</span>
           </div>
 
-          <h1 className="text-3xl font-display font-bold text-foreground mb-2">
+          <h1 className="text-4xl font-display font-bold text-foreground mb-2">
             {lang === "so" ? "Gal" : "Log In"}
           </h1>
-          <p className="text-sm text-muted-foreground mb-1">
+          <p className="text-base text-muted-foreground mb-1">
             {lang === "so" ? "Ma lihid akoon?" : "Don't have an account?"}{" "}
             <Link to="/#contact" className="text-accent font-semibold hover:underline">
               {lang === "so" ? "La xiriir SuperAdmin (Maamulayaasha)" : "Contact SuperAdmin (Managers)"}
             </Link>
           </p>
-          <p className="text-xs text-muted-foreground mb-8">
+          <p className="text-sm text-muted-foreground mb-8">
             {lang === "so" ? "Wax yar ayay qaadataa." : "It will take less than a minute."}
           </p>
 
