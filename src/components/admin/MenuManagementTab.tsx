@@ -26,6 +26,37 @@ import {
 } from "@/lib/store";
 import { toast } from "sonner";
 
+// Real food images
+import foodBariis from "@/assets/food-bariis-hilib.jpg";
+import foodBaasto from "@/assets/food-baasto.jpg";
+import foodCanjeero from "@/assets/food-canjeero.jpg";
+import foodSuqaar from "@/assets/food-suqaar.jpg";
+import foodShaah from "@/assets/food-shaah.jpg";
+import foodJuice from "@/assets/food-juice.jpg";
+import foodSambusa from "@/assets/food-sambusa.jpg";
+import foodMishkaki from "@/assets/food-mishkaki.jpg";
+import foodBurger from "@/assets/food-burger.jpg";
+import foodLasagna from "@/assets/food-lasagna.jpg";
+import foodKalluun from "@/assets/food-kalluun.jpg";
+import foodHalwo from "@/assets/food-halwo.jpg";
+import foodChicken from "@/assets/food-chicken.jpg";
+import foodAvocado from "@/assets/food-avocado-juice.jpg";
+
+const foodImageMap: Record<string, string> = {
+  "🍛": foodBariis, "🍚": foodBariis, "🥘": foodSuqaar,
+  "🍝": foodBaasto, "🫕": foodBaasto,
+  "🫓": foodCanjeero, "🍳": foodCanjeero,
+  "☕": foodShaah, "🍵": foodShaah,
+  "🥭": foodJuice, "🫐": foodJuice,
+  "🥑": foodAvocado,
+  "🥟": foodSambusa,
+  "🥩": foodMishkaki,
+  "🍔": foodBurger,
+  "🍗": foodChicken,
+  "🐟": foodKalluun, "🦑": foodKalluun,
+  "🍮": foodHalwo, "🍪": foodHalwo,
+};
+
 const emojiOptions = ["🍛","🍔","🐟","🥗","🍵","🥤","🫓","🍝","🍰","🍦","🦞","🥭","☕","🍕","🥩","🍗","🌮","🍣","🧁","🥚","🍳","🥐","🧀","🍱","🥘","🫘","🍮","🍨","🦑","🦐"];
 
 // Somali restaurant food suggestions
