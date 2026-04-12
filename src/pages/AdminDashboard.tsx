@@ -1252,13 +1252,27 @@ const AdminDashboard = () => {
 
       <main className={`flex-1 transition-all duration-300 ${collapsed ? "ml-[72px]" : "ml-[240px]"}`}>
         <header className="border-b border-border bg-card px-8 py-5 flex items-center justify-between">
-          <div>
-            <h1 className="font-display font-bold text-2xl text-foreground">{tabTitles[activeTab] || t.adDashboard}</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              {activeTab === "dashboard" ? t.adWelcomeBack : `${t.adManageYour} ${activeTab}`}
-            </p>
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center shadow-sm">
+              {(() => {
+                const iconMap: Record<string, any> = {
+                  dashboard: LayoutDashboard, menu: UtensilsCrossed, "admin-order": Package,
+                  tables: Grid3X3, qr: QrCode, orders: ClipboardList, "order-history": History,
+                  staff: UserCog, customers: Users, loyalty: Heart, "payment-methods": Wallet,
+                  settings: Settings, "receipt-settings": Receipt,
+                };
+                const TabIcon = Object.entries(iconMap).find(([k]) => activeTab.startsWith(k))?.[1] || LayoutDashboard;
+                return <TabIcon className="w-5 h-5 text-accent" />;
+              })()}
+            </div>
+            <div>
+              <h1 className="font-display font-bold text-2xl text-foreground">{tabTitles[activeTab] || t.adDashboard}</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {activeTab === "dashboard" ? t.adWelcomeBack : `${t.adManageYour} ${activeTab}`}
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {activeTab === "dashboard" && (
               <>
                 <Button variant="hero" size="sm" onClick={handleExportPDF}>
@@ -1281,18 +1295,17 @@ const AdminDashboard = () => {
                   setShowNotifications(!showNotifications);
                   setShowHelp(false);
                   setHasNewNotification(false);
-                  // Mark all current notifications as read
                   const newReadIds = new Set(readNotificationIds);
                   notifications.forEach(n => newReadIds.add(n.id));
                   setReadNotificationIds(newReadIds);
                   localStorage.setItem("dp_read_notifications", JSON.stringify([...newReadIds]));
                   setNotifications(prev => prev.map(n => ({ ...n, read: true })));
                 }}
-                className={`w-9 h-9 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all relative ${hasNewNotification ? "animate-bounce" : ""}`}
+                className={`w-10 h-10 rounded-xl bg-gradient-to-br from-muted to-muted/50 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-foreground hover:from-accent/10 hover:to-accent/5 hover:border-accent/20 transition-all relative ${hasNewNotification ? "animate-bounce" : ""}`}
               >
-                <Bell className={`w-4 h-4 ${hasNewNotification ? "text-accent" : ""}`} />
+                <Bell className={`w-4.5 h-4.5 ${hasNewNotification ? "text-accent" : ""}`} />
                 {notifications.filter(n => !n.read).length > 0 && (
-                  <span className={`absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] flex items-center justify-center font-bold ${hasNewNotification ? "animate-pulse" : ""}`}>
+                  <span className={`absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center font-bold ring-2 ring-card ${hasNewNotification ? "animate-pulse" : ""}`}>
                     {notifications.filter(n => !n.read).length}
                   </span>
                 )}
@@ -1309,7 +1322,6 @@ const AdminDashboard = () => {
                     ) : notifications.map(n => (
                       <div key={n.id} className={`px-4 py-3 border-b border-border/50 hover:bg-muted/50 transition-colors cursor-pointer ${!n.read ? "bg-accent/5 border-l-2 border-l-accent" : ""}`}
                         onClick={() => {
-                          // Mark this notification as read
                           const newReadIds = new Set(readNotificationIds);
                           newReadIds.add(n.id);
                           setReadNotificationIds(newReadIds);
@@ -1333,9 +1345,9 @@ const AdminDashboard = () => {
             <div className="relative">
               <button
                 onClick={() => { setShowHelp(!showHelp); setShowNotifications(false); }}
-                className="w-9 h-9 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                className="w-10 h-10 rounded-xl bg-gradient-to-br from-muted to-muted/50 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-foreground hover:from-accent/10 hover:to-accent/5 hover:border-accent/20 transition-all"
               >
-                <HelpCircle className="w-4 h-4" />
+                <HelpCircle className="w-4.5 h-4.5" />
               </button>
               {showHelp && (
                 <div className="absolute right-0 top-11 w-64 bg-card border border-border rounded-xl shadow-lg z-50 p-4">
@@ -1355,7 +1367,7 @@ const AdminDashboard = () => {
                 </div>
               )}
             </div>
-            <div className="w-9 h-9 rounded-full bg-accent/15 flex items-center justify-center overflow-hidden">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 border border-accent/10 flex items-center justify-center overflow-hidden shadow-sm">
               {business.logo ? (
                 <img src={business.logo} alt="" className="w-full h-full object-cover" />
               ) : (
