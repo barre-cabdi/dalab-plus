@@ -8,10 +8,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getBusinessByAdmin, getStaffByUsername, getBusinesses } from "@/lib/store";
 import { useI18n } from "@/lib/i18n";
 import dalabLogo from "@/assets/dalabplus-logo.png";
-import slideWelcome from "@/assets/slide-welcome.jpg";
-import slideQR from "@/assets/slide-qr-ordering.jpg";
-import slideLoyalty from "@/assets/slide-loyalty.jpg";
-import slideAnalytics from "@/assets/slide-analytics.jpg";
+import slideWelcome from "@/assets/slide-welcome.png";
+import slideQR from "@/assets/slide-qr-ordering.png";
+import slideLoyalty from "@/assets/slide-loyalty.png";
+import slideAnalytics from "@/assets/slide-analytics.png";
 
 const slides = [
   {
