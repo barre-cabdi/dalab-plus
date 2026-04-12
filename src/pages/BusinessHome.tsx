@@ -690,14 +690,14 @@ const BusinessHome = () => {
             </div>
           </div>
 
-          <div className="border-t border-border/50 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-muted-foreground">
+          <div className="mt-8 -mx-8 -mb-10 px-8 py-8 rounded-b-3xl bg-primary flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-lg font-semibold text-primary-foreground tracking-wide">
               © 2026 {business.name} · {l({ en: "All rights reserved", so: "Dhammaan xuquuqda way dhowran tahay" })}
             </p>
-            <div className="flex items-center gap-2">
-              <img src={dalabLogo} alt="DALABplus+" className="w-5 h-5 rounded" />
-              <span className="text-sm text-muted-foreground">
-                Powered by <span className="text-accent font-bold">DALABplus+</span>
+            <div className="flex items-center gap-3">
+              <img src={dalabLogo} alt="DALABplus+" className="w-7 h-7 rounded" />
+              <span className="text-lg font-semibold text-primary-foreground/80">
+                Powered by <span className="text-accent font-extrabold text-xl">DALABplus+</span>
               </span>
             </div>
           </div>
