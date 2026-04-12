@@ -26,6 +26,37 @@ import {
 } from "@/lib/store";
 import { toast } from "sonner";
 
+// Real food images
+import foodBariis from "@/assets/food-bariis-hilib.jpg";
+import foodBaasto from "@/assets/food-baasto.jpg";
+import foodCanjeero from "@/assets/food-canjeero.jpg";
+import foodSuqaar from "@/assets/food-suqaar.jpg";
+import foodShaah from "@/assets/food-shaah.jpg";
+import foodJuice from "@/assets/food-juice.jpg";
+import foodSambusa from "@/assets/food-sambusa.jpg";
+import foodMishkaki from "@/assets/food-mishkaki.jpg";
+import foodBurger from "@/assets/food-burger.jpg";
+import foodLasagna from "@/assets/food-lasagna.jpg";
+import foodKalluun from "@/assets/food-kalluun.jpg";
+import foodHalwo from "@/assets/food-halwo.jpg";
+import foodChicken from "@/assets/food-chicken.jpg";
+import foodAvocado from "@/assets/food-avocado-juice.jpg";
+
+const foodImageMap: Record<string, string> = {
+  "🍛": foodBariis, "🍚": foodBariis, "🥘": foodSuqaar,
+  "🍝": foodBaasto, "🫕": foodBaasto,
+  "🫓": foodCanjeero, "🍳": foodCanjeero,
+  "☕": foodShaah, "🍵": foodShaah,
+  "🥭": foodJuice, "🫐": foodJuice,
+  "🥑": foodAvocado,
+  "🥟": foodSambusa,
+  "🥩": foodMishkaki,
+  "🍔": foodBurger,
+  "🍗": foodChicken,
+  "🐟": foodKalluun, "🦑": foodKalluun,
+  "🍮": foodHalwo, "🍪": foodHalwo,
+};
+
 const emojiOptions = ["🍛","🍔","🐟","🥗","🍵","🥤","🫓","🍝","🍰","🍦","🦞","🥭","☕","🍕","🥩","🍗","🌮","🍣","🧁","🥚","🍳","🥐","🧀","🍱","🥘","🫘","🍮","🍨","🦑","🦐"];
 
 // Somali restaurant food suggestions
@@ -62,6 +93,7 @@ const MenuManagementTab = ({ businessId, onDataChange }: MenuManagementTabProps)
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [activeSubTab, setActiveSubTab] = useState("items");
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterCategoryId, setFilterCategoryId] = useState("all");
   const [catDialog, setCatDialog] = useState(false);
   const [menuDialog, setMenuDialog] = useState(false);
   const [editingCat, setEditingCat] = useState<Category | null>(null);
@@ -181,7 +213,11 @@ const MenuManagementTab = ({ businessId, onDataChange }: MenuManagementTabProps)
   };
 
   const getCategoryName = (id: string) => categories.find(c => c.id === id)?.name || "—";
-  const filteredMenuItems = menuItems.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()) || m.description.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredMenuItems = menuItems.filter(m => {
+    const matchSearch = m.name.toLowerCase().includes(searchQuery.toLowerCase()) || m.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchCategory = filterCategoryId === "all" || m.categoryId === filterCategoryId;
+    return matchSearch && matchCategory;
+  });
 
   return (
     <div className="space-y-6">
@@ -209,14 +245,14 @@ const MenuManagementTab = ({ businessId, onDataChange }: MenuManagementTabProps)
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input placeholder="Raadi item..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-9 w-56" />
               </div>
-              <Select value={searchQuery || "all"} onValueChange={v => setSearchQuery(v === "all" ? "" : v)}>
+              <Select value={filterCategoryId} onValueChange={v => setFilterCategoryId(v)}>
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Dhammaan</SelectItem>
                   {categories.map(c => (
-                    <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -255,6 +291,8 @@ const MenuManagementTab = ({ businessId, onDataChange }: MenuManagementTabProps)
                         <div className="w-10 h-10 rounded-lg overflow-hidden bg-muted flex items-center justify-center shrink-0">
                           {isImageUrl(item.image) ? (
                             <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                          ) : foodImageMap[item.image] ? (
+                            <img src={foodImageMap[item.image]} alt={item.name} className="w-full h-full object-cover" />
                           ) : (
                             <span className="text-2xl">{item.image}</span>
                           )}
