@@ -95,11 +95,25 @@ const BusinessHome = () => {
   const [scrolled, setScrolled] = useState(false);
   const [menuTab, setMenuTab] = useState("food");
 
+  const [dbCategories, setDbCategories] = useState<Category[]>([]);
+  const [dbMenuItems, setDbMenuItems] = useState<MenuItem[]>([]);
+
   useEffect(() => {
     const stored = localStorage.getItem("dp_active_business");
     if (stored) setBusiness(JSON.parse(stored));
     else navigate("/login");
   }, [navigate]);
+
+  // Load menu from database
+  useEffect(() => {
+    if (!business) return;
+    const load = async () => {
+      await seedDemoData(business.id);
+      setDbCategories(await getCategories(business.id));
+      setDbMenuItems((await getMenuItems(business.id)).filter(m => m.available));
+    };
+    load();
+  }, [business?.id]);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40);
