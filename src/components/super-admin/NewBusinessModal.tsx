@@ -159,6 +159,10 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
       toast.error("Please fill all required fields");
       return;
     }
+    if (!form.phone.trim()) {
+      toast.error("Phone number is required for OTP verification");
+      return;
+    }
     try {
       if (!editBusiness) {
         const allBiz = await getBusinesses();
@@ -369,7 +373,7 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
 
               {/* Phone */}
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Phone Number *</Label>
+                <Label className="text-xs text-muted-foreground">Phone Number * <span className="text-accent">(OTP verification)</span></Label>
                 <div className="flex gap-2">
                   <div className="flex items-center gap-1 px-3 bg-muted rounded-md border border-border text-sm min-w-[80px] justify-center shrink-0">
                     <span>{selectedCountry?.flag}</span>
