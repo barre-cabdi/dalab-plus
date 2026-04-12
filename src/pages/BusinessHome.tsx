@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Business, getDefaultServices, BusinessService } from "@/lib/store";
+import { Business, getDefaultServices, BusinessService, getCategories, getMenuItems, Category, MenuItem, seedDemoData } from "@/lib/store";
 import { useI18n } from "@/lib/i18n";
 import dalabLogo from "@/assets/dalabplus-logo.png";
 
@@ -20,16 +20,6 @@ import dalabLogo from "@/assets/dalabplus-logo.png";
 import heroCafeInterior from "@/assets/hero-cafe-interior.jpg";
 import testimonialCafe from "@/assets/testimonial-cafe.jpg";
 
-// Menu images
-import foodRiceMeat from "@/assets/menu/food-rice-meat.jpg";
-import foodSuqaar from "@/assets/menu/food-suqaar.jpg";
-import foodPasta from "@/assets/menu/food-pasta.jpg";
-import foodCanjeero from "@/assets/menu/food-canjeero.jpg";
-import drinkSmoothie from "@/assets/menu/drink-smoothie.jpg";
-import drinkJuice from "@/assets/menu/drink-juice.jpg";
-import teaShaah from "@/assets/menu/tea-shaah.jpg";
-import teaCappuccino from "@/assets/menu/tea-cappuccino.jpg";
-import teaMint from "@/assets/menu/tea-mint.jpg";
 
 /* ─── Type themes ─── */
 const typeThemes = {
@@ -95,11 +85,25 @@ const BusinessHome = () => {
   const [scrolled, setScrolled] = useState(false);
   const [menuTab, setMenuTab] = useState("food");
 
+  const [dbCategories, setDbCategories] = useState<Category[]>([]);
+  const [dbMenuItems, setDbMenuItems] = useState<MenuItem[]>([]);
+
   useEffect(() => {
     const stored = localStorage.getItem("dp_active_business");
     if (stored) setBusiness(JSON.parse(stored));
     else navigate("/login");
   }, [navigate]);
+
+  // Load menu from database
+  useEffect(() => {
+    if (!business) return;
+    const load = async () => {
+      await seedDemoData(business.id);
+      setDbCategories(await getCategories(business.id));
+      setDbMenuItems((await getMenuItems(business.id)).filter(m => m.available));
+    };
+    load();
+  }, [business?.id]);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40);
@@ -107,7 +111,14 @@ const BusinessHome = () => {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  if (!business) return null;
+  // Set default active tab to first category
+  useEffect(() => {
+    if (dbCategories.length > 0 && !dbCategories.find(c => c.id === menuTab)) {
+      setMenuTab(dbCategories[0].id);
+    }
+  }, [dbCategories]);
+
+  if (!business) return <div className="min-h-screen bg-background" />;
 
   const theme = typeThemes[business.type as keyof typeof typeThemes] || typeThemes.restaurant;
   const TypeIcon = theme.icon;
@@ -138,29 +149,21 @@ const BusinessHome = () => {
     { label: l({ en: "System Status", so: "Xaaladda" }), value: business.status === "active" ? l({ en: "Active & Online", so: "Firfircoon" }) : l({ en: "Inactive", so: "Aan shaqaynayn" }), sub: l({ en: "All systems connected", so: "Dhammaan nidaamyadu way xirnaahay" }), dot: business.status === "active" },
   ];
 
-  const menuItems: Record<string, { name: string; price: string; desc: string; img: string }[]> = {
-    food: [
-      { name: l({ en: "Bariis & Hilib", so: "Bariis & Hilib" }), price: "$12.00", desc: l({ en: "Fragrant rice with tender meat, Somali style", so: "Bariis udgoon iyo hilib jilicsan" }), img: foodRiceMeat },
-      { name: l({ en: "Suqaar", so: "Suqaar" }), price: "$10.00", desc: l({ en: "Grilled chicken with fresh vegetables", so: "Digaag la dubay oo khudaar cusub ah" }), img: foodSuqaar },
-      { name: l({ en: "Pasta Alfredo", so: "Baasto" }), price: "$9.00", desc: l({ en: "Creamy Italian pasta with herbs", so: "Baasto kriimiyo leh" }), img: foodPasta },
-    ],
-    drinks: [
-      { name: l({ en: "Mango Smoothie", so: "Cambe Smoothie" }), price: "$5.00", desc: l({ en: "Fresh tropical mango blended smooth", so: "Cambe cusub oo la shiday" }), img: drinkSmoothie },
-      { name: l({ en: "Fresh Orange Juice", so: "Casiirka Liin" }), price: "$4.00", desc: l({ en: "Freshly squeezed premium oranges", so: "Liin cusub oo la masiray" }), img: drinkJuice },
-      { name: l({ en: "Canjeero Special", so: "Canjeero Gaar ah" }), price: "$6.00", desc: l({ en: "Traditional flatbread with sugo sauce", so: "Canjeero suugo leh" }), img: foodCanjeero },
-    ],
-    teas: [
-      { name: l({ en: "Somali Shaah", so: "Shaah Soomaaliyeed" }), price: "$2.50", desc: l({ en: "Traditional milk tea with cardamom & cinnamon", so: "Shaah caano ah oo heyl leh" }), img: teaShaah },
-      { name: l({ en: "Cappuccino", so: "Kabuchiino" }), price: "$4.50", desc: l({ en: "Premium Arabica espresso with silky foam", so: "Qahawo xirfad leh" }), img: teaCappuccino },
-      { name: l({ en: "Mint Tea", so: "Shaah Nafnaf" }), price: "$3.00", desc: l({ en: "Refreshing green mint tea, naturally sweet", so: "Shaah nafnaf oo qabowjiye ah" }), img: teaMint },
-    ],
-  };
+  // Build menu tabs from database categories
+  const menuTabs = dbCategories.length > 0
+    ? dbCategories.slice(0, 4).map(cat => ({ key: cat.id, label: cat.name }))
+    : [
+        { key: "food", label: l({ en: "Food", so: "Cunto" }) },
+        { key: "drinks", label: l({ en: "Drinks", so: "Cabbitaano" }) },
+        { key: "teas", label: l({ en: "Teas & Coffee", so: "Shaah" }) },
+      ];
 
-  const menuTabs = [
-    { key: "food", label: l({ en: "Food", so: "Cunto" }) },
-    { key: "drinks", label: l({ en: "Drinks", so: "Cabbitaano" }) },
-    { key: "teas", label: l({ en: "Teas & Coffee", so: "Shaah" }) },
-  ];
+
+
+  // Filter menu items by active category tab
+  const currentMenuItems = dbMenuItems.filter(item => item.categoryId === menuTab).slice(0, 3);
+
+  const isImageUrl = (img: string) => img && (img.startsWith("data:") || img.startsWith("http"));
 
   return (
     <div className="min-h-screen bg-[hsl(30,20%,97%)]">
@@ -284,8 +287,12 @@ const BusinessHome = () => {
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                 className="absolute -bottom-5 -right-2 md:right-4 bg-white rounded-2xl shadow-xl p-4 flex items-center gap-3"
               >
-                <div className="w-12 h-12 rounded-xl overflow-hidden">
-                  <img src={teaCappuccino} alt="Featured" className="w-full h-full object-cover" />
+                <div className="w-12 h-12 rounded-xl overflow-hidden bg-accent/10 flex items-center justify-center">
+                  {dbMenuItems.length > 0 && isImageUrl(dbMenuItems[0].image) ? (
+                    <img src={dbMenuItems[0].image} alt="Featured" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-2xl">{dbMenuItems[0]?.image || "☕"}</span>
+                  )}
                 </div>
                 <div>
                   <p className="text-xs font-bold text-foreground">{l({ en: "Today's Special", so: "Maanta Gaar ah" })}</p>
@@ -415,28 +422,36 @@ const BusinessHome = () => {
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-              {(menuItems[menuTab] || []).map((item, i) => (
+              {currentMenuItems.length > 0 ? currentMenuItems.map((item, i) => (
                 <motion.div
-                  key={item.name + menuTab}
+                  key={item.id + menuTab}
                   initial="hidden" whileInView="visible" viewport={{ once: true }}
                   variants={fadeUp} custom={i}
                   className="bg-[hsl(30,20%,97%)] rounded-2xl border border-border/50 overflow-hidden hover:shadow-lg transition-all duration-300 group"
                 >
-                  <div className="aspect-[4/3] overflow-hidden">
-                    <img src={item.img} alt={item.name} loading="lazy" width={640} height={640} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="aspect-[4/3] overflow-hidden bg-muted flex items-center justify-center">
+                    {isImageUrl(item.image) ? (
+                      <img src={item.image} alt={item.name} loading="lazy" width={640} height={640} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    ) : (
+                      <span className="text-6xl">{item.image || "🍽️"}</span>
+                    )}
                   </div>
                   <div className="p-5">
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <h4 className="font-display font-bold text-foreground">{item.name}</h4>
-                      <span className="font-display font-extrabold text-accent whitespace-nowrap">{item.price}</span>
+                      <span className="font-display font-extrabold text-accent whitespace-nowrap">${item.price.toFixed(2)}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed mb-3">{item.desc}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-3">{item.description}</p>
                     <button className="text-xs text-accent font-semibold flex items-center gap-1 hover:underline">
                       {l({ en: "Customize", so: "Habee" })} <ChevronRight className="w-3 h-3" />
                     </button>
                   </div>
                 </motion.div>
-              ))}
+              )) : (
+                <div className="col-span-full text-center py-12 text-muted-foreground">
+                  <p className="text-sm">{l({ en: "No items in this category yet", so: "Wali cunno lama gelin qaybtan" })}</p>
+                </div>
+              )}
             </div>
           )}
 
