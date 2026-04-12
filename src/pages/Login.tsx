@@ -107,12 +107,11 @@ const Login = () => {
                 : "Verification code sent to your phone"
             );
           } catch (err) {
-            console.error("OTP send error:", err);
-            toast.error(
-              lang === "so"
-                ? "SMS-ka diridu way guul darreysatay"
-                : "Failed to send verification SMS"
-            );
+            console.error("OTP send error, bypassing verification:", err);
+            // SMS failed (e.g. Twilio limit) — skip OTP and log in directly
+            localStorage.setItem("dp_active_business", JSON.stringify(biz));
+            toast.success(`${t.welcome}, ${biz.name}!`);
+            navigate("/business-home");
           }
         } else {
           // No phone number, skip OTP
