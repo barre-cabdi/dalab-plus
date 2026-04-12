@@ -236,10 +236,11 @@ const BusinessHome = () => {
             <Button
               size="sm"
               onClick={() => navigate("/admin")}
-              className="hidden sm:flex bg-foreground hover:bg-foreground/90 text-background gap-1.5 rounded-full font-semibold text-xs px-5"
+              className="hidden sm:flex bg-foreground hover:bg-foreground/90 text-background gap-2 rounded-full font-semibold text-xs px-5 group"
             >
               <LayoutDashboard className="w-3.5 h-3.5" />
               Dashboard
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
             </Button>
           </div>
         </div>
@@ -741,7 +742,7 @@ const BusinessHome = () => {
             </div>
           </div>
 
-          <div className="mt-8 -mx-8 -mb-10 px-8 py-8 rounded-b-3xl bg-primary flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="mt-8 -mx-4 -mb-6 px-8 py-6 rounded-2xl bg-primary flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-lg font-semibold text-primary-foreground tracking-wide">
               © 2026 {business.name} · {l({ en: "All rights reserved", so: "Dhammaan xuquuqda way dhowran tahay" })}
             </p>
