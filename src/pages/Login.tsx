@@ -118,7 +118,7 @@ const Login = () => {
           // No phone number, skip OTP
           localStorage.setItem("dp_active_business", JSON.stringify(biz));
           toast.success(`${t.welcome}, ${biz.name}!`);
-          navigate("/admin");
+          navigate("/business-home");
         }
         setLoading(false);
         return;
@@ -173,7 +173,7 @@ const Login = () => {
       const biz = pendingAdmin.biz;
       localStorage.setItem("dp_active_business", JSON.stringify(biz));
       toast.success(`${t.welcome}, ${biz.name}!`);
-      navigate("/admin");
+      navigate("/business-home");
     }
   };
 
