@@ -20,6 +20,23 @@ import dalabLogo from "@/assets/dalabplus-logo.png";
 import heroCafeInterior from "@/assets/hero-cafe-interior.jpg";
 import testimonialCafe from "@/assets/testimonial-cafe.jpg";
 
+// Real food images for menu fallback
+import foodBariis from "@/assets/food-bariis-hilib.jpg";
+import foodBaasto from "@/assets/food-baasto.jpg";
+import foodCanjeero from "@/assets/food-canjeero.jpg";
+import foodSuqaar from "@/assets/food-suqaar.jpg";
+import foodShaah from "@/assets/food-shaah.jpg";
+import foodJuice from "@/assets/food-juice.jpg";
+
+// Map common food emoji/names to real images
+const foodImageMap: Record<string, string> = {
+  "🍛": foodBariis, "🍚": foodBariis, "🥘": foodSuqaar,
+  "🍝": foodBaasto, "🫕": foodBaasto,
+  "🫓": foodCanjeero, "🍳": foodCanjeero,
+  "☕": foodShaah, "🍵": foodShaah,
+  "🥭": foodJuice, "🫐": foodJuice, "🥑": foodJuice,
+};
+
 
 /* ─── Type themes ─── */
 const typeThemes = {
@@ -290,6 +307,8 @@ const BusinessHome = () => {
                 <div className="w-12 h-12 rounded-xl overflow-hidden bg-accent/10 flex items-center justify-center">
                   {dbMenuItems.length > 0 && isImageUrl(dbMenuItems[0].image) ? (
                     <img src={dbMenuItems[0].image} alt="Featured" className="w-full h-full object-cover" />
+                  ) : dbMenuItems.length > 0 && foodImageMap[dbMenuItems[0]?.image] ? (
+                    <img src={foodImageMap[dbMenuItems[0].image]} alt="Featured" className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-2xl">{dbMenuItems[0]?.image || "☕"}</span>
                   )}
@@ -431,7 +450,9 @@ const BusinessHome = () => {
                 >
                   <div className="aspect-[4/3] overflow-hidden bg-muted flex items-center justify-center">
                     {isImageUrl(item.image) ? (
-                      <img src={item.image} alt={item.name} loading="lazy" width={640} height={640} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <img src={item.image} alt={item.name} loading="lazy" width={640} height={512} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    ) : foodImageMap[item.image] ? (
+                      <img src={foodImageMap[item.image]} alt={item.name} loading="lazy" width={640} height={512} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
                       <span className="text-6xl">{item.image || "🍽️"}</span>
                     )}
