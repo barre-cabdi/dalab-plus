@@ -182,7 +182,11 @@ const MenuManagementTab = ({ businessId, onDataChange }: MenuManagementTabProps)
   };
 
   const getCategoryName = (id: string) => categories.find(c => c.id === id)?.name || "—";
-  const filteredMenuItems = menuItems.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()) || m.description.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredMenuItems = menuItems.filter(m => {
+    const matchSearch = m.name.toLowerCase().includes(searchQuery.toLowerCase()) || m.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchCategory = filterCategoryId === "all" || m.categoryId === filterCategoryId;
+    return matchSearch && matchCategory;
+  });
 
   return (
     <div className="space-y-6">
@@ -210,14 +214,14 @@ const MenuManagementTab = ({ businessId, onDataChange }: MenuManagementTabProps)
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input placeholder="Raadi item..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-9 w-56" />
               </div>
-              <Select value={searchQuery || "all"} onValueChange={v => setSearchQuery(v === "all" ? "" : v)}>
+              <Select value={filterCategoryId} onValueChange={v => setFilterCategoryId(v)}>
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Dhammaan</SelectItem>
                   {categories.map(c => (
-                    <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
