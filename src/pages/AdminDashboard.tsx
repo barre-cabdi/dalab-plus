@@ -1367,7 +1367,7 @@ const AdminDashboard = () => {
             <div className="relative">
               <button
                 onClick={() => { setShowHelp(!showHelp); setShowNotifications(false); }}
-                className="w-10 h-10 rounded-xl bg-gradient-to-br from-muted to-muted/50 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-foreground hover:from-accent/10 hover:to-accent/5 hover:border-accent/20 transition-all"
+                className="w-10 h-10 rounded-xl bg-gradient-to-br from-muted to-muted/50 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-accent hover:from-accent/15 hover:to-accent/5 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 hover:scale-110 transition-all duration-300"
               >
                 <HelpCircle className="w-4.5 h-4.5" />
               </button>
