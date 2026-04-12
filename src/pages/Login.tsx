@@ -173,12 +173,12 @@ const Login = () => {
               <img
                 src={slide.image}
                 alt={slideContent.title}
-                className="w-80 h-64 object-contain mb-6 mx-auto drop-shadow-2xl"
+                className="w-[28rem] h-[22rem] object-contain mb-6 mx-auto drop-shadow-2xl"
               />
-              <h2 className="text-3xl font-display font-extrabold text-white mb-3" style={{ fontSize: '21px' }}>
+              <h2 className="text-3xl font-display font-extrabold text-white mb-3" style={{ fontSize: '28px' }}>
                 {slideContent.title}
               </h2>
-              <p className="text-white/70 max-w-xs mx-auto leading-relaxed" style={{ fontSize: '18px' }}>
+              <p className="text-white/70 max-w-sm mx-auto leading-relaxed" style={{ fontSize: '20px' }}>
                 {slideContent.desc}
               </p>
             </motion.div>
