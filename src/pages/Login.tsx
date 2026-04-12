@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { getBusinessByAdmin, getStaffByUsername, getBusinesses } from "@/lib/store";
 import { useI18n } from "@/lib/i18n";
+import { supabase } from "@/integrations/supabase/client";
+import OTPVerification from "@/components/auth/OTPVerification";
 import dalabLogo from "@/assets/dalabplus-logo.png";
 import slideWelcome from "@/assets/slide-welcome.png";
 import slideQR from "@/assets/slide-qr-ordering.png";
@@ -36,6 +38,11 @@ const slides = [
   },
 ];
 
+interface PendingAdmin {
+  type: "business";
+  biz: any;
+}
+
 const Login = () => {
   const navigate = useNavigate();
   const { t, lang, setLang } = useI18n();
@@ -44,6 +51,8 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [otpStep, setOtpStep] = useState(false);
+  const [pendingAdmin, setPendingAdmin] = useState<PendingAdmin | null>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -51,6 +60,13 @@ const Login = () => {
     }, 4000);
     return () => clearInterval(interval);
   }, []);
+
+  const sendOTP = async (phone: string, businessId: string) => {
+    const { error } = await supabase.functions.invoke("send-otp", {
+      body: { phone, businessId },
+    });
+    if (error) throw error;
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,9 +92,33 @@ const Login = () => {
           setLoading(false);
           return;
         }
-        localStorage.setItem("dp_active_business", JSON.stringify(biz));
-        toast.success(`${t.welcome}, ${biz.name}!`);
-        navigate("/admin");
+
+        // Check if business has a phone number for OTP
+        const fullPhone = (biz.phonePrefix || "") + (biz.phone || "");
+        if (fullPhone) {
+          try {
+            await sendOTP(fullPhone, biz.id);
+            setPendingAdmin({ type: "business", biz });
+            setOtpStep(true);
+            toast.success(
+              lang === "so"
+                ? "Code xaqiijin ah ayaa loo diray telefoonkaaga"
+                : "Verification code sent to your phone"
+            );
+          } catch (err) {
+            console.error("OTP send error:", err);
+            toast.error(
+              lang === "so"
+                ? "SMS-ka diridu way guul darreysatay"
+                : "Failed to send verification SMS"
+            );
+          }
+        } else {
+          // No phone number, skip OTP
+          localStorage.setItem("dp_active_business", JSON.stringify(biz));
+          toast.success(`${t.welcome}, ${biz.name}!`);
+          navigate("/admin");
+        }
         setLoading(false);
         return;
       }
@@ -127,6 +167,20 @@ const Login = () => {
     }
   };
 
+  const handleOTPVerified = () => {
+    if (pendingAdmin?.type === "business") {
+      const biz = pendingAdmin.biz;
+      localStorage.setItem("dp_active_business", JSON.stringify(biz));
+      toast.success(`${t.welcome}, ${biz.name}!`);
+      navigate("/admin");
+    }
+  };
+
+  const handleOTPBack = () => {
+    setOtpStep(false);
+    setPendingAdmin(null);
+  };
+
   const slide = slides[currentSlide];
   const slideContent = lang === "so" ? slide.so : slide.en;
 
@@ -145,22 +199,18 @@ const Login = () => {
 
       {/* Left Panel - Blue branded side */}
       <div className="hidden lg:flex lg:w-[45%] relative bg-gradient-to-br from-[hsl(var(--accent))] via-[hsl(220,80%,50%)] to-[hsl(220,90%,35%)] flex-col justify-between p-10 overflow-hidden">
-        {/* Decorative shapes */}
         <div className="absolute top-10 right-10 w-3 h-3 rounded-full bg-white/20" />
         <div className="absolute top-20 right-32 w-2 h-2 rounded-full bg-white/15" />
         <div className="absolute top-40 left-20 w-4 h-4 rounded-full bg-white/10" />
         <div className="absolute bottom-40 right-20 w-2 h-2 rounded-full bg-white/15" />
         <div className="absolute top-16 left-1/2 w-1.5 h-1.5 rounded-full bg-white/20" />
 
-        {/* Logo */}
         <div className="flex items-center gap-3 relative z-10">
           <img src={dalabLogo} alt="DALABplus+" className="w-10 h-10 rounded-lg" />
           <span className="font-display font-bold text-xl text-white">DALABplus+</span>
         </div>
 
-        {/* Center illustration area */}
         <div className="flex-1 flex flex-col items-center justify-center relative z-10">
-          {/* Slide content */}
           <AnimatePresence mode="wait">
             <motion.div
               key={currentSlide}
@@ -185,7 +235,6 @@ const Login = () => {
           </AnimatePresence>
         </div>
 
-        {/* Slide dots */}
         <div className="flex items-center gap-2 relative z-10">
           {slides.map((_, i) => (
             <button
@@ -201,88 +250,96 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Right Panel - Login form */}
+      {/* Right Panel */}
       <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
-        <motion.div
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full max-w-md"
-        >
-          {/* Mobile logo */}
-          <div className="flex items-center gap-3 mb-8 lg:hidden">
-            <img src={dalabLogo} alt="DALABplus+" className="w-10 h-10 rounded-lg" />
-            <span className="font-display font-bold text-xl">DALABplus+</span>
-          </div>
+        {otpStep && pendingAdmin ? (
+          <OTPVerification
+            phone={(pendingAdmin.biz.phonePrefix || "") + (pendingAdmin.biz.phone || "")}
+            businessId={pendingAdmin.biz.id}
+            businessName={pendingAdmin.biz.name}
+            lang={lang}
+            onVerified={handleOTPVerified}
+            onBack={handleOTPBack}
+          />
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="w-full max-w-md"
+          >
+            <div className="flex items-center gap-3 mb-8 lg:hidden">
+              <img src={dalabLogo} alt="DALABplus+" className="w-10 h-10 rounded-lg" />
+              <span className="font-display font-bold text-xl">DALABplus+</span>
+            </div>
 
-          <h1 className="text-4xl font-display font-bold text-foreground mb-2">
-            {lang === "so" ? "Gal" : "Log In"}
-          </h1>
-          <p className="text-base text-muted-foreground mb-1">
-            {lang === "so" ? "Ma lihid akoon?" : "Don't have an account?"}{" "}
-            <Link to="/#contact" className="text-accent font-semibold hover:underline">
-              {lang === "so" ? "La xiriir SuperAdmin (Maamulayaasha)" : "Contact SuperAdmin (Managers)"}
+            <h1 className="text-4xl font-display font-bold text-foreground mb-2">
+              {lang === "so" ? "Gal" : "Log In"}
+            </h1>
+            <p className="text-base text-muted-foreground mb-1">
+              {lang === "so" ? "Ma lihid akoon?" : "Don't have an account?"}{" "}
+              <Link to="/#contact" className="text-accent font-semibold hover:underline">
+                {lang === "so" ? "La xiriir SuperAdmin (Maamulayaasha)" : "Contact SuperAdmin (Managers)"}
+              </Link>
+            </p>
+            <p className="text-sm text-muted-foreground mb-8">
+              {lang === "so" ? "Wax yar ayay qaadataa." : "It will take less than a minute."}
+            </p>
+
+            <form onSubmit={handleLogin} className="space-y-5">
+              <div className="relative">
+                <Input
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder={t.username}
+                  required
+                  className="h-12 pl-4 pr-10 border-border bg-background"
+                />
+                <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground/50" />
+              </div>
+
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={t.password}
+                  required
+                  className="h-12 pl-4 pr-10 border-border bg-background"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-accent transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Lock className="w-4.5 h-4.5" />}
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Button
+                  variant="default"
+                  size="lg"
+                  type="submit"
+                  disabled={loading}
+                  className="px-8 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
+                >
+                  {loading ? t.signingIn : t.signInBtn}
+                </Button>
+              </div>
+            </form>
+
+            <div className="mt-8 p-3 rounded-lg bg-muted/50 border border-border">
+              <p className="text-xs text-muted-foreground font-semibold mb-1.5">{t.demoCredentials}</p>
+              <p className="text-xs text-muted-foreground"><strong>{t.superAdmin}:</strong> superadmin / super123</p>
+              <p className="text-xs text-muted-foreground"><strong>{t.businessAdmin}:</strong> {t.businessAdmin}</p>
+            </div>
+
+            <Link to="/" className="inline-block mt-4 text-xs text-muted-foreground hover:text-accent transition-colors">
+              ← {t.backHome}
             </Link>
-          </p>
-          <p className="text-sm text-muted-foreground mb-8">
-            {lang === "so" ? "Wax yar ayay qaadataa." : "It will take less than a minute."}
-          </p>
-
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div className="relative">
-              <Input
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder={t.username}
-                required
-                className="h-12 pl-4 pr-10 border-border bg-background"
-              />
-              <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground/50" />
-            </div>
-
-            <div className="relative">
-              <Input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={t.password}
-                required
-                className="h-12 pl-4 pr-10 border-border bg-background"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-accent transition-colors"
-              >
-                {showPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Lock className="w-4.5 h-4.5" />}
-              </button>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Button
-                variant="default"
-                size="lg"
-                type="submit"
-                disabled={loading}
-                className="px-8 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
-              >
-                {loading ? t.signingIn : t.signInBtn}
-              </Button>
-            </div>
-          </form>
-
-          {/* Demo credentials */}
-          <div className="mt-8 p-3 rounded-lg bg-muted/50 border border-border">
-            <p className="text-xs text-muted-foreground font-semibold mb-1.5">{t.demoCredentials}</p>
-            <p className="text-xs text-muted-foreground"><strong>{t.superAdmin}:</strong> superadmin / super123</p>
-            <p className="text-xs text-muted-foreground"><strong>{t.businessAdmin}:</strong> {t.businessAdmin}</p>
-          </div>
-
-          {/* Back to home */}
-          <Link to="/" className="inline-block mt-4 text-xs text-muted-foreground hover:text-accent transition-colors">
-            ← {t.backHome}
-          </Link>
-        </motion.div>
+          </motion.div>
+        )}
       </div>
     </div>
   );
