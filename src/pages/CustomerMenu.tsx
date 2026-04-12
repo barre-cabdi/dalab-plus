@@ -8,6 +8,39 @@ import { Input } from "@/components/ui/input";
 import { getCategories, getMenuItems, Category, MenuItem, seedDemoData, getBusinessById, saveOrder, getOrders, generateId, Order, updateCustomer, getCustomers } from "@/lib/store";
 import { useI18n } from "@/lib/i18n";
 
+// Real food images
+import foodBariis from "@/assets/food-bariis-hilib.jpg";
+import foodBaasto from "@/assets/food-baasto.jpg";
+import foodCanjeero from "@/assets/food-canjeero.jpg";
+import foodSuqaar from "@/assets/food-suqaar.jpg";
+import foodShaah from "@/assets/food-shaah.jpg";
+import foodJuice from "@/assets/food-juice.jpg";
+import foodSambusa from "@/assets/food-sambusa.jpg";
+import foodMishkaki from "@/assets/food-mishkaki.jpg";
+import foodBurger from "@/assets/food-burger.jpg";
+import foodLasagna from "@/assets/food-lasagna.jpg";
+import foodKalluun from "@/assets/food-kalluun.jpg";
+import foodHalwo from "@/assets/food-halwo.jpg";
+import foodChicken from "@/assets/food-chicken.jpg";
+import foodAvocado from "@/assets/food-avocado-juice.jpg";
+
+const foodImageMap: Record<string, string> = {
+  "🍛": foodBariis, "🍚": foodBariis, "🥘": foodSuqaar,
+  "🍝": foodBaasto, "🫕": foodBaasto,
+  "🫓": foodCanjeero, "🍳": foodCanjeero,
+  "☕": foodShaah, "🍵": foodShaah,
+  "🥭": foodJuice, "🫐": foodJuice,
+  "🥑": foodAvocado,
+  "🥟": foodSambusa,
+  "🥩": foodMishkaki,
+  "🍔": foodBurger,
+  "🍗": foodChicken,
+  "🐟": foodKalluun, "🦑": foodKalluun,
+  "🍮": foodHalwo, "🍪": foodHalwo,
+};
+
+const isImageUrl = (img: string) => img && (img.startsWith("data:") || img.startsWith("http"));
+
 type CartItem = { id: string; name: string; price: number; quantity: number; image: string };
 
 const CustomerMenu = () => {
