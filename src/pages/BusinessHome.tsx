@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Business, getDefaultServices, BusinessService } from "@/lib/store";
+import { Business, getDefaultServices, BusinessService, getCategories, getMenuItems, Category, MenuItem, seedDemoData } from "@/lib/store";
 import { useI18n } from "@/lib/i18n";
 import dalabLogo from "@/assets/dalabplus-logo.png";
 
