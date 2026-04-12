@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Plus, Minus, Search, Star, Trash2, Send, UtensilsCrossed, Trophy, ChevronRight, User, Clock, ChefHat, Package, CheckCircle, MessageSquare, XCircle, Sparkles, ArrowRight, Zap, Store } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Search, Star, Trash2, Send, UtensilsCrossed, Trophy, ChevronRight, User, Clock, ChefHat, Package, CheckCircle, MessageSquare, XCircle, Sparkles, ArrowRight, Zap, Store, Home } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { getCategories, getMenuItems, Category, MenuItem, seedDemoData, getBusinessById, saveOrder, getOrders, generateId, Order, updateCustomer, getCustomers } from "@/lib/store";
 import { useI18n } from "@/lib/i18n";
@@ -221,16 +221,17 @@ const CustomerMenu = () => {
           </div>
           <div className="flex items-center gap-1">
             {[
+              { key: "home", label: "Home", icon: Home, path: `/customer-home?business=${businessId}` },
               { key: "menu", label: menuLabel, icon: UtensilsCrossed },
-              { key: "orders", label: myOrdersLabel, icon: ShoppingCart },
+              { key: "orders", label: myOrdersLabel, icon: ShoppingCart, path: `/customer?business=${businessId}` },
             ].map(nav => (
               <motion.button
                 key={nav.key}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => {
+                  if (nav.path) { navigate(nav.path); return; }
                   setActiveNav(nav.key);
-                  if (nav.key === "orders") navigate(`/customer?business=${businessId}`);
                 }}
                 className={`px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all duration-300 flex items-center gap-1.5 ${
                   activeNav === nav.key
