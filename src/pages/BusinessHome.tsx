@@ -152,29 +152,26 @@ const BusinessHome = () => {
     { label: l({ en: "System Status", so: "Xaaladda" }), value: business.status === "active" ? l({ en: "Active & Online", so: "Firfircoon" }) : l({ en: "Inactive", so: "Aan shaqaynayn" }), sub: l({ en: "All systems connected", so: "Dhammaan nidaamyadu way xirnaahay" }), dot: business.status === "active" },
   ];
 
-  const menuItems: Record<string, { name: string; price: string; desc: string; img: string }[]> = {
-    food: [
-      { name: l({ en: "Bariis & Hilib", so: "Bariis & Hilib" }), price: "$12.00", desc: l({ en: "Fragrant rice with tender meat, Somali style", so: "Bariis udgoon iyo hilib jilicsan" }), img: foodRiceMeat },
-      { name: l({ en: "Suqaar", so: "Suqaar" }), price: "$10.00", desc: l({ en: "Grilled chicken with fresh vegetables", so: "Digaag la dubay oo khudaar cusub ah" }), img: foodSuqaar },
-      { name: l({ en: "Pasta Alfredo", so: "Baasto" }), price: "$9.00", desc: l({ en: "Creamy Italian pasta with herbs", so: "Baasto kriimiyo leh" }), img: foodPasta },
-    ],
-    drinks: [
-      { name: l({ en: "Mango Smoothie", so: "Cambe Smoothie" }), price: "$5.00", desc: l({ en: "Fresh tropical mango blended smooth", so: "Cambe cusub oo la shiday" }), img: drinkSmoothie },
-      { name: l({ en: "Fresh Orange Juice", so: "Casiirka Liin" }), price: "$4.00", desc: l({ en: "Freshly squeezed premium oranges", so: "Liin cusub oo la masiray" }), img: drinkJuice },
-      { name: l({ en: "Canjeero Special", so: "Canjeero Gaar ah" }), price: "$6.00", desc: l({ en: "Traditional flatbread with sugo sauce", so: "Canjeero suugo leh" }), img: foodCanjeero },
-    ],
-    teas: [
-      { name: l({ en: "Somali Shaah", so: "Shaah Soomaaliyeed" }), price: "$2.50", desc: l({ en: "Traditional milk tea with cardamom & cinnamon", so: "Shaah caano ah oo heyl leh" }), img: teaShaah },
-      { name: l({ en: "Cappuccino", so: "Kabuchiino" }), price: "$4.50", desc: l({ en: "Premium Arabica espresso with silky foam", so: "Qahawo xirfad leh" }), img: teaCappuccino },
-      { name: l({ en: "Mint Tea", so: "Shaah Nafnaf" }), price: "$3.00", desc: l({ en: "Refreshing green mint tea, naturally sweet", so: "Shaah nafnaf oo qabowjiye ah" }), img: teaMint },
-    ],
-  };
+  // Build menu tabs from database categories
+  const menuTabs = dbCategories.length > 0
+    ? dbCategories.slice(0, 4).map(cat => ({ key: cat.id, label: cat.name }))
+    : [
+        { key: "food", label: l({ en: "Food", so: "Cunto" }) },
+        { key: "drinks", label: l({ en: "Drinks", so: "Cabbitaano" }) },
+        { key: "teas", label: l({ en: "Teas & Coffee", so: "Shaah" }) },
+      ];
 
-  const menuTabs = [
-    { key: "food", label: l({ en: "Food", so: "Cunto" }) },
-    { key: "drinks", label: l({ en: "Drinks", so: "Cabbitaano" }) },
-    { key: "teas", label: l({ en: "Teas & Coffee", so: "Shaah" }) },
-  ];
+  // Set default active tab to first category
+  useEffect(() => {
+    if (dbCategories.length > 0 && !dbCategories.find(c => c.id === menuTab)) {
+      setMenuTab(dbCategories[0].id);
+    }
+  }, [dbCategories]);
+
+  // Filter menu items by active category tab
+  const currentMenuItems = dbMenuItems.filter(item => item.categoryId === menuTab).slice(0, 3);
+
+  const isImageUrl = (img: string) => img && (img.startsWith("data:") || img.startsWith("http"));
 
   return (
     <div className="min-h-screen bg-[hsl(30,20%,97%)]">
