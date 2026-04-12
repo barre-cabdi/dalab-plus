@@ -426,28 +426,36 @@ const BusinessHome = () => {
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-              {(menuItems[menuTab] || []).map((item, i) => (
+              {currentMenuItems.length > 0 ? currentMenuItems.map((item, i) => (
                 <motion.div
-                  key={item.name + menuTab}
+                  key={item.id + menuTab}
                   initial="hidden" whileInView="visible" viewport={{ once: true }}
                   variants={fadeUp} custom={i}
                   className="bg-[hsl(30,20%,97%)] rounded-2xl border border-border/50 overflow-hidden hover:shadow-lg transition-all duration-300 group"
                 >
-                  <div className="aspect-[4/3] overflow-hidden">
-                    <img src={item.img} alt={item.name} loading="lazy" width={640} height={640} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="aspect-[4/3] overflow-hidden bg-muted flex items-center justify-center">
+                    {isImageUrl(item.image) ? (
+                      <img src={item.image} alt={item.name} loading="lazy" width={640} height={640} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    ) : (
+                      <span className="text-6xl">{item.image || "🍽️"}</span>
+                    )}
                   </div>
                   <div className="p-5">
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <h4 className="font-display font-bold text-foreground">{item.name}</h4>
-                      <span className="font-display font-extrabold text-accent whitespace-nowrap">{item.price}</span>
+                      <span className="font-display font-extrabold text-accent whitespace-nowrap">${item.price.toFixed(2)}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed mb-3">{item.desc}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-3">{item.description}</p>
                     <button className="text-xs text-accent font-semibold flex items-center gap-1 hover:underline">
                       {l({ en: "Customize", so: "Habee" })} <ChevronRight className="w-3 h-3" />
                     </button>
                   </div>
                 </motion.div>
-              ))}
+              )) : (
+                <div className="col-span-full text-center py-12 text-muted-foreground">
+                  <p className="text-sm">{l({ en: "No items in this category yet", so: "Wali cunno lama gelin qaybtan" })}</p>
+                </div>
+              )}
             </div>
           )}
 
