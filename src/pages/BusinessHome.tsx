@@ -287,8 +287,12 @@ const BusinessHome = () => {
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                 className="absolute -bottom-5 -right-2 md:right-4 bg-white rounded-2xl shadow-xl p-4 flex items-center gap-3"
               >
-                <div className="w-12 h-12 rounded-xl overflow-hidden">
-                  <img src={teaCappuccino} alt="Featured" className="w-full h-full object-cover" />
+                <div className="w-12 h-12 rounded-xl overflow-hidden bg-accent/10 flex items-center justify-center">
+                  {dbMenuItems.length > 0 && isImageUrl(dbMenuItems[0].image) ? (
+                    <img src={dbMenuItems[0].image} alt="Featured" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-2xl">{dbMenuItems[0]?.image || "☕"}</span>
+                  )}
                 </div>
                 <div>
                   <p className="text-xs font-bold text-foreground">{l({ en: "Today's Special", so: "Maanta Gaar ah" })}</p>
