@@ -121,7 +121,7 @@ const BusinessHome = () => {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  if (!business) return null;
+  if (!business) return <div className="min-h-screen bg-background" />;
 
   const theme = typeThemes[business.type as keyof typeof typeThemes] || typeThemes.restaurant;
   const TypeIcon = theme.icon;
