@@ -173,7 +173,7 @@ const Login = () => {
               <img
                 src={slide.image}
                 alt={slideContent.title}
-                className="w-72 h-56 object-contain mb-8 mx-auto drop-shadow-lg"
+                className="w-80 h-64 object-contain mb-6 mx-auto drop-shadow-2xl"
               />
               <h2 className="text-3xl font-display font-extrabold text-white mb-3" style={{ fontSize: '21px' }}>
                 {slideContent.title}
