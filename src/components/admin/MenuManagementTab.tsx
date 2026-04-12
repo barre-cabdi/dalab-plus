@@ -291,6 +291,8 @@ const MenuManagementTab = ({ businessId, onDataChange }: MenuManagementTabProps)
                         <div className="w-10 h-10 rounded-lg overflow-hidden bg-muted flex items-center justify-center shrink-0">
                           {isImageUrl(item.image) ? (
                             <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                          ) : foodImageMap[item.image] ? (
+                            <img src={foodImageMap[item.image]} alt={item.name} className="w-full h-full object-cover" />
                           ) : (
                             <span className="text-2xl">{item.image}</span>
                           )}
