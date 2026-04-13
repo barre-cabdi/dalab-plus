@@ -18,6 +18,7 @@ import BusinessDetailModal from "@/components/super-admin/BusinessDetailModal";
 import SubscriptionsTab from "@/components/super-admin/SubscriptionsTab";
 import RevenueTab from "@/components/super-admin/RevenueTab";
 import SettingsTab from "@/components/super-admin/SettingsTab";
+import HomePageEditorTab from "@/components/super-admin/HomePageEditorTab";
 
 const SuperAdminDashboard = () => {
   const { t } = useI18n();
@@ -64,6 +65,7 @@ const SuperAdminDashboard = () => {
   const tabTitles: Record<string, { title: string; subtitle: string }> = {
     dashboard: { title: t.saDashboard, subtitle: t.saGlobalControl },
     businesses: { title: t.saBusinessMgmt, subtitle: t.saManageAll },
+    homepages: { title: "Home Page Editor", subtitle: "Customize business home pages" },
     subscriptions: { title: t.saSubscriptions, subtitle: t.saManagePlans },
     revenue: { title: t.saRevenue, subtitle: t.saTrackIncome },
     settings: { title: t.saPlatformSettings, subtitle: t.saConfigSystem },
@@ -116,6 +118,9 @@ const SuperAdminDashboard = () => {
             />
           </div>
         );
+
+      case "homepages":
+        return <HomePageEditorTab businesses={businesses} onUpdated={refresh} />;
 
       case "subscriptions":
         return <SubscriptionsTab businesses={businesses} />;
