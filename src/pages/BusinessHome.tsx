@@ -18,7 +18,23 @@ import dalabLogo from "@/assets/dalabplus-logo.png";
 
 // Hero & testimonial images
 import heroCafeInterior from "@/assets/hero-cafe-interior.jpg";
+import heroRestaurantInterior from "@/assets/hero-restaurant-interior.jpg";
+import heroHotelInterior from "@/assets/hero-hotel-interior.jpg";
 import testimonialCafe from "@/assets/testimonial-cafe.jpg";
+import testimonialRestaurant from "@/assets/testimonial-restaurant.jpg";
+import testimonialHotel from "@/assets/testimonial-hotel.jpg";
+import hotelRoomSuite from "@/assets/hotel-room-suite.jpg";
+
+const heroImageMap: Record<string, string> = {
+  cafe: heroCafeInterior,
+  restaurant: heroRestaurantInterior,
+  hotel: heroHotelInterior,
+};
+const testimonialImageMap: Record<string, string> = {
+  cafe: testimonialCafe,
+  restaurant: testimonialRestaurant,
+  hotel: testimonialHotel,
+};
 
 // Real food images for menu fallback
 import foodBariis from "@/assets/food-bariis-hilib.jpg";
@@ -333,7 +349,7 @@ const BusinessHome = () => {
               className="relative"
             >
               <div className="rounded-3xl overflow-hidden shadow-2xl">
-                <img src={heroCafeInterior} alt={business.name} width={800} height={600} className="w-full h-auto object-cover" />
+                <img src={heroImageMap[business.type] || heroCafeInterior} alt={business.name} width={800} height={600} className="w-full h-auto object-cover" />
               </div>
               {/* Floating card */}
               <motion.div
@@ -553,7 +569,7 @@ const BusinessHome = () => {
                 </div>
               </div>
               <div className="hidden md:block">
-                <img src={testimonialCafe} alt="Customer experience" loading="lazy" width={640} height={640} className="w-full h-full object-cover" />
+                <img src={testimonialImageMap[business.type] || testimonialCafe} alt="Customer experience" loading="lazy" width={640} height={640} className="w-full h-full object-cover" />
               </div>
             </div>
           </motion.div>
@@ -616,7 +632,7 @@ const BusinessHome = () => {
             </motion.div>
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={2}>
               <div className="rounded-2xl overflow-hidden shadow-lg">
-                <img src={heroCafeInterior} alt={business.name} loading="lazy" width={800} height={600} className="w-full h-auto object-cover" />
+                <img src={heroImageMap[business.type] || heroCafeInterior} alt={business.name} loading="lazy" width={800} height={600} className="w-full h-auto object-cover" />
               </div>
             </motion.div>
           </div>

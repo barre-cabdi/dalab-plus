@@ -163,6 +163,18 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
       toast.error("Phone number is required for OTP verification");
       return;
     }
+    if (form.phone.length !== 7) {
+      toast.error("Phone number must be exactly 7 digits");
+      return;
+    }
+    if (!form.city.trim() || !form.address.trim()) {
+      toast.error("City and address are required");
+      return;
+    }
+    if (form.adminPassword.length < 4) {
+      toast.error("Password must be at least 4 characters");
+      return;
+    }
     try {
       if (!editBusiness) {
         const allBiz = await getBusinesses();

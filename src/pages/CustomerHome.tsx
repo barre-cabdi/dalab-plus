@@ -16,7 +16,23 @@ import { useI18n } from "@/lib/i18n";
 import dalabLogo from "@/assets/dalabplus-logo.png";
 
 import heroCafeInterior from "@/assets/hero-cafe-interior.jpg";
+import heroRestaurantInterior from "@/assets/hero-restaurant-interior.jpg";
+import heroHotelInterior from "@/assets/hero-hotel-interior.jpg";
 import testimonialCafe from "@/assets/testimonial-cafe.jpg";
+import testimonialRestaurant from "@/assets/testimonial-restaurant.jpg";
+import testimonialHotel from "@/assets/testimonial-hotel.jpg";
+import hotelRoomSuite from "@/assets/hotel-room-suite.jpg";
+
+const heroImageMap: Record<string, string> = {
+  cafe: heroCafeInterior,
+  restaurant: heroRestaurantInterior,
+  hotel: heroHotelInterior,
+};
+const testimonialImageMap: Record<string, string> = {
+  cafe: testimonialCafe,
+  restaurant: testimonialRestaurant,
+  hotel: testimonialHotel,
+};
 
 import foodBariis from "@/assets/food-bariis-hilib.jpg";
 import foodBaasto from "@/assets/food-baasto.jpg";
