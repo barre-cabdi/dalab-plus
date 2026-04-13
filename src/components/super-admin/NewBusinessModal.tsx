@@ -401,7 +401,7 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
                       </SelectContent>
                     </Select>
                   )}
-                  <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, "") })} placeholder={hasPrefixes ? "XXXXXXX" : "XXXXXXXXX"} required className="flex-1" />
+                  <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, "").slice(0, 7) })} placeholder="XXXXXXX (7 digits)" required className="flex-1" maxLength={7} />
                 </div>
                 <p className="text-[10px] text-muted-foreground">Full: {form.countryCode} {form.phonePrefix} {form.phone}</p>
               </div>
