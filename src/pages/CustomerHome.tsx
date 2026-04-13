@@ -426,23 +426,27 @@ const CustomerHome = () => {
           {business.type === "hotel" ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
               {[
-                { name: l({ en: "Single Room", so: "Qol Keli ah" }), price: "$80", icon: "🛏️", desc: l({ en: "Cozy room for solo travelers", so: "Qol raaxo ah" }) },
-                { name: l({ en: "Double Room", so: "Qol Labo" }), price: "$120", icon: "🛏️🛏️", desc: l({ en: "Spacious room for couples", so: "Qol ballaaran" }) },
-                { name: l({ en: "VIP Suite", so: "Qol VIP" }), price: "$250", icon: "👑", desc: l({ en: "Luxury suite with premium amenities", so: "Qol raaxo leh" }) },
+                { name: l({ en: "The Executive Studio", so: "Qol Keli ah" }), price: "$149", desc: l({ en: "Perfect for the busy business traveler requiring quietness and modern amenities.", so: "Qol raaxo ah oo suuq-geynta." }) },
+                { name: l({ en: "Superior Double", so: "Qol Labo" }), price: "$289", desc: l({ en: "Spacious comfort for longer stays. Features panoramic views and an oversized bath.", so: "Qol ballaaran oo leh muuqaal qurux." }) },
+                { name: l({ en: "The Royal Penthouse", so: "Qol VIP" }), price: "$1,200", desc: l({ en: "Our crowning achievement. In tasteful elegance with coverage and fireplace on terrace.", so: "Qolkeena ugu sarreeya oo leh raaxo." }) },
               ].map((room, i) => (
                 <motion.div
                   key={room.name}
                   initial="hidden" whileInView="visible" viewport={{ once: true }}
                   variants={fadeUp} custom={i}
-                  className="p-6 rounded-2xl bg-[hsl(30,20%,97%)] border border-border/50 hover:shadow-lg transition-all group text-center"
+                  className="rounded-2xl bg-[hsl(30,20%,97%)] border border-border/50 overflow-hidden hover:shadow-lg transition-all group"
                 >
-                  <span className="text-4xl block mb-4">{room.icon}</span>
-                  <h3 className="font-display font-bold text-lg text-foreground mb-1">{room.name}</h3>
-                  <p className="text-xs text-muted-foreground mb-3">{room.desc}</p>
-                  <p className="font-display font-extrabold text-2xl text-accent mb-4">{room.price}<span className="text-xs text-muted-foreground font-normal">/{l({ en: "night", so: "habeennimo" })}</span></p>
-                  <Button size="sm" className="bg-foreground hover:bg-foreground/90 text-background rounded-full gap-1.5 w-full font-semibold">
-                    {l({ en: "Book Now", so: "Hadda Qabo" })} <ArrowRight className="w-3.5 h-3.5" />
-                  </Button>
+                  <div className="aspect-[4/3] overflow-hidden bg-muted">
+                    <img src={hotelRoomSuite} alt={room.name} loading="lazy" width={640} height={480} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  </div>
+                  <div className="p-5 text-center">
+                    <h3 className="font-display font-bold text-lg text-foreground mb-1">{room.name}</h3>
+                    <p className="text-xs text-muted-foreground mb-3">{room.desc}</p>
+                    <p className="font-display font-extrabold text-2xl text-accent mb-4">{room.price}<span className="text-xs text-muted-foreground font-normal"> / {l({ en: "night", so: "habeennimo" })}</span></p>
+                    <Button size="sm" variant="outline" className="rounded-full gap-1.5 w-full font-semibold border-foreground text-foreground hover:bg-foreground hover:text-background">
+                      {l({ en: "Book Now", so: "Hadda Qabo" })} <ArrowRight className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
                 </motion.div>
               ))}
             </div>
