@@ -335,7 +335,7 @@ const CustomerHome = () => {
               className="relative"
             >
               <div className="rounded-3xl overflow-hidden shadow-2xl">
-                <img src={heroCafeInterior} alt={business.name} width={800} height={600} className="w-full h-auto object-cover" />
+                <img src={heroImageMap[business.type] || heroCafeInterior} alt={business.name} width={800} height={600} className="w-full h-auto object-cover" />
               </div>
               <motion.div
                 animate={{ y: [0, -8, 0] }}
@@ -523,7 +523,7 @@ const CustomerHome = () => {
                 </div>
               </div>
               <div className="hidden md:block">
-                <img src={testimonialCafe} alt="Customer experience" loading="lazy" width={640} height={640} className="w-full h-full object-cover" />
+                <img src={testimonialImageMap[business.type] || testimonialCafe} alt="Customer experience" loading="lazy" width={640} height={640} className="w-full h-full object-cover" />
               </div>
             </div>
           </motion.div>
@@ -586,7 +586,7 @@ const CustomerHome = () => {
             </motion.div>
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={2}>
               <div className="rounded-2xl overflow-hidden shadow-lg">
-                <img src={heroCafeInterior} alt={business.name} loading="lazy" width={800} height={600} className="w-full h-auto object-cover" />
+                <img src={heroImageMap[business.type] || heroCafeInterior} alt={business.name} loading="lazy" width={800} height={600} className="w-full h-auto object-cover" />
               </div>
             </motion.div>
           </div>
