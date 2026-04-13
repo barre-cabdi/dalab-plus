@@ -3,7 +3,20 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
 import dalabLogo from "@/assets/dalabplus-logo.png";
-import { ArrowRight, Mail, Phone, MapPin, Globe, Facebook, Twitter, Instagram, Linkedin, Send, Heart, ChevronRight } from "lucide-react";
+import {
+  ArrowRight,
+  Mail,
+  Phone,
+  MapPin,
+  Globe,
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  Send,
+  Heart,
+  ChevronRight,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -11,7 +24,8 @@ import { toast } from "sonner";
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: (i: number = 0) => ({
-    opacity: 1, y: 0,
+    opacity: 1,
+    y: 0,
     transition: { delay: i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
   }),
 };
@@ -69,7 +83,11 @@ const Footer = () => {
                 <span className="text-xs font-bold text-accent uppercase tracking-widest">Newsletter</span>
               </span>
             </motion.div>
-            <motion.h3 variants={fadeUp} custom={1} className="font-display font-extrabold text-3xl md:text-4xl text-foreground mb-3">
+            <motion.h3
+              variants={fadeUp}
+              custom={1}
+              className="font-display font-extrabold text-3xl md:text-4xl text-foreground mb-3"
+            >
               Stay Updated
             </motion.h3>
             <motion.p variants={fadeUp} custom={2} className="text-muted-foreground mb-8 max-w-md mx-auto">
@@ -183,19 +201,19 @@ const Footer = () => {
                   <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <MapPin className="w-3.5 h-3.5 text-accent" />
                   </div>
-                  <p className="text-sm text-white/50">Mogadishu, Somalia</p>
+                  <p className="text-sm text-white/50">Garowe,Puntland, Somalia</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
                     <Phone className="w-3.5 h-3.5 text-accent" />
                   </div>
-                  <p className="text-sm text-white/50">+252 61 XXX XXXX</p>
+                  <p className="text-sm text-white/50">+252 90 5816269/90 6448087</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
                     <Mail className="w-3.5 h-3.5 text-accent" />
                   </div>
-                  <p className="text-sm text-white/50">hello@dalabplus.com</p>
+                  <p className="text-sm text-white/50">info@dalabplus.com</p>
                 </div>
               </div>
             </motion.div>
@@ -213,14 +231,14 @@ const Footer = () => {
               © 2026 DALABplus+ · Made with <Heart className="w-4 h-4 text-accent fill-accent" /> {t.allRights}
             </p>
             <div className="flex items-center gap-6">
-              <motion.div
-                className="flex items-center gap-2"
-                whileHover={{ scale: 1.03 }}
-              >
+              <motion.div className="flex items-center gap-2" whileHover={{ scale: 1.03 }}>
                 <Globe className="w-4 h-4 text-white/40" />
                 <span className="text-base md:text-lg font-bold text-white/40">SO · EN</span>
               </motion.div>
-              <Link to="/login" className="text-base md:text-lg font-bold text-white/40 hover:text-accent transition-colors duration-300">
+              <Link
+                to="/login"
+                className="text-base md:text-lg font-bold text-white/40 hover:text-accent transition-colors duration-300"
+              >
                 {t.login}
               </Link>
             </div>
