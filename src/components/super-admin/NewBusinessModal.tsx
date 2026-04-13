@@ -163,6 +163,18 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
       toast.error("Phone number is required for OTP verification");
       return;
     }
+    if (form.phone.length !== 7) {
+      toast.error("Phone number must be exactly 7 digits");
+      return;
+    }
+    if (!form.city.trim() || !form.address.trim()) {
+      toast.error("City and address are required");
+      return;
+    }
+    if (form.adminPassword.length < 4) {
+      toast.error("Password must be at least 4 characters");
+      return;
+    }
     try {
       if (!editBusiness) {
         const allBiz = await getBusinesses();
@@ -389,7 +401,7 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
                       </SelectContent>
                     </Select>
                   )}
-                  <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, "") })} placeholder={hasPrefixes ? "XXXXXXX" : "XXXXXXXXX"} required className="flex-1" />
+                  <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, "").slice(0, 7) })} placeholder="XXXXXXX (7 digits)" required className="flex-1" maxLength={7} />
                 </div>
                 <p className="text-[10px] text-muted-foreground">Full: {form.countryCode} {form.phonePrefix} {form.phone}</p>
               </div>
