@@ -244,6 +244,7 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
           return;
         }
         toast.success(`"${form.name}" created with home page! 🎉`);
+        localStorage.removeItem("dp_new_business_draft");
       }
       onCreated();
       onClose();
