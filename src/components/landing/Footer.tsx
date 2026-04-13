@@ -209,18 +209,18 @@ const Footer = () => {
             transition={{ delay: 0.4 }}
             className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4"
           >
-            <p className="text-2xl md:text-3xl font-bold text-white/40 flex items-center gap-2">
-              © 2026 DALABplus+ · Made with <Heart className="w-6 h-6 text-accent fill-accent" /> {t.allRights}
+            <p className="text-base md:text-lg font-bold text-white/40 flex items-center gap-2">
+              © 2026 DALABplus+ · Made with <Heart className="w-4 h-4 text-accent fill-accent" /> {t.allRights}
             </p>
             <div className="flex items-center gap-6">
               <motion.div
                 className="flex items-center gap-2"
                 whileHover={{ scale: 1.03 }}
               >
-                <Globe className="w-6 h-6 text-white/40" />
-                <span className="text-2xl md:text-3xl font-bold text-white/40">SO · EN</span>
+                <Globe className="w-4 h-4 text-white/40" />
+                <span className="text-base md:text-lg font-bold text-white/40">SO · EN</span>
               </motion.div>
-              <Link to="/login" className="text-2xl md:text-3xl font-bold text-white/40 hover:text-accent transition-colors duration-300">
+              <Link to="/login" className="text-base md:text-lg font-bold text-white/40 hover:text-accent transition-colors duration-300">
                 {t.login}
               </Link>
             </div>
