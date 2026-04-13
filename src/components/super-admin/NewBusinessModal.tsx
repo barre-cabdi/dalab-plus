@@ -68,7 +68,7 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodsConfig>(getDefaultPaymentMethods());
   const [permissions, setPermissions] = useState<BusinessPermissions>(getDefaultPermissions());
 
-  // Reset form when editBusiness changes or modal opens
+  // Load draft from localStorage for new businesses, or load edit data
   useEffect(() => {
     if (open) {
       if (editBusiness) {
@@ -92,6 +92,18 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
         setPaymentMethods(editBusiness.paymentMethods || getDefaultPaymentMethods());
         setPermissions(editBusiness.permissions || getDefaultPermissions());
       } else {
+        // Try to restore draft
+        try {
+          const draft = localStorage.getItem("dp_new_business_draft");
+          if (draft) {
+            const parsed = JSON.parse(draft);
+            setForm(parsed.form);
+            setServices(parsed.services || getDefaultServices("restaurant"));
+            setPaymentMethods(parsed.paymentMethods || getDefaultPaymentMethods());
+            setPermissions(parsed.permissions || getDefaultPermissions());
+            return;
+          }
+        } catch {}
         setForm({
           name: "", type: "restaurant", address: "", city: "", country: "Somalia",
           countryCode: "+252", phonePrefix: "", phone: "", email: "", logo: "",
@@ -103,6 +115,16 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
       }
     }
   }, [open, editBusiness]);
+
+  // Auto-save draft for new business forms
+  useEffect(() => {
+    if (open && !editBusiness) {
+      const hasData = form.name || form.phone || form.adminUsername || form.email || form.city || form.address;
+      if (hasData) {
+        localStorage.setItem("dp_new_business_draft", JSON.stringify({ form, services, paymentMethods, permissions }));
+      }
+    }
+  }, [open, editBusiness, form, services, paymentMethods, permissions]);
 
   const selectedCountry = eastAfricaCountries.find(c => c.code === form.countryCode);
   const hasPrefixes = selectedCountry && selectedCountry.prefixes.length > 0;
@@ -222,6 +244,7 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
           return;
         }
         toast.success(`"${form.name}" created with home page! 🎉`);
+        localStorage.removeItem("dp_new_business_draft");
       }
       onCreated();
       onClose();

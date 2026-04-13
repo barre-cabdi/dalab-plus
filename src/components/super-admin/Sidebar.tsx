@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import dalabLogo from "@/assets/dalabplus-logo.png";
 import {
   LayoutDashboard, Building2, CreditCard, DollarSign,
-  Settings, LogOut, ChevronLeft, ChevronRight, Globe,
+  Settings, LogOut, ChevronLeft, ChevronRight, Globe, Home,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
@@ -20,6 +20,7 @@ const SuperAdminSidebar = ({ collapsed, setCollapsed, activeTab, setActiveTab }:
   const navItems = [
     { id: "dashboard", label: t.adDashboard, icon: LayoutDashboard },
     { id: "businesses", label: t.businesses, icon: Building2 },
+    { id: "homepages", label: "Home Pages", icon: Home },
     { id: "subscriptions", label: t.saSubscriptions, icon: CreditCard },
     { id: "revenue", label: t.saRevenue, icon: DollarSign },
     { id: "settings", label: t.saSettings, icon: Settings },
