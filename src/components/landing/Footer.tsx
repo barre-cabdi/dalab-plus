@@ -228,7 +228,7 @@ const Footer = () => {
             className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4"
           >
             <p className="text-base md:text-lg font-bold text-white/40 flex items-center gap-2">
-              © 2026 DALABplus+ · Made with <Heart className="w-4 h-4 text-accent fill-accent" /> {t.allRights}
+              © 2026 DALABplus+ · Made with <Heart className="w-4 h-4 text-accent fill-accent" /> Mareeg Softwares 2026. All rights reserved.
             </p>
             <div className="flex items-center gap-6">
               <motion.div className="flex items-center gap-2" whileHover={{ scale: 1.03 }}>
