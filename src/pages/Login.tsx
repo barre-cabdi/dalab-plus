@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Globe, User, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { getBusinessByAdmin, getStaffByUsername, getBusinesses } from "@/lib/store";
+import { getBusinesses, verifyLogin } from "@/lib/store";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import OTPVerification from "@/components/auth/OTPVerification";
