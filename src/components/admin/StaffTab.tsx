@@ -13,7 +13,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { StaffMember, getStaff, saveStaff, updateStaff, deleteStaff, generateId } from "@/lib/store";
+import { StaffMember, getStaff, saveStaff, updateStaff, deleteStaff, generateId, setCredentialPassword } from "@/lib/store";
 import { toast } from "sonner";
 
 const JOB_TITLES = ["Waiter", "Hotel Manager", "Hotel Manager", "Chef", "Cashier", "Manager", "Cleaner", "Security", "Other"];
