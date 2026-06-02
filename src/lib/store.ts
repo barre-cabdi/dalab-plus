@@ -826,3 +826,29 @@ export const seedDemoData = async (businessId: string): Promise<void> => {
   const { error: itemError } = await supabase.from("menu_items").insert(items);
   if (itemError) console.error("seedDemoData items error:", itemError);
 };
+
+// ============= AUTH HELPERS (server-side credential verification) =============
+
+export const verifyLogin = async (
+  username: string,
+  password: string,
+  type: "business" | "staff"
+): Promise<{ valid: boolean; business?: any; staff?: any }> => {
+  const { data, error } = await supabase.functions.invoke("verify-login", {
+    body: { username, password, type },
+  });
+  if (error) { console.error("verifyLogin error:", error); return { valid: false }; }
+  return data || { valid: false };
+};
+
+export const setCredentialPassword = async (
+  id: string,
+  password: string,
+  type: "business" | "staff"
+): Promise<boolean> => {
+  const { data, error } = await supabase.functions.invoke("set-password", {
+    body: { id, password, type },
+  });
+  if (error) { console.error("setCredentialPassword error:", error); return false; }
+  return !!data?.ok;
+};
