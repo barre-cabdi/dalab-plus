@@ -118,7 +118,7 @@ const mapBusinessFromDb = (row: any): Business => ({
   logo: row.logo || "",
   description: row.description || "",
   adminUsername: row.admin_username,
-  adminPassword: row.admin_password,
+  adminPassword: "", // stored server-side only; never returned to client
   status: row.status as "active" | "inactive",
   createdAt: row.created_at,
   totalOrders: row.total_orders || 0,
