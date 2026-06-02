@@ -118,7 +118,7 @@ const mapBusinessFromDb = (row: any): Business => ({
   logo: row.logo || "",
   description: row.description || "",
   adminUsername: row.admin_username,
-  adminPassword: row.admin_password,
+  adminPassword: "", // stored server-side only; never returned to client
   status: row.status as "active" | "inactive",
   createdAt: row.created_at,
   totalOrders: row.total_orders || 0,
@@ -143,7 +143,7 @@ const mapBusinessToDb = (biz: Partial<Business>): any => {
   if (biz.logo !== undefined) m.logo = biz.logo;
   if (biz.description !== undefined) m.description = biz.description;
   if (biz.adminUsername !== undefined) m.admin_username = biz.adminUsername;
-  if (biz.adminPassword !== undefined) m.admin_password = biz.adminPassword;
+  // adminPassword is stored via the set-password edge function, never written to the businesses table
   if (biz.status !== undefined) m.status = biz.status;
   if (biz.totalOrders !== undefined) m.total_orders = biz.totalOrders;
   if (biz.totalRevenue !== undefined) m.total_revenue = biz.totalRevenue;
@@ -506,7 +506,7 @@ const mapStaffFromDb = (row: any): StaffMember => ({
   startTime: row.start_time || "",
   endTime: row.end_time || "",
   username: row.username || undefined,
-  password: row.password || undefined,
+  password: undefined, // stored server-side only
   createdAt: row.created_at,
 });
 
@@ -516,16 +516,17 @@ export const getStaff = async (businessId: string): Promise<StaffMember[]> => {
   return (data || []).map(mapStaffFromDb);
 };
 
-export const saveStaff = async (staff: StaffMember): Promise<void> => {
+export const saveStaff = async (staff: StaffMember): Promise<string | null> => {
   const row: any = {
     business_id: staff.businessId, name: staff.name, phone: staff.phone,
     nationality: staff.nationality, job_title: staff.jobTitle, custom_job_title: staff.customJobTitle || "",
     shifts: staff.shifts, start_time: staff.startTime, end_time: staff.endTime,
-    username: staff.username || null, password: staff.password || "",
+    username: staff.username || null,
   };
   if (staff.id && /^[0-9a-f]{8}-/i.test(staff.id)) row.id = staff.id;
-  const { error } = await supabase.from("staff").insert(row);
-  if (error) console.error("saveStaff error:", error);
+  const { data, error } = await supabase.from("staff").insert(row).select("id").single();
+  if (error) { console.error("saveStaff error:", error); return null; }
+  return data?.id || null;
 };
 
 export const updateStaff = async (id: string, updates: Partial<StaffMember>): Promise<void> => {
@@ -539,7 +540,7 @@ export const updateStaff = async (id: string, updates: Partial<StaffMember>): Pr
   if (updates.startTime !== undefined) m.start_time = updates.startTime;
   if (updates.endTime !== undefined) m.end_time = updates.endTime;
   if (updates.username !== undefined) m.username = updates.username;
-  if (updates.password !== undefined) m.password = updates.password;
+  // password updates go through the set-password edge function
   const { error } = await supabase.from("staff").update(m).eq("id", id);
   if (error) console.error("updateStaff error:", error);
 };
@@ -824,4 +825,30 @@ export const seedDemoData = async (businessId: string): Promise<void> => {
 
   const { error: itemError } = await supabase.from("menu_items").insert(items);
   if (itemError) console.error("seedDemoData items error:", itemError);
+};
+
+// ============= AUTH HELPERS (server-side credential verification) =============
+
+export const verifyLogin = async (
+  username: string,
+  password: string,
+  type: "business" | "staff"
+): Promise<{ valid: boolean; business?: any; staff?: any }> => {
+  const { data, error } = await supabase.functions.invoke("verify-login", {
+    body: { username, password, type },
+  });
+  if (error) { console.error("verifyLogin error:", error); return { valid: false }; }
+  return data || { valid: false };
+};
+
+export const setCredentialPassword = async (
+  id: string,
+  password: string,
+  type: "business" | "staff"
+): Promise<boolean> => {
+  const { data, error } = await supabase.functions.invoke("set-password", {
+    body: { id, password, type },
+  });
+  if (error) { console.error("setCredentialPassword error:", error); return false; }
+  return !!data?.ok;
 };

@@ -13,7 +13,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { StaffMember, getStaff, saveStaff, updateStaff, deleteStaff, generateId } from "@/lib/store";
+import { StaffMember, getStaff, saveStaff, updateStaff, deleteStaff, generateId, setCredentialPassword } from "@/lib/store";
 import { toast } from "sonner";
 
 const JOB_TITLES = ["Waiter", "Hotel Manager", "Hotel Manager", "Chef", "Cashier", "Manager", "Cleaner", "Security", "Other"];
@@ -45,7 +45,7 @@ const StaffTab = ({ businessId }: StaffTabProps) => {
         jobTitle: JOB_TITLES.includes(s.jobTitle) ? s.jobTitle : "Other",
         customJobTitle: JOB_TITLES.includes(s.jobTitle) ? "" : s.jobTitle,
         shifts: s.shifts, startTime: s.startTime, endTime: s.endTime,
-        username: s.username || "", password: s.password || "",
+        username: s.username || "", password: "",
       });
     } else {
       setEditing(null);
@@ -56,7 +56,7 @@ const StaffTab = ({ businessId }: StaffTabProps) => {
 
   const isLoginRole = form.jobTitle === "Waiter" || form.jobTitle === "Hotel Manager" || form.jobTitle === "Cashier" || (form.jobTitle === "Other" && (form.customJobTitle.toLowerCase().includes("waiter") || form.customJobTitle.toLowerCase().includes("hotel manager") || form.customJobTitle.toLowerCase().includes("cashier")));
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name.trim() || !form.phone.trim()) { toast.error("Name and phone required"); return; }
     const actualTitle = form.jobTitle === "Other" ? form.customJobTitle : form.jobTitle;
     if (!actualTitle.trim()) { toast.error("Job title required"); return; }
@@ -66,14 +66,22 @@ const StaffTab = ({ businessId }: StaffTabProps) => {
       jobTitle: actualTitle, shifts: form.shifts,
       startTime: form.startTime, endTime: form.endTime,
       username: isLoginRole ? form.username : undefined,
-      password: isLoginRole ? form.password : undefined,
     };
 
     if (editing) {
-      updateStaff(editing.id, data);
+      await updateStaff(editing.id, data);
+      // If login role and a new password was typed, store it server-side
+      if (isLoginRole && form.password && form.password.length >= 4) {
+        await setCredentialPassword(editing.id, form.password, "staff");
+      }
       toast.success("Staff updated");
     } else {
-      saveStaff({ ...data, id: generateId("staff"), businessId, createdAt: new Date().toISOString() } as StaffMember);
+      const newId = generateId("staff");
+      const insertedId = await saveStaff({ ...data, id: newId, businessId, createdAt: new Date().toISOString() } as StaffMember);
+      const finalId = insertedId || newId;
+      if (isLoginRole && form.password && form.password.length >= 4) {
+        await setCredentialPassword(finalId, form.password, "staff");
+      }
       toast.success("Staff created");
     }
     setDialog(false);

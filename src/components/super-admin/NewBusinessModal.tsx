@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Business, BusinessService, MobilePaymentProvider, PaymentMethodsConfig, BusinessPermissions, getBusinesses, saveBusiness, updateBusiness, generateId, getDefaultServices, getDefaultPaymentMethods, getDefaultPermissions } from "@/lib/store";
+import { Business, BusinessService, MobilePaymentProvider, PaymentMethodsConfig, BusinessPermissions, getBusinesses, saveBusiness, updateBusiness, generateId, getDefaultServices, getDefaultPaymentMethods, getDefaultPermissions, setCredentialPassword } from "@/lib/store";
 
 const businessTypes = [
   { value: "restaurant", label: "Restaurant", emoji: "🍽️" },
@@ -214,6 +214,10 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
           paymentMethods,
           permissions,
         });
+        // If password was changed, persist via edge function
+        if (form.adminPassword && form.adminPassword.length >= 4) {
+          await setCredentialPassword(editBusiness.id, form.adminPassword, "business");
+        }
         try {
           const active = localStorage.getItem("dp_active_business");
           if (active) {
@@ -242,6 +246,11 @@ const NewBusinessModal = ({ open, onClose, onCreated, editBusiness }: NewBusines
         if (!result) {
           toast.error("Failed to create business. Please try again.");
           return;
+        }
+        // Store hashed password server-side
+        const pwOk = await setCredentialPassword(result.id, form.adminPassword, "business");
+        if (!pwOk) {
+          toast.error("Business created but password could not be saved. Please reset it.");
         }
         toast.success(`"${form.name}" created with home page! 🎉`);
         localStorage.removeItem("dp_new_business_draft");
