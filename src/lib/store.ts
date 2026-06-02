@@ -521,7 +521,7 @@ export const saveStaff = async (staff: StaffMember): Promise<void> => {
     business_id: staff.businessId, name: staff.name, phone: staff.phone,
     nationality: staff.nationality, job_title: staff.jobTitle, custom_job_title: staff.customJobTitle || "",
     shifts: staff.shifts, start_time: staff.startTime, end_time: staff.endTime,
-    username: staff.username || null, password: staff.password || "",
+    username: staff.username || null,
   };
   if (staff.id && /^[0-9a-f]{8}-/i.test(staff.id)) row.id = staff.id;
   const { error } = await supabase.from("staff").insert(row);
