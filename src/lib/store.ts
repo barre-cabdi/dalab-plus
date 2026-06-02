@@ -143,7 +143,7 @@ const mapBusinessToDb = (biz: Partial<Business>): any => {
   if (biz.logo !== undefined) m.logo = biz.logo;
   if (biz.description !== undefined) m.description = biz.description;
   if (biz.adminUsername !== undefined) m.admin_username = biz.adminUsername;
-  if (biz.adminPassword !== undefined) m.admin_password = biz.adminPassword;
+  // adminPassword is stored via the set-password edge function, never written to the businesses table
   if (biz.status !== undefined) m.status = biz.status;
   if (biz.totalOrders !== undefined) m.total_orders = biz.totalOrders;
   if (biz.totalRevenue !== undefined) m.total_revenue = biz.totalRevenue;
