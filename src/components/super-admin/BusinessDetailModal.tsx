@@ -233,14 +233,9 @@ const PasswordSection = ({ business }: { business: Business }) => {
       <div className="bg-muted/30 rounded-lg p-3 space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">Current Password</span>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-mono font-medium text-foreground">
-              {showCurrent ? business.adminPassword : "••••••••"}
-            </span>
-            <button onClick={() => setShowCurrent(!showCurrent)} className="text-muted-foreground hover:text-foreground">
-              {showCurrent ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-            </button>
-          </div>
+          <span className="text-xs font-mono font-medium text-muted-foreground italic">
+            Hidden (securely hashed)
+          </span>
         </div>
         {logs.length > 0 && (
           <>
