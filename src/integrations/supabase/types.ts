@@ -14,10 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      business_credentials: {
+        Row: {
+          business_id: string
+          password_hash: string
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          password_hash: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          password_hash?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       businesses: {
         Row: {
           address: string | null
-          admin_password: string
           admin_username: string
           city: string | null
           country: string | null
@@ -45,7 +62,6 @@ export type Database = {
         }
         Insert: {
           address?: string | null
-          admin_password: string
           admin_username: string
           city?: string | null
           country?: string | null
@@ -73,7 +89,6 @@ export type Database = {
         }
         Update: {
           address?: string | null
-          admin_password?: string
           admin_username?: string
           city?: string | null
           country?: string | null
@@ -587,7 +602,6 @@ export type Database = {
           job_title: string
           name: string
           nationality: string | null
-          password: string | null
           phone: string | null
           shifts: string | null
           start_time: string | null
@@ -603,7 +617,6 @@ export type Database = {
           job_title: string
           name: string
           nationality?: string | null
-          password?: string | null
           phone?: string | null
           shifts?: string | null
           start_time?: string | null
@@ -619,7 +632,6 @@ export type Database = {
           job_title?: string
           name?: string
           nationality?: string | null
-          password?: string | null
           phone?: string | null
           shifts?: string | null
           start_time?: string | null
@@ -635,6 +647,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      staff_credentials: {
+        Row: {
+          password_hash: string
+          staff_id: string
+          updated_at: string
+        }
+        Insert: {
+          password_hash: string
+          staff_id: string
+          updated_at?: string
+        }
+        Update: {
+          password_hash?: string
+          staff_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {
