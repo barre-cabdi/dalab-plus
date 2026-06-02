@@ -506,7 +506,7 @@ const mapStaffFromDb = (row: any): StaffMember => ({
   startTime: row.start_time || "",
   endTime: row.end_time || "",
   username: row.username || undefined,
-  password: row.password || undefined,
+  password: undefined, // stored server-side only
   createdAt: row.created_at,
 });
 
