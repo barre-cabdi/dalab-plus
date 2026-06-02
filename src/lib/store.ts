@@ -540,7 +540,7 @@ export const updateStaff = async (id: string, updates: Partial<StaffMember>): Pr
   if (updates.startTime !== undefined) m.start_time = updates.startTime;
   if (updates.endTime !== undefined) m.end_time = updates.endTime;
   if (updates.username !== undefined) m.username = updates.username;
-  if (updates.password !== undefined) m.password = updates.password;
+  // password updates go through the set-password edge function
   const { error } = await supabase.from("staff").update(m).eq("id", id);
   if (error) console.error("updateStaff error:", error);
 };
