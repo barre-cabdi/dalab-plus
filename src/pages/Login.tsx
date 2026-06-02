@@ -80,20 +80,40 @@ const Login = () => {
         return;
       }
 
-      const biz = await getBusinessByAdmin(username);
-      if (biz) {
-        if (biz.adminPassword !== password) {
-          toast.error(t.wrongPassword);
-          setLoading(false);
-          return;
-        }
+      // Try business admin login
+      const bizResult = await verifyLogin(username, password, "business");
+      if (bizResult.valid && bizResult.business) {
+        const raw = bizResult.business;
+        const biz: any = {
+          id: raw.id,
+          name: raw.name,
+          type: raw.type,
+          address: raw.address || "",
+          city: raw.city || "",
+          country: raw.country || "",
+          countryCode: raw.country_code || "",
+          phonePrefix: raw.phone_prefix || "",
+          phone: raw.phone || "",
+          email: raw.email || "",
+          logo: raw.logo || "",
+          description: raw.description || "",
+          adminUsername: raw.admin_username,
+          adminPassword: "",
+          status: raw.status,
+          createdAt: raw.created_at,
+          totalOrders: raw.total_orders || 0,
+          totalRevenue: Number(raw.total_revenue) || 0,
+          subscription: raw.subscription || "free",
+          services: raw.services || [],
+          paymentMethods: raw.payment_methods || {},
+          permissions: raw.permissions || {},
+        };
         if (biz.status === "inactive") {
           toast.error(t.businessInactive);
           setLoading(false);
           return;
         }
 
-        // Check if business has a phone number for OTP
         let fullPhone = ((biz.phonePrefix || "") + (biz.phone || "")).replace(/\s+/g, "");
         if (fullPhone && !fullPhone.startsWith("+")) fullPhone = "+" + fullPhone;
         if (fullPhone) {
@@ -108,13 +128,11 @@ const Login = () => {
             );
           } catch (err) {
             console.error("OTP send error, bypassing verification:", err);
-            // SMS failed (e.g. Twilio limit) — skip OTP and log in directly
             localStorage.setItem("dp_active_business", JSON.stringify(biz));
             toast.success(`${t.welcome}, ${biz.name}!`);
             navigate("/business-home");
           }
         } else {
-          // No phone number, skip OTP
           localStorage.setItem("dp_active_business", JSON.stringify(biz));
           toast.success(`${t.welcome}, ${biz.name}!`);
           navigate("/business-home");
@@ -123,13 +141,24 @@ const Login = () => {
         return;
       }
 
-      const waiter = await getStaffByUsername(username);
-      if (waiter) {
-        if (waiter.password !== password) {
-          toast.error(t.wrongPassword);
-          setLoading(false);
-          return;
-        }
+      // Try staff login
+      const staffResult = await verifyLogin(username, password, "staff");
+      if (staffResult.valid && staffResult.staff) {
+        const s = staffResult.staff;
+        const waiter: any = {
+          id: s.id,
+          businessId: s.business_id,
+          name: s.name,
+          phone: s.phone || "",
+          nationality: s.nationality || "",
+          jobTitle: s.job_title,
+          customJobTitle: s.custom_job_title || "",
+          shifts: s.shifts || "",
+          startTime: s.start_time || "",
+          endTime: s.end_time || "",
+          username: s.username || undefined,
+          createdAt: s.created_at,
+        };
         const businesses = await getBusinesses();
         const waiterBiz = businesses.find(b => b.id === waiter.businessId);
         if (waiterBiz) {
