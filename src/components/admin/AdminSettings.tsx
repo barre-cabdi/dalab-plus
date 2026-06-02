@@ -68,11 +68,7 @@ const AdminSettings = ({ business, onUpdate }: AdminSettingsProps) => {
   const [passwordForm, setPasswordForm] = useState({ current: "", newPass: "", confirm: "" });
   const [showPassFields, setShowPassFields] = useState({ current: false, newPass: false, confirm: false });
 
-  const handlePasswordChange = () => {
-    if (passwordForm.current !== business.adminPassword) {
-      toast.error("Current password is incorrect!");
-      return;
-    }
+  const handlePasswordChange = async () => {
     if (passwordForm.newPass.length < 4) {
       toast.error("New password must be at least 4 characters!");
       return;
@@ -81,23 +77,18 @@ const AdminSettings = ({ business, onUpdate }: AdminSettingsProps) => {
       toast.error("Passwords do not match!");
       return;
     }
-    // Update password in business record
-    updateBusiness(business.id, { adminPassword: passwordForm.newPass });
-    // Sync dp_active_business
-    try {
-      const active = localStorage.getItem("dp_active_business");
-      if (active) {
-        const activeBiz = JSON.parse(active);
-        if (activeBiz.id === business.id) {
-          localStorage.setItem("dp_active_business", JSON.stringify({ ...activeBiz, adminPassword: passwordForm.newPass }));
-        }
-      }
-    } catch {}
-    // Store password change log for SuperAdmin
-    const logKey = `dp_password_log_${business.id}`;
-    const logs = JSON.parse(localStorage.getItem(logKey) || "[]");
-    logs.push({ changedAt: new Date().toISOString(), newPassword: passwordForm.newPass });
-    localStorage.setItem(logKey, JSON.stringify(logs));
+    // Verify current password server-side
+    const verify = await verifyLogin(business.adminUsername, passwordForm.current, "business");
+    if (!verify.valid) {
+      toast.error("Current password is incorrect!");
+      return;
+    }
+    // Set new hashed password
+    const ok = await setCredentialPassword(business.id, passwordForm.newPass, "business");
+    if (!ok) {
+      toast.error("Failed to update password. Please try again.");
+      return;
+    }
 
     setPasswordForm({ current: "", newPass: "", confirm: "" });
     onUpdate();
