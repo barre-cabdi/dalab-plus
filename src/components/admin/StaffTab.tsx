@@ -45,7 +45,7 @@ const StaffTab = ({ businessId }: StaffTabProps) => {
         jobTitle: JOB_TITLES.includes(s.jobTitle) ? s.jobTitle : "Other",
         customJobTitle: JOB_TITLES.includes(s.jobTitle) ? "" : s.jobTitle,
         shifts: s.shifts, startTime: s.startTime, endTime: s.endTime,
-        username: s.username || "", password: s.password || "",
+        username: s.username || "", password: "",
       });
     } else {
       setEditing(null);
