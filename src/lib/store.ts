@@ -516,7 +516,7 @@ export const getStaff = async (businessId: string): Promise<StaffMember[]> => {
   return (data || []).map(mapStaffFromDb);
 };
 
-export const saveStaff = async (staff: StaffMember): Promise<void> => {
+export const saveStaff = async (staff: StaffMember): Promise<string | null> => {
   const row: any = {
     business_id: staff.businessId, name: staff.name, phone: staff.phone,
     nationality: staff.nationality, job_title: staff.jobTitle, custom_job_title: staff.customJobTitle || "",
@@ -524,8 +524,9 @@ export const saveStaff = async (staff: StaffMember): Promise<void> => {
     username: staff.username || null,
   };
   if (staff.id && /^[0-9a-f]{8}-/i.test(staff.id)) row.id = staff.id;
-  const { error } = await supabase.from("staff").insert(row);
-  if (error) console.error("saveStaff error:", error);
+  const { data, error } = await supabase.from("staff").insert(row).select("id").single();
+  if (error) { console.error("saveStaff error:", error); return null; }
+  return data?.id || null;
 };
 
 export const updateStaff = async (id: string, updates: Partial<StaffMember>): Promise<void> => {
