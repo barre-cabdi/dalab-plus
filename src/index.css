@@ -5,37 +5,40 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
 
 @layer base {
+  /* DALABplus+ — UI/UX Pro Max "Liquid Glass" design system
+     Palette: Luxury Navy + WCAG-tuned Gold (Accent #A16207)
+     Pattern: Storytelling + Feature-Rich  |  No dark mode (per project memory) */
   :root {
-    --background: 220 20% 97%;
-    --foreground: 222 47% 11%;
+    --background: 210 40% 98%;          /* #F8FAFC */
+    --foreground: 224 71% 12%;           /* deep navy text for readability */
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 224 71% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 222 60% 18%;
-    --primary-foreground: 45 100% 60%;
-    --secondary: 45 100% 55%;
-    --secondary-foreground: 222 60% 18%;
-    --muted: 220 15% 92%;
-    --muted-foreground: 220 10% 45%;
-    --accent: 45 100% 55%;
-    --accent-foreground: 222 60% 18%;
-    --destructive: 0 84% 60%;
+    --popover-foreground: 224 71% 12%;
+    --primary: 224 76% 33%;              /* #1E3A8A luxury navy */
+    --primary-foreground: 0 0% 100%;     /* #FFFFFF */
+    --secondary: 217 91% 60%;            /* #3B82F6 bright royal */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 214 32% 94%;                /* #E9EEF5 */
+    --muted-foreground: 220 14% 42%;
+    --accent: 38 89% 33%;                /* #A16207 accessible gold */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 73% 51%;            /* #DC2626 */
     --destructive-foreground: 0 0% 100%;
-    --border: 220 15% 88%;
-    --input: 220 15% 88%;
-    --ring: 45 100% 55%;
-    --radius: 0.75rem;
-    --sidebar-background: 222 60% 12%;
-    --sidebar-foreground: 220 15% 92%;
-    --sidebar-primary: 45 100% 55%;
-    --sidebar-primary-foreground: 222 60% 18%;
-    --sidebar-accent: 222 50% 20%;
-    --sidebar-accent-foreground: 220 15% 92%;
-    --sidebar-border: 222 40% 22%;
-    --sidebar-ring: 45 100% 55%;
-    --hero-gradient: linear-gradient(135deg, hsl(222 60% 12%) 0%, hsl(222 50% 22%) 50%, hsl(222 40% 16%) 100%);
-    --gold-gradient: linear-gradient(135deg, hsl(45 100% 55%) 0%, hsl(38 100% 50%) 100%);
+    --border: 213 50% 86%;               /* tuned from #BFDBFE for visibility */
+    --input: 213 50% 86%;
+    --ring: 224 76% 33%;                 /* primary navy */
+    --radius: 0.875rem;                  /* softer liquid-glass corners */
+    --sidebar-background: 224 71% 10%;
+    --sidebar-foreground: 214 32% 94%;
+    --sidebar-primary: 38 89% 45%;       /* gold for sidebar emphasis */
+    --sidebar-primary-foreground: 224 71% 12%;
+    --sidebar-accent: 224 60% 18%;
+    --sidebar-accent-foreground: 214 32% 94%;
+    --sidebar-border: 224 50% 22%;
+    --sidebar-ring: 38 89% 45%;
+    --hero-gradient: linear-gradient(135deg, hsl(224 71% 10%) 0%, hsl(224 76% 22%) 50%, hsl(217 71% 16%) 100%);
+    --gold-gradient: linear-gradient(135deg, hsl(38 89% 45%) 0%, hsl(38 89% 33%) 100%);
     --glass: 0 0% 100% / 0.08;
     --shadow-hero: 0 25px 60px -15px hsl(222 60% 10% / 0.4);
     --shadow-card: 0 4px 24px -4px hsl(222 60% 10% / 0.08);
